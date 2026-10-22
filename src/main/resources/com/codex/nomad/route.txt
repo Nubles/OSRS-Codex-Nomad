@@ -1,0 +1,148 @@
+# Route to Prifddinas for ultimate ironmen.
+# Steps paraphrased from the OSRS Wiki's "Guide:Ultimate Ironman Walkthrough Guide To Prifddinas"
+# (https://oldschool.runescape.wiki/w/Guide:Ultimate_Ironman_Walkthrough_Guide_To_Prifddinas),
+# CC BY-NC-SA 3.0. Format: section | step | tags (quest:, skill:Name level, item:, diary:), tags optional.
+# A line starting with "~" is a tip shown under the step before it.
+Setting up for Agility | Sell your starting items to the general store, except Bread and Shrimps |
+Setting up for Agility | Teleport to the Stronghold of Security with Count Check |
+~ Pick up the cooked meat in the longhouse to the north, and hop worlds for more
+Setting up for Agility | Finish the first three Stronghold of Security floors for 10k coins |
+Setting up for Agility | Home teleport and buy a bronze axe and a steel axe from Bob | item:Bronze axe; item:Steel axe
+Setting up for Agility | Drop extra food, then buy a spade and an empty jug at the general store | item:Spade; item:Jug
+Setting up for Agility | Complete X Marks the Spot | quest:X Marks the Spot
+~ Fill the jug with water in the kitchen. Do not use the lamp: destroy it to reclaim later
+Setting up for Agility | Reach 20 Agility at the Draynor Village Rooftop Course | skill:Agility 20
+Setting up for Agility | Buy a Chronicle and 20 teleport cards | item:Chronicle
+Setting up for Agility | Walk to Ardougne and complete Hazeel Cult, siding with Hazeel | quest:Hazeel Cult
+~ The boat from Rimmington reaches Ardougne
+Setting up for Agility | Complete Monk's Friend | quest:Monk's Friend
+~ Chop some logs nearby, and pop the balloons
+Setting up for Agility | Buy swamp paste and a tinderbox at the Port Khazard general store | item:Swamp paste; item:Tinderbox
+Setting up for Agility | Chop and burn logs to 30 Firemaking | skill:Firemaking 30
+Setting up for Agility | Complete Sea Slug | quest:Sea Slug
+Setting up for Agility | Drop everything except coins |
+Setting up for Agility | Reach 25 Thieving at the cake stalls | skill:Thieving 25
+Setting up for Agility | Complete Tribal Totem | quest:Tribal Totem
+Setting up for Agility | Take a full inventory of cakes to the Brimhaven Agility Arena |
+Setting up for Agility | Train at Brimhaven to 50 Agility | skill:Agility 50
+~ Start on the floor spikes until tickets come steadily (30 Agility for most, 40 for all)
+Setting up for Agility | Reach 52 Agility at the Agility Pyramid, earning coins | skill:Agility 52
+Setting up for Agility | Chronicle to Varrock and complete Shield of Arrav, joining the Phoenix Gang | quest:Shield of Arrav
+Setting up for Agility | Buy a shortbow and iron arrows and kill Jonny the Beard | item:Shortbow; item:Iron arrow
+~ Optional: an alt in the Black Arm Gang can have the Weaponsmaster killed
+Setting up for Agility | Complete Children of the Sun | quest:Children of the Sun
+Setting up for Agility | Work through Ethically Acquired Antiquities until it sends you to Port Sarim |
+Setting up for Agility | Take the charter ship to Port Sarim and buy a feather from Gerrant | item:Feather
+Setting up for Agility | Complete Client of Kourend, stealing from fruit stalls to 31 Thieving | quest:Client of Kourend; skill:Thieving 31
+~ Save strange fruit for run energy. Use the Client of Kourend lamps on Hitpoints, not the X Marks lamp
+~ Swap to the Arceuus spellbook and back during the quest
+Setting up for Agility | Complete Ethically Acquired Antiquities | quest:Ethically Acquired Antiquities
+Setting up for Agility | Head to Aldarin and complete Death on the Isle | quest:Death on the Isle
+~ Let the first fight end near death: prop sword attacks give no experience
+Setting up for Agility | Minigame teleport to Clan Wars and store your coins in the coffer |
+Setting up for Agility | Empty your inventory completely |
+Setting up for Agility | Reach 40 Prayer with big bones at the Chaos Altar | skill:Prayer 40
+~ Skip Protect from Melee for now, and do not kill anything for a looting bag yet
+Setting up for Agility | Pickpocket Rogues in the deep Wilderness for an iron dagger(p) and a lockpick | item:Iron dagger(p); item:Lockpick
+~ Ardougne cakes make good food. Track poison with RuneLite's Poison plugin to save combat experience
+Setting up for Agility | Withdraw your coins from the Clan Wars coffer without the minigame teleport |
+Setting up for Agility | Steal from the Aldarin chests to 50 Thieving | skill:Thieving 50
+~ Fishing Trawler teleport, then the charter ship to Aldarin
+Setting up for Agility | Drop the lockpick and all loot except coins, then home teleport |
+Setting up for Agility | Start Rune Mysteries with Duke Horacio |
+Setting up for Agility | Work through The Restless Ghost until you have the skull |
+Setting up for Agility | Take the leather gloves spawn by Father Urhney | item:Leather gloves
+Setting up for Agility | Speak to Archmage Sedridor, buy another Chronicle, then see Aubury |
+Setting up for Agility | Complete The Restless Ghost | quest:The Restless Ghost
+Setting up for Agility | Claim a training bow and arrows from the Ranged combat tutor | item:Training bow
+Setting up for Agility | Complete Rune Mysteries | quest:Rune Mysteries
+Setting up for Agility | Buy wine from Fortunato and head to the H.A.M. Hideout | item:Jug of wine
+Setting up for Agility | Pickpocket H.A.M. members for a rusty sword and an uncut opal | item:Rusty sword; item:Uncut opal
+Setting up for Agility | Reclaim the X Marks the Spot lamp and keep it |
+Setting up for Agility | Buy cheese, raw beef, raw chicken and cheap food from Wydin | item:Cheese; item:Raw beef; item:Raw chicken
+Setting up for Agility | Safespot a giant rat for raw rat meat, then drop the bow and arrows | item:Raw rat meat
+Setting up for Agility | Boat to Ardougne, safespot and poison a bear for raw bear meat | item:Raw bear meat
+Setting up for Agility | Boat back to Rimmington and pick snape grass west of the Crafting Guild | item:Snape grass
+Setting up for Agility | Complete Druidic Ritual | quest:Druidic Ritual
+Setting up for Agility | Complete Witch's House, safespotting the boss with poison | quest:Witch's House
+~ Optional: start Wilderness agility now for more risk, and finish this section later
+Setting up for Agility | Collect the 1k experience lamp from Historian Minas |
+Setting up for Agility | Use the X Marks the Spot lamp on Herblore |
+Setting up for Agility | Fishing Trawler teleport: view Aleck's Hunter Emporium and have Tindel identify the rusty sword |
+Setting up for Agility | Play a Fishing Trawler game for the diary (no need to finish) |
+Setting up for Agility | Steal a silk in Ardougne and keep it | item:Silk
+Setting up for Agility | Ardougne diary: Wizard Cromperty's teleport, Probita's pets, the church altar |
+Setting up for Agility | Buy a rope at the general store | item:Rope
+Setting up for Agility | Buy dwellberries, chocolate dust and a bucket of milk from Hudo in the Grand Tree | item:Dwellberries; item:Chocolate dust; item:Bucket of milk
+Setting up for Agility | Complete Plague City | quest:Plague City
+Setting up for Agility | Sell the silk to the silk trader for 60 coins, and steal some cakes |
+Setting up for Agility | Complete Biohazard, keeping the poisoned Mourner in combat | quest:Biohazard
+Setting up for Agility | Enter the Combat Training Camp for the last Ardougne easy diary task |
+~ Do not collect the Ardougne diary rewards yet
+Setting up for Agility | Complete Jungle Potion | quest:Jungle Potion
+Setting up for Agility | Buy the Dig Site supplies on Karamja, and tea from the east Varrock stall |
+Setting up for Agility | Complete The Dig Site | quest:The Dig Site
+Setting up for Agility | Complete Merlin's Crystal | quest:Merlin's Crystal
+~ Keep enough combat experience for two poison kills on Sir Mordred; clean finds if short
+Setting up for Agility | Claim the Historian Minas lamps and use them on Hitpoints |
+Setting up for Agility | Clean Varrock Museum finds for lamps to 30 Hitpoints | skill:Hitpoints 30
+~ Lamping is optional: try fewer Hitpoints and decide later if unsure
+Setting up for Agility | Collect the Ardougne easy diary reward and lamp to 32 Hitpoints | skill:Hitpoints 32
+Setting up for Agility | Start Dragon Slayer I for an anti-dragon shield | item:Anti-dragon shield
+~ Default tank build: 32 Hitpoints, 40 Prayer, 13 combat
+Wilderness Agility | Collect 160k coins at the Agility Pyramid to start |
+~ Optional instead: get the Rogue outfit and earn coins with Thieving
+Wilderness Agility | Watch the wiki's tanking video, at least the skeleton section |
+Wilderness Agility | Buy cooked karambwans at the Shrimp and Parrot for the first trip | item:Cooked karambwan
+Wilderness Agility | Run the Wilderness Agility Course: about 50 laps on the first trip |
+~ Paying the 150k fee hands you a looting bag. Use blighted supplies on later trips
+Wilderness Agility | Sell loot to Martin Thwait's Lost and Found after each trip, 2-3 per world |
+~ Destroy the looting bag inside the Wilderness to get its loot: other players can see it
+Wilderness Agility | Store spare coins in the Last Man Standing coffer |
+Wilderness Agility | Later trips: 100-150+ laps, mass worlds for safety | skill:Agility 70
+Wilderness Agility | Bank 10m coins at least, 15-20m ideally |
+~ On mass worlds, pray Protect from Missiles against dark bow pures and never bank loot there
+MTA and Protect Melee | Keep every blighted supply: they become bounty crates later |
+MTA and Protect Melee | Place a 2m bond offer at the Grand Exchange, then cancel it |
+MTA and Protect Melee | Walk to Ferox Enclave and put the rest of your coins in its coffer |
+MTA and Protect Melee | Take the iron dagger spawn north of the enclave and go to the Mage Arena bank | item:Iron dagger
+MTA and Protect Melee | Collect the bond money and buy the rune list for the Mage Training Arena |
+~ 500 mind, 2,000 nature, 1,000 cosmic, 800 law, 1,000 water and 1,000 earth runes
+MTA and Protect Melee | Back at Ferox, coffer all but 4,000 coins |
+MTA and Protect Melee | Buy a staff of air and a staff of fire in Varrock | item:Staff of air; item:Staff of fire
+MTA and Protect Melee | Kill thugs in the Edgeville Dungeon for 15 Magic and a looting bag | skill:Magic 15; item:Looting bag
+MTA and Protect Melee | Bag the blighted supplies and drop the mind runes |
+MTA and Protect Melee | Creature Graveyard: 351 points (831 for the master wand) |
+MTA and Protect Melee | Telekinetic Theatre: 351 points (831 for the master wand) |
+MTA and Protect Melee | Enchanting Chamber with Lvl-3 Enchant: 3,515 points (8,315 for the wand) |
+MTA and Protect Melee | Alchemists' Playground: 501 points (1,031 for the wand) |
+MTA and Protect Melee | Unlock Bones to Peaches; keep the staff of air and drop the staff of fire |
+MTA and Protect Melee | Clan Wars teleport for your coins and buy the Varrock rune list |
+~ 500 fire, 500 earth, 500 water, 20 air and 500 death runes
+MTA and Protect Melee | Complete Daddy's Home | quest:Daddy's Home
+MTA and Protect Melee | Make planks from Lumberyard logs and finish two beginner Mahogany Homes contracts |
+MTA and Protect Melee | Reclaim Ardougne cloak 1 for its teleport | item:Ardougne cloak 1
+MTA and Protect Melee | Take the boots of lightness in the Temple of Ikov | item:Boots of lightness
+MTA and Protect Melee | Buy cakes in Ardougne, plus a rope and an iron axe | item:Rope; item:Iron axe
+MTA and Protect Melee | Skip the Barbarian Assault tutorial and start Alfred Grimhand's Barcrawl |
+MTA and Protect Melee | Work through Waterfall Quest up to the maze and pebble |
+MTA and Protect Melee | Complete Tree Gnome Village | quest:Tree Gnome Village
+MTA and Protect Melee | Complete Fight Arena | quest:Fight Arena
+MTA and Protect Melee | Destroy the looting bag in the Wilderness to recover the blighted supplies |
+MTA and Protect Melee | Turn the supplies into bounty crates and sell them at the Rogues' Den |
+MTA and Protect Melee | Complete Waterfall Quest | quest:Waterfall Quest
+MTA and Protect Melee | Complete the Natural History Quiz |
+MTA and Protect Melee | Buy a noose wand in Yanille and hunt feldip weasels for 4 furs | item:Noose wand
+MTA and Protect Melee | Make jungle camo at the Varrock Fancy Clothes Store | item:Jungle camo top; item:Jungle camo legs
+MTA and Protect Melee | Complete Priest in Peril | quest:Priest in Peril
+MTA and Protect Melee | Buy an adamant sword in Varrock | item:Adamant sword
+MTA and Protect Melee | Complete Alfred Grimhand's Barcrawl | quest:Alfred Grimhand's Barcrawl
+MTA and Protect Melee | Complete Scorpion Catcher | quest:Scorpion Catcher
+MTA and Protect Melee | Complete Vampyre Slayer | quest:Vampyre Slayer
+MTA and Protect Melee | Complete Ernest the Chicken | quest:Ernest the Chicken
+MTA and Protect Melee | Complete Holy Grail | quest:Holy Grail
+~ Tables keep items for ten minutes, but others can see them after one
+MTA and Protect Melee | Reach 43 Prayer for Protect from Melee | skill:Prayer 43
+MTA and Protect Melee | Complete The Feud | quest:The Feud
+MTA and Protect Melee | Do the runes part of Rogue Trader |
+~ Buy teleport runes from Ali Morrisane, and drop runes for space before the next places
