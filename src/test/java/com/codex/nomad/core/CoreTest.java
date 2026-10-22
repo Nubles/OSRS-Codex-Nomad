@@ -173,7 +173,7 @@ public class CoreTest
 	{
 		Route r = Route.load();
 		assertTrue(r.size() > 100);
-		assertEquals(3, r.sections().size());
+		assertEquals(13, r.sections().size());
 		Set<String> keys = new HashSet<>();
 		for (Route.Step s : r.steps())
 		{

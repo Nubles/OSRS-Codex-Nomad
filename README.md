@@ -20,7 +20,7 @@ A RuneLite plugin for ultimate ironmen. A UIM has no bank, so Nomad keeps the bo
 - **STASH reminders.** Emote clue items you carry are matched to the STASH units they belong in, so you can put them away and stop carrying them.
 - **Guards.** Hides *Destroy* on the looting bag outside the Wilderness (*Looting bag Destroy*), and *Sell* on items worth more than a set amount in shops (*Shop Sell*, *Protect items over* 50,000 gp).
 - **Peril plaque.** A small plaque in the game view with your free slots, the value at risk and the most urgent deathpile (*Peril plaque*).
-- **Route tab.** The early steps of the OSRS Wiki's UIM walkthrough to Prifddinas, ticked off as you finish the quests, reach the levels and hold the items each step needs. The current step can also be shown on the plaque (*Route step on plaque*). The guide is still being written; the route covers the chapters that exist.
+- **Route tab.** The early steps of the OSRS Wiki's UIM walkthrough to Prifddinas, ticked off as you finish the quests, reach the levels and hold the items each step needs. The current step can also be shown on the plaque (*Route step on plaque*). All thirteen sections are in, from a fresh account to Song of the Elves: over 300 steps.
 
 ## Settings
 

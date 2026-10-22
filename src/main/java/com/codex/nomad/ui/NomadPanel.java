@@ -595,7 +595,7 @@ public class NomadPanel extends PluginPanel
 				p.add(more);
 			}
 		}
-		p.add(foot("Steps paraphrased from the OSRS Wiki's Ultimate Ironman walkthrough to Prifddinas (CC BY-NC-SA 3.0). The wiki has written its first three chapters so far."));
+		p.add(foot("Steps paraphrased from the OSRS Wiki's Ultimate Ironman walkthrough to Prifddinas (CC BY-NC-SA 3.0)."));
 		return p;
 	}
 

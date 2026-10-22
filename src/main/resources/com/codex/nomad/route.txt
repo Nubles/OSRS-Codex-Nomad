@@ -105,9 +105,11 @@ Wilderness Agility | Bank 10m coins at least, 15-20m ideally |
 MTA and Protect Melee | Keep every blighted supply: they become bounty crates later |
 MTA and Protect Melee | Place a 2m bond offer at the Grand Exchange, then cancel it |
 MTA and Protect Melee | Walk to Ferox Enclave and put the rest of your coins in its coffer |
+~ Unnote some food first in case you are attacked on the way to the Mage Arena bank
 MTA and Protect Melee | Take the iron dagger spawn north of the enclave and go to the Mage Arena bank | item:Iron dagger
 MTA and Protect Melee | Collect the bond money and buy the rune list for the Mage Training Arena |
 ~ 500 mind, 2,000 nature, 1,000 cosmic, 800 law, 1,000 water and 1,000 earth runes
+~ Recommended: 1,000 law, 2,200 nature and 1,000 cosmic more to earn master wand points now (buy the wand much later)
 MTA and Protect Melee | Back at Ferox, coffer all but 4,000 coins |
 MTA and Protect Melee | Buy a staff of air and a staff of fire in Varrock | item:Staff of air; item:Staff of fire
 MTA and Protect Melee | Kill thugs in the Edgeville Dungeon for 15 Magic and a looting bag | skill:Magic 15; item:Looting bag
@@ -122,6 +124,7 @@ MTA and Protect Melee | Clan Wars teleport for your coins and buy the Varrock ru
 MTA and Protect Melee | Complete Daddy's Home | quest:Daddy's Home
 MTA and Protect Melee | Make planks from Lumberyard logs and finish two beginner Mahogany Homes contracts |
 MTA and Protect Melee | Reclaim Ardougne cloak 1 for its teleport | item:Ardougne cloak 1
+MTA and Protect Melee | Get a banana hat | item:Banana hat
 MTA and Protect Melee | Take the boots of lightness in the Temple of Ikov | item:Boots of lightness
 MTA and Protect Melee | Buy cakes in Ardougne, plus a rope and an iron axe | item:Rope; item:Iron axe
 MTA and Protect Melee | Skip the Barbarian Assault tutorial and start Alfred Grimhand's Barcrawl |
@@ -136,6 +139,7 @@ MTA and Protect Melee | Buy a noose wand in Yanille and hunt feldip weasels for 
 MTA and Protect Melee | Make jungle camo at the Varrock Fancy Clothes Store | item:Jungle camo top; item:Jungle camo legs
 MTA and Protect Melee | Complete Priest in Peril | quest:Priest in Peril
 MTA and Protect Melee | Buy an adamant sword in Varrock | item:Adamant sword
+MTA and Protect Melee | Walk briefly into Morytania |
 MTA and Protect Melee | Complete Alfred Grimhand's Barcrawl | quest:Alfred Grimhand's Barcrawl
 MTA and Protect Melee | Complete Scorpion Catcher | quest:Scorpion Catcher
 MTA and Protect Melee | Complete Vampyre Slayer | quest:Vampyre Slayer
@@ -146,3 +150,266 @@ MTA and Protect Melee | Reach 43 Prayer for Protect from Melee | skill:Prayer 43
 MTA and Protect Melee | Complete The Feud | quest:The Feud
 MTA and Protect Melee | Do the runes part of Rogue Trader |
 ~ Buy teleport runes from Ali Morrisane, and drop runes for space before the next places
+Tempoross Setup | Complete Tower of Life | quest:Tower of Life
+Tempoross Setup | Complete Cook's Assistant | quest:Cook's Assistant
+~ Everything is on the farm north of Lumbridge Castle. Milk an extra bucket for Gertrude's Cat
+Tempoross Setup | Complete Gertrude's Cat | quest:Gertrude's Cat
+Tempoross Setup | Complete Murder Mystery | quest:Murder Mystery
+Tempoross Setup | Complete Fishing Contest | quest:Fishing Contest
+Tempoross Setup | Complete Twilight's Promise | quest:Twilight's Promise
+Tempoross Setup | Complete The Ribbiting Tale of a Lily Pad Labour Dispute | quest:The Ribbiting Tale of a Lily Pad Labour Dispute
+Tempoross Setup | Complete The Knight's Sword | quest:The Knight's Sword
+~ The pie dish is in the Varrock kitchen after Reldo; iron bars spawn at the Sunset Coast docks
+Tempoross Setup | Complete Black Knights' Fortress | quest:Black Knights' Fortress
+Tempoross Setup | Complete Sleeping Giants | quest:Sleeping Giants
+Tempoross Setup | Get a forestry kit and do Forestry events on world 444 from now on | item:Forestry kit
+~ Keep every leaf in the kit
+Tempoross Setup | Start The Giant Dwarf for Keldagrim |
+Tempoross Setup | Smith an inventory of steel bars at the Blast Furnace |
+~ Pay the fee, withdraw 5 at a time, and cool the bars with the nearby bucket and water
+Tempoross Setup | Reach 26 Construction with Mahogany Homes and the Auburnvale sawmill | skill:Construction 26
+~ Beginner contracts to 20, oak to 26. Buy an adamant axe (and a mithril one below 31 Woodcutting)
+Tempoross Setup | Chop logs and fletch 900 arrow shafts |
+Tempoross Setup | Complete The Tourist Trap, with the reward on Fletching | quest:The Tourist Trap
+~ Buy 15,000 feathers from Shantay and fletch 900 headless arrows first for 10 Fletching
+Tempoross Setup | Fletch 14,100 more arrow shafts, oak then willow at 30 Fletching |
+~ Deathpile and let the forestry kit despawn: it keeps the bark. Nettles and a Draynor jail guard make a quick death
+Tempoross Setup | Fletch 15,000 headless arrows while questing |
+Tempoross Setup | Buy 15,000 steel arrowtips at Hickton's, 250 a world, and fletch them | skill:Fletching 50
+~ Drop the arrows afterwards: they are only for the experience
+Tempoross Setup | Complete Elemental Workshop I | quest:Elemental Workshop I
+Tempoross Setup | Complete Elemental Workshop II | quest:Elemental Workshop II
+Tempoross Setup | Make rings of dueling and a games necklace for teleports |
+~ Telegrab gold bars in the Varrock West Bank basement; gems in Al Kharid. 3-4 rings at a time, wear one necklace
+Tempoross Setup | Complete Horror from the Deep | quest:Horror from the Deep
+Tempoross Setup | Complete Pandemonium | quest:Pandemonium
+Tempoross Setup | Complete Enter the Abyss | quest:Enter the Abyss
+Tempoross Setup | Complete Goblin Diplomacy | quest:Goblin Diplomacy
+Tempoross Setup | Complete Recipe for Disaster: Another Cook's Quest | quest:Recipe for Disaster - Another Cook's Quest
+Tempoross Setup | Complete Recipe for Disaster: Freeing the Goblin generals | quest:Recipe for Disaster - Wartface & Bentnoze
+Tempoross Setup | Complete The Lost Tribe | quest:The Lost Tribe
+~ Optional: keep the ring of life for safety while deathbanked. The Lumbridge basement is now an easy deathpile
+Tempoross Setup | Complete Getting Ahead | quest:Getting Ahead
+Tempoross Setup | Complete the free-to-play quests except Dragon Slayer I and Below Ice Mountain |
+Tempoross Setup | Complete Dwarf Cannon | quest:Dwarf Cannon
+Tempoross Setup | Complete A Porcine of Interest | quest:A Porcine of Interest
+Tempoross Setup | Complete Sheep Herder | quest:Sheep Herder
+Tempoross Setup | Complete Observatory Quest | quest:Observatory Quest
+Tempoross Setup | Complete Clock Tower | quest:Clock Tower
+Tempoross Setup | Cook raw sardines from Gerrant's on the nearby range to 15 Cooking | skill:Cooking 15
+Tempoross Setup | Fly fish and cook at Barbarian Village to 35 Fishing | skill:Fishing 35
+Tempoross Setup | Coffer your coins at Ferox and drop all runes and items |
+~ Keep the Ardougne cloak, boots of lightness, staff of air and jungle camo. Optional: an Imcando hammer
+Tempoross Setup | Train at Tempoross to 53 Fishing | skill:Fishing 53
+~ Repair masts and totems for Construction experience; skip cooking. Get the combat achievements except Dress Like You Mean It and Why Cook?
+Tempoross Setup | Pull your loot: drop spirit flakes, open caskets and sell at the Rogues' Den |
+~ Drop soaked pages unless you have the Tome of Water; drop the fish barrel, tackle box and big harpoonfish
+Tempoross Setup | Cook and drop the fish, and use the planks at your house (unnote at Phials) |
+Wintertodt | Get your coins back from Ferox and buy elemental and law runes from Ali Morrisane |
+Wintertodt | Buy an adamant axe in Auburnvale | item:Adamant axe
+Wintertodt | Dig up the clue hunter gloves and boots; destroy the boots, wear the gloves | item:Clue hunter gloves
+Wintertodt | Get a tinderbox and a forestry kit from Draynor's Forestry shop | item:Tinderbox; item:Forestry kit
+~ The Ardougne cloak can go now. Do all Woodcutting on world 444
+Wintertodt | Buy a rainbow scarf from Diango | item:Rainbow scarf
+Wintertodt | Coffer your coins at Ferox again |
+Wintertodt | Cut and burn logs to 50 Firemaking | skill:Firemaking 50
+~ Do every Forestry event: you need a log basket, and leaves become supercompost with a compost potion
+~ At 35 Woodcutting and Firemaking, cut teaks on the north of the Isle of Souls
+Wintertodt | Complete Death to the Dorgeshuun | quest:Death to the Dorgeshuun
+Wintertodt | Complete Tears of Guthix | quest:Tears of Guthix
+~ Bring swamp tar, buy an empty bullseye lantern from Miltog and light it with oil from his still
+Wintertodt | Drink the tears for Sailing experience (30 at least) | skill:Sailing 30
+~ Sailing is optional for the route but helps in a few places
+Wintertodt | Complete Vale Totems for the fletching knife with maple logs | quest:Vale Totems
+Wintertodt | Get a log basket from Forestry | item:Log basket
+~ A UIM can hand the Forester logs an inventory at a time; no noted logs needed
+~ Optional: knock out 50 Crafting with the flax here
+Wintertodt | Train Wintertodt to 50 Construction from the braziers | skill:Construction 50
+~ Get every Wintertodt combat achievement. Mass worlds with the Wintertodt Scouter plugin are the efficient way
+~ Or get 50 Construction from Mahogany Homes instead: you only need some magic logs, uncut diamonds and the points
+Wintertodt | At 38 Construction, break off and complete Scrambled! | quest:Scrambled!
+Wintertodt | Do not loot the Wintertodt reward cart yet |
+Smithing and Renovation | Retrieve your coins and buy a few teleport runes |
+Smithing and Renovation | Reach 60 Woodcutting and 5,000 anima-infused bark | skill:Woodcutting 60
+Smithing and Renovation | Buy a log basket if you still lack one | item:Log basket
+Smithing and Renovation | Build an oak magic wardrobe and oak armour case |
+Smithing and Renovation | Store the log basket, forestry kit and jungle camo in your house |
+Smithing and Renovation | Buy a Chronicle with charges | item:Chronicle
+Smithing and Renovation | Buy pickaxes up to rune at Nurmof's and mine to 52 Mining | skill:Mining 52
+Smithing and Renovation | Kill the Ice Queen with fire blast for ice gloves | item:Ice gloves
+Smithing and Renovation | Train Giant's Foundry to 70 Smithing with only coins, ice gloves and the Chronicle | skill:Smithing 70
+~ Buy the moulds first. Consider staying for the Smiths' uniform, and buy the tunic last
+Smithing and Renovation | Store your coins and the uniform, then clear all items and equipment |
+Smithing and Renovation | Complete Recruitment Drive | quest:Recruitment Drive
+Smithing and Renovation | Buy your rune pouch from the Mage Training Arena | item:Rune pouch
+Smithing and Renovation | Gear up: teleport and death runes, a staff of air, Ardougne cloak, boots of lightness, jungle camo |
+Smithing and Renovation | Complete The Grand Tree | quest:The Grand Tree
+Smithing and Renovation | Complete The Eyes of Glouphrie | quest:The Eyes of Glouphrie
+~ Get the mud rune with spare MTA points, then make the crystal saw
+Smithing and Renovation | Optional: complete Watchtower and read the teleport scroll |
+Smithing and Renovation | Rebuild your house: 5 portal chambers, chapel, workshop, menagerie, kitchen |
+Smithing and Renovation | Build the oak furniture: toy box, fancy dress box, treasure chest, altar, tool stores 1-4, larder |
+~ Also upgrade to a carved oak wardrobe, and build clockmaker's bench 1 and an oak pet house
+Smithing and Renovation | Make 7 steel bars and 8 soft clay, then a pump and drain, firepit and oak shelves 2 |
+Smithing and Renovation | Buy 10 limestone bricks from Rasolo and make a teleport focus in each chamber |
+Smithing and Renovation | Build clockmaker's bench 2, an oak cape rack and tool store 5 |
+Smithing and Renovation | Make teak planks and build teak portal frames |
+Smithing and Renovation | Buy the portal runes from Ali Morrisane or the Mage Arena |
+~ 1,800 law, 500 soul, 200 mind, 500 water, 400 fire, 1,400 air and 700 earth runes
+Smithing and Renovation | Direct your portals: Salve Graveyard, Fenkenstrain's Castle, Battlefront, Arceuus Library, Draynor Manor, West Ardougne, Mind Altar |
+Smithing and Renovation | Direct your portals: Varrock, Ardougne, Falador, Lumbridge, Camelot, Kourend, Civitas illa Fortis |
+Smithing and Renovation | Move your house to Hosidius |
+~ Deathbanked, take the Tithe Farm teleport home, then Battlefront to the Farming Guild
+Farming and Building | Complete Nature Spirit | quest:Nature Spirit
+Farming and Building | Complete Lost City | quest:Lost City
+Farming and Building | Complete Fairytale I | quest:Fairytale I - Growing Pains
+~ Magic secateurs can be stored at any tool leprechaun
+Farming and Building | Work through Fairytale II until you can use fairy rings |
+Farming and Building | Complete The Garden of Death | quest:The Garden of Death
+Farming and Building | Reach 34 Farming | skill:Farming 34
+~ Optimal: The Giant Dwarf, Forgettable Tale, Creature of Fenkenstrain and Garden of Tranquillity. Lazy: bagged plants and garden pies
+Farming and Building | Train Tithe Farm to 65 Farming | skill:Farming 65
+Farming and Building | Buy the seed box and auto-weed | item:Seed box
+~ Keep guam, marrentill and harralander seeds for quests; save the extra points
+Farming and Building | Make a games necklace and ring of dueling, then loot Wintertodt into your looting bag |
+~ Keep herbs, seeds, gems, magic logs and burnt pages (teak logs optional); drop ores, other logs, fish and the rest
+Farming and Building | Buy a few thousand air runes and drop the staff of air |
+Farming and Building | Fill the rune pouch with air, earth and law runes |
+Farming and Building | Deathbank at the Nightmare |
+~ Tithe Farm teleport home, then the Fenkenstrain's Castle portal back. Optional: train 70 Cooking now
+Farming and Building | From the deathbank take guams, uncut sapphires, emeralds, rubies, coins and the rune pouch |
+~ Leave the uncut diamonds: you need them at the end of the route
+Farming and Building | Cut and sell the sapphires and emeralds; give the rubies to the Museum Curator |
+Farming and Building | Make the guams into attack potions and drop them |
+Farming and Building | Blow glass in Port Phasmatys to 50 Crafting | skill:Crafting 50
+Farming and Building | Take your Construction kit from the deathbank and buy a rune axe from Perry | item:Rune axe
+Farming and Building | Train teak Mahogany Homes to 82 Construction | skill:Construction 82
+~ Buy a plank sack, then Amy's saw. Watch for the aggressive ghouls at the Salve Graveyard teleport
+Farming and Building | Build teak shelves 2, an achievement gallery and a basic jewellery box |
+Farming and Building | Build a portal nexus and a mounted digsite pendant |
+~ Optional: a restoration pool, a servant's money bag, and teak or mahogany storage furniture
+Questing for Combats | Take your items from the deathbank into your looting bag, keeping a marrentill out |
+~ Spare looting bags come from Last Man Standing points. You can bag items at Ferox Enclave
+Questing for Combats | Get a kitten from Gertrude and grow it in your house |
+Questing for Combats | Complete Recipe for Disaster: Freeing the Mountain Dwarf | quest:Recipe for Disaster - Mountain Dwarf
+Questing for Combats | Complete Death Plateau | quest:Death Plateau
+Questing for Combats | Complete Troll Stronghold | quest:Troll Stronghold
+Questing for Combats | Complete Making History | quest:Making History
+Questing for Combats | Complete Bone Voyage | quest:Bone Voyage
+~ Take the Historian Minas lamps for Herblore. Clean herbs before noting them
+Questing for Combats | Unlock Barbarian Farming so you no longer need a seed dibber |
+Questing for Combats | Complete The Golem | quest:The Golem
+Questing for Combats | Complete Shadow of the Storm, experience on Ranged | quest:Shadow of the Storm
+Questing for Combats | Complete Recipe for Disaster: Freeing Evil Dave | quest:Recipe for Disaster - Evil Dave
+Questing for Combats | Complete Big Chompy Bird Hunting | quest:Big Chompy Bird Hunting
+Questing for Combats | Complete Recipe for Disaster: Freeing Skrach Uglogwee | quest:Recipe for Disaster - Skrach Uglogwee
+Questing for Combats | Complete Recipe for Disaster: Freeing Pirate Pete | quest:Recipe for Disaster - Pirate Pete
+Questing for Combats | Complete Recipe for Disaster: Freeing the Lumbridge Guide | quest:Recipe for Disaster - Lumbridge Guide
+Questing for Combats | Complete Wanted! | quest:Wanted!
+Questing for Combats | Complete Animal Magnetism | quest:Animal Magnetism
+Questing for Combats | Complete Spirits of the Elid | quest:Spirits of the Elid
+Questing for Combats | Reach 70 Cooking | skill:Cooking 70
+~ Frankie's fish are easy. Carry a clean irit for Dr Jekyll's agility potion
+Questing for Combats | Complete Zogre Flesh Eaters | quest:Zogre Flesh Eaters
+Questing for Combats | Complete Monkey Madness I, training Strength with Daero after | quest:Monkey Madness I
+~ Leave a second ninja greegree with Zooknock for Monkey Madness II
+Questing for Combats | Complete Recipe for Disaster: Freeing King Awowogei | quest:Recipe for Disaster - King Awowogei
+Questing for Combats | Buy a dragon scimitar from Daga | item:Dragon scimitar
+Questing for Combats | Complete Dragon Slayer I | quest:Dragon Slayer I
+Questing for Combats | Complete Heroes' Quest | quest:Heroes' Quest
+Questing for Combats | Complete Icthlarin's Little Helper | quest:Icthlarin's Little Helper
+Questing for Combats | Complete Contact!, experience on Ranged | quest:Contact!
+Questing for Combats | Complete The Fremennik Trials | quest:The Fremennik Trials
+~ You will need to deathpile for this one
+Questing for Combats | Complete The Fremennik Isles, experience on Strength | quest:The Fremennik Isles
+Questing for Combats | Train at ammonite crabs to 65 Attack and 65 Strength | skill:Attack 65; skill:Strength 65
+~ 56 Strength, 60 Attack, 65 Strength, 65 Attack. Helm of neitiznot at 55 Defence
+Questing for Combats | Do birdhouse runs to 57 Hunter | skill:Hunter 57
+~ Farm fruit trees for a Hespori seed; keep fossils for lamps
+Questing for Combats | Train with a bone crossbow and Ava's attractor to 60 Ranged | skill:Ranged 60
+Barrows Gloves | Complete Shades of Mort'ton | quest:Shades of Mort'ton
+Barrows Gloves | Complete the easy Karamja diary |
+Barrows Gloves | Complete Shilo Village | quest:Shilo Village
+Barrows Gloves | Complete One Small Favour | quest:One Small Favour
+Barrows Gloves | Move your house to Taverley and deathbank at Hespori |
+Barrows Gloves | Play the Rogues' Den for the full Rogue equipment, storing pieces at home |
+Barrows Gloves | Get a fighter torso while still deathbanked | item:Fighter torso
+~ Leave the rune pouch in the deathbank: it cannot come in
+Barrows Gloves | Make prayer potions from your ranarrs at the Grand Exchange and note them |
+~ Keep one unfinished potion for the next quest. Move your house back to Hosidius
+Barrows Gloves | Complete His Faithful Servants | quest:His Faithful Servants
+Barrows Gloves | Complete Eadgar's Ruse | quest:Eadgar's Ruse
+Barrows Gloves | Complete My Arm's Big Adventure | quest:My Arm's Big Adventure
+Barrows Gloves | Complete The Depths of Despair | quest:The Depths of Despair
+Barrows Gloves | Complete The Queen of Thieves | quest:The Queen of Thieves
+Barrows Gloves | Complete The Ascent of Arceuus | quest:The Ascent of Arceuus
+Barrows Gloves | Complete The Forsaken Tower | quest:The Forsaken Tower
+Barrows Gloves | Complete Tale of the Righteous | quest:Tale of the Righteous
+Barrows Gloves | Complete Eagles' Peak | quest:Eagles' Peak
+Barrows Gloves | Complete the Kourend and Kebos easy and medium diaries |
+Barrows Gloves | Complete the easy combat achievements |
+Barrows Gloves | Get a rune defender at the Warriors' Guild and show it to Lorelai | item:Rune defender
+Barrows Gloves | Complete Family Crest | quest:Family Crest
+Barrows Gloves | Complete Underground Pass, alching the staff after | quest:Underground Pass
+Barrows Gloves | Complete Legends' Quest, all experience on Herblore | quest:Legends' Quest
+Barrows Gloves | Complete Recipe for Disaster: Freeing Sir Amik Varze | quest:Recipe for Disaster - Sir Amik Varze
+Barrows Gloves | Complete A Kingdom Divided | quest:A Kingdom Divided
+Barrows Gloves | Pickpocket master farmers for limpwurt seeds and farm 20 roots |
+Barrows Gloves | Complete Temple of Ikov | quest:Temple of Ikov
+Barrows Gloves | Complete Desert Treasure I | quest:Desert Treasure I
+~ Keep the ring of visibility, and keep your magic logs for Mourning's End Part I
+Barrows Gloves | Complete Curse of the Empty Lord | quest:Curse of the Empty Lord
+Barrows Gloves | Complete Recipe for Disaster: Defeating the Culinaromancer | quest:Recipe for Disaster - Culinaromancer
+Barrows Gloves | Buy barrows gloves | item:Barrows gloves
+Barrows Gloves | Complete Fairytale II | quest:Fairytale II - Cure a Queen
+~ Tea boost to build a fairy ring in your house
+Guardians of the Rift | Complete Regicide | quest:Regicide
+Guardians of the Rift | Complete Roving Elves | quest:Roving Elves
+~ The crystal bow can go in its STASH unit for later
+Guardians of the Rift | Complete Mourning's End Part I | quest:Mourning's End Part I
+Guardians of the Rift | Work through Mourning's End Part II until the death talisman |
+Guardians of the Rift | Complete Temple of the Eye | quest:Temple of the Eye
+Guardians of the Rift | Complete the easy Varrock diary and keep the armour |
+Guardians of the Rift | Deathbank and play Guardians of the Rift to 65 Runecraft | skill:Runecraft 65
+~ At 50, search for a large pouch and 25+ pearls. Hope for a catalytic talisman
+Guardians of the Rift | Complete Mourning's End Part II | quest:Mourning's End Part II
+Guardians of the Rift | Finish the full Raiments of the Eye set |
+~ The abyssal lantern now stores in your house. Put a catalytic talisman on the hat if you have one
+Slayer | Complete Ghosts Ahoy | quest:Ghosts Ahoy
+~ Alch your nature runes away as you go
+Slayer | Complete Lunar Diplomacy | quest:Lunar Diplomacy
+Slayer | Complete Dream Mentor if you have 85 combat |
+Slayer | Build a lunar altar and a mahogany eagle lectern |
+Slayer | Reach 250 quest points |
+Slayer | Make super attack potions and about 250 teleport to house tablets |
+Slayer | Point boost: Turael tasks, Mazchna every 10th, Konar every 50th, to task 250 or 500 |
+Slayer | Train Slayer to 58 | skill:Slayer 58
+~ At 30 Slayer, The Slug Menace gives proselyte armour
+Slayer | Complete Rum Deal | quest:Rum Deal
+Slayer | Complete Cabin Fever | quest:Cabin Fever
+Slayer | Kill cave horrors for a black mask and make an imbued Slayer helmet |
+Slayer | Get a dragon defender | item:Dragon defender
+Slayer | Build the master STASH unit in the Warriors' Guild for your helmet, battleaxe and defender |
+70 Herblore | Reach 70 Hunter | skill:Hunter 70
+70 Herblore | Reach 70 Mining | skill:Mining 70
+70 Herblore | Reach 70 Woodcutting and 70 Farming | skill:Woodcutting 70; skill:Farming 70
+70 Herblore | Complete At First Light | quest:At First Light
+70 Herblore | Complete Grim Tales | quest:Grim Tales
+70 Herblore | Complete A Tail of Two Cats | quest:A Tail of Two Cats
+70 Herblore | Complete Another Slice of H.A.M. | quest:Another Slice of H.A.M.
+70 Herblore | Complete Land of the Goblins | quest:Land of the Goblins
+70 Herblore | Complete The Great Brain Robbery | quest:The Great Brain Robbery
+70 Herblore | Complete King's Ransom | quest:King's Ransom
+70 Herblore | Complete In Search of the Myreque | quest:In Search of the Myreque
+70 Herblore | Complete In Aid of the Myreque | quest:In Aid of the Myreque
+70 Herblore | Complete Darkness of Hallowvale | quest:Darkness of Hallowvale
+70 Herblore | Complete A Taste of Hope | quest:A Taste of Hope
+70 Herblore | Complete Sins of the Father | quest:Sins of the Father
+70 Herblore | Complete as many achievement diaries as you can |
+70 Herblore | Finish 70 Herblore farming herbs for Mastering Mixology | skill:Herblore 70
+~ Keep a cadantine seed and belladonna seeds for Song of the Elves
+Song of the Elves | Plant belladonna for a stack of nightshade |
+Song of the Elves | Reclaim Iban's staff and upgrade it for the fight |
+Song of the Elves | Complete Song of the Elves | quest:Song of the Elves
+~ Phoenix necklaces triggered by nightshade cancel Seren's big attack. Iban Blast with mystic and a shortbow
+~ A death here is a deathbank, not a deathpile: dying again before reclaiming loses it
