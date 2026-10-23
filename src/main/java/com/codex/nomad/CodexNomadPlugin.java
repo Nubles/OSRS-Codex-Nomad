@@ -945,7 +945,15 @@ public class CodexNomadPlugin extends Plugin
 		if (lair != null && bank != null && !lair.equals(bank.name) && config.wildWarning())
 		{
 			say("A death at " + lair + " wipes your deathbank at " + bank.name
-				+ (bank.exact ? " (" + Format.coins(Items.worth(bank.items, this::price)) + ")" : "") + ". Collect it first if you can.", true);
+				+ (bank.exact ? " (" + Format.coins(Items.worth(bank.items, this::price)) + ")" : "") + ". Collect it first if you can." + needless(), true);
+		}
+		else if (lair != null && config.wildWarning())
+		{
+			String needless = needless();
+			if (!needless.isEmpty())
+			{
+				say(lair + ":" + needless, true);
+			}
 		}
 	}
 
@@ -1107,8 +1115,36 @@ public class CodexNomadPlugin extends Plugin
 		}
 		if (!lose.isEmpty())
 		{
-			say("Wilderness: dying here costs " + String.join(" and ", lose) + ".", true);
+			say("Wilderness: dying here costs " + String.join(" and ", lose) + "." + needless(), true);
 		}
+	}
+
+	/**
+	 * " You carry 3.1M that Vorkath does not need: Dragon pickaxe, Abyssal whip.": what the active
+	 * packing list leaves out, risked for nothing. Empty with no list, or under 10k.
+	 */
+	private String needless()
+	{
+		Trip t = nomad.activeTrip();
+		Fetch f = t == null ? null : Views.plan(nomad, t, lookup(), here());
+		if (f == null || f.extra.isEmpty())
+		{
+			return "";
+		}
+		List<Map.Entry<Integer, Long>> extra = new ArrayList<>(f.extra.entrySet());
+		extra.sort((a, b) -> Long.compare(price(b.getKey()) * b.getValue(), price(a.getKey()) * a.getValue()));
+		long worth = Items.worth(f.extra, this::price);
+		if (worth < 10_000)
+		{
+			return "";
+		}
+		List<String> names = new ArrayList<>();
+		for (int i = 0; i < Math.min(3, extra.size()); i++)
+		{
+			names.add(name(itemManager.canonicalize(extra.get(i).getKey())));
+		}
+		return " You carry " + Format.coins(worth) + " that " + t.name + " does not need: " + String.join(", ", names)
+			+ (extra.size() > 3 ? " and more" : "") + ".";
 	}
 
 	/** Lets dropped items go when their time comes, and warns before. */
