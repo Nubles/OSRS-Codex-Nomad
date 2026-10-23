@@ -54,6 +54,7 @@ import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.ActorDeath;
 import net.runelite.api.events.ChatMessage;
 import net.runelite.api.events.GameStateChanged;
+import net.runelite.api.events.GameObjectDespawned;
 import net.runelite.api.events.GameObjectSpawned;
 import net.runelite.api.events.GameTick;
 import net.runelite.api.events.ItemContainerChanged;
@@ -182,6 +183,7 @@ public class CodexNomadPlugin extends Plugin
 	private final Plaque plaque = new Plaque();
 	private Marker marker;
 	private Highlights highlights;
+	private RaidFloor raidFloor;
 	private Clicks clicks;
 	private RouteGuide guide;
 	/** The plaque as the last publish left it, before the route row is added each tick. */
@@ -245,7 +247,9 @@ public class CodexNomadPlugin extends Plugin
 		herbSack = new HerbSack(id -> name(id));
 		marker = new Marker(client);
 		guide = new RouteGuide(client, eventBus, route, id -> name(itemManager.canonicalize(id)));
-		highlights = new Highlights(client, outlines, guide);
+		raidFloor = new RaidFloor(client);
+		highlights = new Highlights(client, outlines, guide, () -> raidLeft().isEmpty() || !config.guardRaidFloor()
+			? java.util.Collections.emptyList() : raidFloor.exits(), this::raidLabel);
 		clicks = new Clicks(client, guide, id -> name(itemManager.canonicalize(id)));
 		tips = new ItemTips(client, tooltipManager, itemManager::canonicalize, config::itemTips);
 		Arrivals arrivals = new Arrivals();
@@ -482,6 +486,10 @@ public class CodexNomadPlugin extends Plugin
 				loginTick = client.getTickCount();
 				sawRetrieval = false;
 			}
+		}
+		else if (state == GameState.LOADING)
+		{
+			raidFloor.sceneLoading();
 		}
 		else if (state == GameState.LOGGING_IN)
 		{
@@ -793,8 +801,9 @@ public class CodexNomadPlugin extends Plugin
 			return;
 		}
 		long now = System.currentTimeMillis();
-		long until = now + Math.max(0, item.getDespawnTime() - client.getTickCount()) * 600L;
-		nomad.drop(client.getWorld(), at.getX(), at.getY(), at.getPlane(), item.getId(), item.getQuantity(), until, now);
+		boolean raid = raidFloor.inRaid();
+		long until = raid ? Long.MAX_VALUE : now + Math.max(0, item.getDespawnTime() - client.getTickCount()) * 600L;
+		nomad.drop(raid ? Nomad.RAID : client.getWorld(), at.getX(), at.getY(), at.getPlane(), item.getId(), item.getQuantity(), until, now);
 		changed();
 	}
 
@@ -813,9 +822,10 @@ public class CodexNomadPlugin extends Plugin
 			return;
 		}
 		TileItem item = event.getItem();
-		if (nomad.store(Nomad.floorKey(client.getWorld(), at.getX(), at.getY(), at.getPlane())) != null)
+		int world = raidFloor.inRaid() ? Nomad.RAID : client.getWorld();
+		if (nomad.store(Nomad.floorKey(world, at.getX(), at.getY(), at.getPlane())) != null)
 		{
-			nomad.lift(client.getWorld(), at.getX(), at.getY(), at.getPlane(), item.getId(), item.getQuantity());
+			nomad.lift(world, at.getX(), at.getY(), at.getPlane(), item.getId(), item.getQuantity());
 			changed();
 		}
 	}
@@ -883,8 +893,40 @@ public class CodexNomadPlugin extends Plugin
 	}
 
 	@Subscribe
+	public void onGameObjectDespawned(GameObjectDespawned event)
+	{
+		raidFloor.despawned(event.getGameObject());
+	}
+
+	/** What lies on the Chambers of Xeric floor, all piles together. */
+	private Map<Integer, Long> raidLeft()
+	{
+		Map<Integer, Long> left = new LinkedHashMap<>();
+		if (nomad != null)
+		{
+			for (Store s : nomad.stores(Kind.FLOOR))
+			{
+				if (s.world == Nomad.RAID)
+				{
+					s.items.forEach((item, qty) -> left.merge(item, qty, Long::sum));
+				}
+			}
+		}
+		return left;
+	}
+
+	/** "You left 6 things (1.2M) on the floor" above the raid's ways out. */
+	private String raidLabel()
+	{
+		Map<Integer, Long> left = raidLeft();
+		int n = left.size();
+		return "You left " + n + (n == 1 ? " thing" : " things") + " (" + Format.coins(Items.worth(left, this::price)) + ") on the floor";
+	}
+
+	@Subscribe
 	public void onGameObjectSpawned(GameObjectSpawned event)
 	{
+		raidFloor.spawned(event.getGameObject());
 		int[] capes = nomad == null ? null : CapeHanger.holds(event.getGameObject().getId());
 		if (capes == null)
 		{
@@ -1315,6 +1357,15 @@ public class CodexNomadPlugin extends Plugin
 		}
 		warnPiles();
 		watchFloor();
+		if (raidFloor.tick())
+		{
+			Map<Integer, Long> lost = nomad.endRaid();
+			if (!lost.isEmpty())
+			{
+				say("You left the Chambers of Xeric with things on its floor; they are gone: " + itemsText(lost) + ".", true);
+				changed();
+			}
+		}
 		watchLair();
 		checkLogin();
 		if (loginTick >= 0 && client.getTickCount() - loginTick == READ_TICKS)
@@ -1438,6 +1489,12 @@ public class CodexNomadPlugin extends Plugin
 		MenuEntry entry = event.getMenuEntry();
 		String option = Text.removeTags(entry.getOption());
 		int item = entry.getItemId();
+		if (config.guardRaidFloor() && RaidFloor.objectAction(entry.getType()) && RaidFloor.exit(entry.getIdentifier())
+			&& raidFloor.inRaid() && !raidLeft().isEmpty())
+		{
+			entry.setDeprioritized(true);
+			return;
+		}
 		if (item <= 0)
 		{
 			return;
@@ -1608,8 +1665,8 @@ public class CodexNomadPlugin extends Plugin
 		if (soonest != null && config.plaque())
 		{
 			long left = soonest.until - nowMs;
-			rows.add(0, new Plaque.Row("On the floor", Format.clock(left), itemsText(soonest.items)
-				+ (soonest.world != client.getWorld() ? " · world " + soonest.world : ""), left <= config.floorWarning() * 1000L ? Theme.BLOOD : Theme.EMBER));
+			rows.add(0, new Plaque.Row(soonest.world == Nomad.RAID ? "On the raid floor" : "On the floor", Format.clock(left), itemsText(soonest.items)
+				+ (soonest.world != client.getWorld() && soonest.world != Nomad.RAID ? " · world " + soonest.world : ""), left <= config.floorWarning() * 1000L ? Theme.BLOOD : Theme.EMBER));
 			tint = Theme.EMBER;
 		}
 		Store urgent = null;
@@ -1678,7 +1735,8 @@ public class CodexNomadPlugin extends Plugin
 		Map<Integer, List<String>> where = new HashMap<>();
 		for (View.StoreView s : v.stores)
 		{
-			String place = s.kind == Kind.FLOOR ? "On the floor, world " + s.world
+			String place = s.kind == Kind.FLOOR && s.world == Nomad.RAID ? "On the Chambers of Xeric floor"
+				: s.kind == Kind.FLOOR ? "On the floor, world " + s.world
 				: s.kind == Kind.DEATHPILE ? "Deathpile, " + Format.ticks(s.ticksLeft) + " left"
 				: s.kind == Kind.STASH ? "STASH, " + s.name
 				: s.kind == Kind.DEATHBANK ? "Deathbank, " + s.name : s.name;

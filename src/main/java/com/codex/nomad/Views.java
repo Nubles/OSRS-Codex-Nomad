@@ -146,8 +146,8 @@ final class Views
 			View.Peril p = new View.Peril();
 			p.kind = Kind.FLOOR;
 			p.key = s.key;
-			p.title = "On the floor, world " + s.world;
-			p.note = roomNote("Gone when its timer runs out", room(s.items, inv, look), 28 - v.invUsed);
+			p.title = s.world == Nomad.RAID ? "Chambers of Xeric floor" : "On the floor, world " + s.world;
+			p.note = roomNote(s.world == Nomad.RAID ? "Lost when you leave the raid" : "Gone when its timer runs out", room(s.items, inv, look), 28 - v.invUsed);
 			p.note = shedNote(p.note, s.items, inv, look, room(s.items, inv, look) - (28 - v.invUsed));
 			p.worth = Items.worth(s.items, look::price);
 			p.until = s.until;

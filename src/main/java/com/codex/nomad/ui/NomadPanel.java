@@ -551,7 +551,8 @@ public class NomadPanel extends PluginPanel
 		}
 		for (View.StoreView s : v.stores)
 		{
-			String place = s.kind == Kind.FLOOR ? "Floor, world " + s.world + " (" + Format.clock(s.until - v.now) + ")"
+			String place = s.kind == Kind.FLOOR && s.world == com.codex.nomad.core.Nomad.RAID ? "Chambers of Xeric floor"
+				: s.kind == Kind.FLOOR ? "Floor, world " + s.world + " (" + Format.clock(s.until - v.now) + ")"
 				: s.kind == Kind.DEATHPILE ? "Deathpile (" + Format.ticks(s.ticksLeft) + ")"
 				: s.kind == Kind.STASH ? "STASH, " + s.name
 				: s.kind == Kind.DEATHBANK ? "Deathbank, " + s.name : s.name;

@@ -23,6 +23,7 @@ A RuneLite plugin for ultimate ironmen. A UIM has no bank, so Nomad keeps the bo
 - **Notes and unnotes.** For any item, where to note or unnote it near you: the tool leprechaun, Piles, Phials, the Pollnivneach banknote merchant, Tiles, the Elder Chaos druid, or your house servant, with the cost.
 - **STASH reminders.** Emote clue items you carry are matched to the STASH units they belong in, so you can put them away and stop carrying them.
 - **Guards.** Hides *Destroy* on the looting bag wherever destroying it would delete what is inside: outside the Wilderness, in the Ferox Enclave and on the first two tiles past the ditch (*Looting bag Destroy*). Where *Destroy* does drop the contents, Nomad names the food and potions inside that would be lost, and *Sell* on items worth more than a set amount in shops (*Shop Sell*, *Protect items over* 50,000 gp). On the way into the Wilderness, Nomad says what a death there would cost: your deathbank, and everything you carry (beyond the items you keep, on other accounts). Walking into a boss lair while your deathbank waits somewhere else, it reminds you that a death here would wipe it (*Danger warnings*).
+- **The Chambers of Xeric floor.** Things you drop in a raid are kept as a store of their own with no timer, since they last the whole raid. While any lie there, the ways out are outlined in red with what you left and its worth, and leaving takes a right-click (*Chambers of Xeric floor*). If you leave anyway, Nomad says what was lost.
 - **Saving a deathpile comes first.** While a deathpile is ticking, the hint arrow and Shortest Path point at it, ahead of the route. With no route step in hand, they point at the next stop for your packing list.
 - **Peril plaque.** A small plaque in the game view with your free slots, the value at risk and the most urgent deathpile (*Peril plaque*).
 - **Route tab.** The OSRS Wiki's Ultimate Ironman walkthrough to Prifddinas, all thirteen sections from a fresh account to Song of the Elves: over 300 steps. Nomad ticks them itself. Quests, levels, quest points, unlocks, diaries and combat achievements are read from the game. Steps about items, places, coins, chat, your deathbank, where your house is and the furniture in it are watched while the step is in hand. The few it cannot see tick once you are past them. You can still tick any step by hand.
@@ -34,7 +35,7 @@ A RuneLite plugin for ultimate ironmen. A UIM has no bank, so Nomad keeps the bo
 - **Deathpile warning** (10 minutes): when to warn about a deathpile.
 - **Dropped item warning** (30 seconds): when to warn about something you dropped.
 - **Share with Codex** (on): share what you hold with other Codex plugins.
-- **Looting bag Destroy** and **Shop Sell** (on), **Protect items over** (50,000 gp): the guards.
+- **Looting bag Destroy**, **Chambers of Xeric floor** and **Shop Sell** (on), **Protect items over** (50,000 gp): the guards.
 - **Danger warnings** (on): on the way into the Wilderness or a boss lair, say what dying there would cost.
 - **Peril plaque**, **Mark the next stop**, **Route step on plaque** (on): what shows in the game view.
 - **Route arrow**, **Highlight route clicks**, **Path with Shortest Path** (on): how the route guides you.
@@ -54,6 +55,7 @@ It is guidance only. It does not automate any input, send any data off the clien
 
 - STASH unit and costume room data, and which game counters hold the leprechaun, sacks, pouches and coffers, are adapted from [Dude, Where's My Stuff](https://github.com/Thource/dude-wheres-my-stuff) (BSD 2-Clause).
 - The wording the game uses for the coal bag, gem bag, fish barrel and log basket follows the [Coal Bag](https://github.com/WolffTech/coal-bag-plugin), [Gem Sack](https://github.com/serenibyss/osrs-gem-sack-plugin), [Fish Barrel](https://github.com/molo-pl/runelite-plugins) and [Log Basket](https://github.com/aidanmastro/log-basket-plugin) plugins (BSD 2-Clause).
+- The Chambers of Xeric exits follow [UIM Utilities](https://github.com/jakevollkommer/uim-utilities) (BSD 2-Clause).
 - Where each quest starts comes from the first step of [Quest Helper](https://github.com/Zoinkwiz/quest-helper) (BSD 2-Clause).
 - The route follows the OSRS Wiki's [Ultimate Ironman Walkthrough Guide To Prifddinas](https://oldschool.runescape.wiki/w/Guide:Ultimate_Ironman_Walkthrough_Guide_To_Prifddinas), paraphrased, under [CC BY-NC-SA 3.0](https://creativecommons.org/licenses/by-nc-sa/3.0/).
 

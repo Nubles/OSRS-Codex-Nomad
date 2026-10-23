@@ -158,8 +158,13 @@ public final class Format
 	}
 
 	/** Milliseconds left as m:ss. */
+	/** A countdown, or "in raid" for the raid floor, which has no timer. */
 	public static String clock(long ms)
 	{
+		if (ms > 365L * 24 * 3600 * 1000)
+		{
+			return "in raid";
+		}
 		long seconds = (Math.max(0, ms) + 999) / 1000;
 		return String.format(Locale.ENGLISH, "%d:%02d", seconds / 60, seconds % 60);
 	}

@@ -224,6 +224,9 @@ public final class Nomad
 
 	// ---- dropped items ----
 
+	/** The "world" of things dropped on the Chambers of Xeric floor, kept by raid map position. */
+	public static final int RAID = -1;
+
 	public static String floorKey(int world, int x, int y, int plane)
 	{
 		return "floor:" + world + ":" + x + ":" + y + ":" + plane;
@@ -237,12 +240,13 @@ public final class Nomad
 		if (s == null)
 		{
 			List<Store> floors = stores(Kind.FLOOR);
+			floors.removeIf(f -> f.world == RAID);
 			floors.sort((a, b) -> Long.compare(a.until, b.until));
 			while (floors.size() >= FLOORS)
 			{
 				stores.remove(floors.remove(0).key);
 			}
-			s = new Store(key, Kind.FLOOR, "Dropped on world " + world).at(x, y, plane);
+			s = new Store(key, Kind.FLOOR, world == RAID ? "Chambers of Xeric floor" : "Dropped on world " + world).at(x, y, plane);
 			s.world = world;
 			s.since = now;
 			put(s);
@@ -257,6 +261,25 @@ public final class Nomad
 		s.seen = now;
 		s.exact = true;
 		return s;
+	}
+
+	/**
+	 * Forgets the raid floor once the player has left the raid, which destroys it.
+	 *
+	 * @return what was left behind
+	 */
+	public Map<Integer, Long> endRaid()
+	{
+		Map<Integer, Long> lost = new LinkedHashMap<>();
+		for (Store s : stores(Kind.FLOOR))
+		{
+			if (s.world == RAID)
+			{
+				s.items.forEach((item, qty) -> lost.merge(item, qty, Long::sum));
+				stores.remove(s.key);
+			}
+		}
+		return lost;
 	}
 
 	/** Takes items off the floor: picked up, or seen to vanish. */

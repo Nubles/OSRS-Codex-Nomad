@@ -6,6 +6,8 @@ import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Polygon;
 import java.awt.Shape;
+import java.util.List;
+import java.util.function.Supplier;
 import net.runelite.api.Client;
 import net.runelite.api.NPC;
 import net.runelite.api.Point;
@@ -28,12 +30,20 @@ class Highlights extends Overlay
 	private final Client client;
 	private final ModelOutlineRenderer outlines;
 	private final RouteGuide guide;
+	private final Supplier<List<TileObject>> warnAt;
+	private final Supplier<String> warning;
 
-	Highlights(Client client, ModelOutlineRenderer outlines, RouteGuide guide)
+	/**
+	 * @param warnAt objects to mark in red, such as the ways out of a raid with things left on its floor
+	 * @param warning the words above them
+	 */
+	Highlights(Client client, ModelOutlineRenderer outlines, RouteGuide guide, Supplier<List<TileObject>> warnAt, Supplier<String> warning)
 	{
 		this.client = client;
 		this.outlines = outlines;
 		this.guide = guide;
+		this.warnAt = warnAt;
+		this.warning = warning;
 		setPosition(OverlayPosition.DYNAMIC);
 		setLayer(OverlayLayer.ABOVE_SCENE);
 	}
@@ -41,6 +51,20 @@ class Highlights extends Overlay
 	@Override
 	public Dimension render(Graphics2D g)
 	{
+		List<TileObject> danger = warnAt.get();
+		if (!danger.isEmpty())
+		{
+			String words = warning.get();
+			for (TileObject o : danger)
+			{
+				outlines.drawOutline(o, 2, Theme.BLOOD, 4);
+				Point at = o.getCanvasTextLocation(g, words, 200);
+				if (at != null)
+				{
+					OverlayUtil.renderTextLocation(g, at, words, Theme.BLOOD);
+				}
+			}
+		}
 		if (guide.lead().isEmpty())
 		{
 			return null;

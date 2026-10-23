@@ -418,4 +418,22 @@ public class CoreTest
 		assertTrue(LootingBag.dropsHere(true, 3200, 3700, 0));
 		assertEquals(java.util.Collections.singletonList(385), LootingBag.perishable(items(385, 5, 1513, 20), i -> i == 385));
 	}
+
+	@Test
+	public void theRaidFloorHasNoTimerAndEndsWithTheRaid()
+	{
+		Nomad n = new Nomad();
+		n.drop(Nomad.RAID, 3300, 5200, 0, 385, 4, Long.MAX_VALUE, 1000);
+		n.drop(302, 3200, 3200, 0, 1513, 1, 5000, 1000);
+		for (int i = 0; i < 25; i++)
+		{
+			n.drop(302, 3000 + i, 3000, 0, 1511, 1, 6000 + i, 1000);
+		}
+		assertNotNull(n.store(Nomad.floorKey(Nomad.RAID, 3300, 5200, 0)));
+		assertEquals("Chambers of Xeric floor", n.store(Nomad.floorKey(Nomad.RAID, 3300, 5200, 0)).name);
+		assertTrue(n.expire(10_000_000L).values().stream().noneMatch(m -> m.containsKey(385)));
+		assertEquals(Long.valueOf(4), n.endRaid().get(385));
+		assertNull(n.store(Nomad.floorKey(Nomad.RAID, 3300, 5200, 0)));
+		assertEquals("in raid", com.codex.nomad.ui.Format.clock(Long.MAX_VALUE - 1000));
+	}
 }

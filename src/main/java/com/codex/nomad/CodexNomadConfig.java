@@ -89,6 +89,18 @@ public interface CodexNomadConfig extends Config
 	}
 
 	@ConfigItem(
+		keyName = "guardRaidFloor",
+		name = "Chambers of Xeric floor",
+		description = "While things you dropped lie on the Chambers of Xeric floor, label the ways out and make leaving a right-click, since leaving the raid destroys them",
+		section = GUARDS,
+		position = 9
+	)
+	default boolean guardRaidFloor()
+	{
+		return true;
+	}
+
+	@ConfigItem(
 		keyName = "wildWarning",
 		name = "Danger warnings",
 		description = "On entering the Wilderness or a boss lair, say in the chat box what dying there would cost: your deathbank and what you carry",
