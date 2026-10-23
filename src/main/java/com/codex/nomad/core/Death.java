@@ -18,12 +18,43 @@ public final class Death
 
 	/** Lairs whose deaths go to an item retrieval service, by map region. */
 	private static final Map<Integer, String> LAIRS = new HashMap<>();
+	/**
+	 * Map regions where dying is safe and never wipes a deathbank: minigames, raids, the house, the
+	 * Fight Cave and Inferno. The list follows Deathbank Utility and Item Retrieval Warning (BSD 2-Clause).
+	 */
+	private static final java.util.Set<Integer> SAFE = new java.util.HashSet<>(java.util.Arrays.asList(
+		7508, 7509, 10322, // Barbarian Assault
+		9520, 9620, // Castle Wars
+		12889, 13136, 13137, 13138, 13139, 13140, 13141, 13145, 13393, 13394, 13395, 13396, 13397, 13401, // Chambers of Xeric
+		12621, 12622, 12623, 13130, 13131, 13133, 13134, 13135, 13386, 13387, 13390,
+		13641, 13642, 13643, 13644, 13645, 13646, 13647, 13899, 13900, 14155, 14156, // Clan Wars
+		13362, // Emir's Arena
+		7499, // Fishing Trawler
+		9043, 9806, 10062, // Inferno
+		13658, 13659, 13660, 13914, 13915, 13916, 13918, 13919, 13920, 14174, 14175, 14176, 14430, 14431, 14432, // LMS
+		13462, 13463, // Mage Training Arena
+		9033, // Nightmare Zone
+		10536, // Pest Control
+		7513, 7514, 7769, 7770, // the house
+		8493, 8749, 9005, // Soul Wars
+		9551, // Fight Cave
+		9552, // Fight Pit
+		11854, 11855, 12110, 12111, // Rogues' Den
+		12127, 7512, 7768 // the Gauntlet
+	));
+
 	/** Who gives a lair's items back, and for what, as the OSRS Wiki's item retrieval service page has it. */
 	private static final Map<String, String> CLAIMS = new HashMap<>();
 	/** The fee in coins, where it is paid in coins. */
 	private static final Map<String, Long> FEES = new HashMap<>();
 	/** The same in a few words, for tight places: "Torfinn, 100k". */
 	private static final Map<String, String> BRIEFS = new HashMap<>();
+
+	/** Whether dying in this map region is safe, so it cannot wipe a deathbank. */
+	public static boolean safe(int region)
+	{
+		return SAFE.contains(region);
+	}
 
 	static
 	{

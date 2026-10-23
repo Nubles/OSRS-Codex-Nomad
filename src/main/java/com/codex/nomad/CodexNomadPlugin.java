@@ -55,6 +55,7 @@ import net.runelite.api.events.ActorDeath;
 import net.runelite.api.events.ChatMessage;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.GameObjectDespawned;
+import net.runelite.api.events.HitsplatApplied;
 import net.runelite.api.events.GameObjectSpawned;
 import net.runelite.api.events.GameTick;
 import net.runelite.api.events.ItemContainerChanged;
@@ -70,6 +71,7 @@ import net.runelite.http.api.item.ItemPrice;
 import net.runelite.api.gameval.InventoryID;
 import net.runelite.api.gameval.ItemID;
 import net.runelite.api.gameval.VarbitID;
+import net.runelite.client.Notifier;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.chat.ChatColorType;
 import net.runelite.client.chat.ChatMessageBuilder;
@@ -144,6 +146,9 @@ public class CodexNomadPlugin extends Plugin
 
 	@Inject
 	private ClientThread clientThread;
+
+	@Inject
+	private Notifier notifier;
 
 	@Inject
 	private ClientToolbar clientToolbar;
@@ -225,6 +230,9 @@ public class CodexNomadPlugin extends Plugin
 	private int deathTick = -1;
 	private int loginTick = -1;
 	private boolean sawRetrieval;
+	/** The last tick the player took damage where a death would wipe the deathbank, and the last warning. */
+	private int hurtTick = -1000;
+	private int hurtWarned = -1000;
 	private int stashDeposit = -1;
 	private int stashWithdraw = -1;
 	private int ticks;
@@ -830,6 +838,34 @@ public class CodexNomadPlugin extends Plugin
 		}
 	}
 
+	/** Taking damage with a deathbank waiting, anywhere a death is not safe: warn, at most once a minute. */
+	@Subscribe
+	public void onHitsplatApplied(HitsplatApplied event)
+	{
+		Player me = client.getLocalPlayer();
+		Store bank = nomad == null ? null : nomad.deathbank();
+		if (bank == null || me == null || event.getActor() != me || event.getHitsplat().getAmount() <= 0 || !config.wildWarning())
+		{
+			return;
+		}
+		WorldPoint p = WorldPoint.fromLocalInstance(client, me.getLocalLocation());
+		if (p == null || Death.safe(p.getRegionID()))
+		{
+			return;
+		}
+		int tick = client.getTickCount();
+		hurtTick = tick;
+		dirty = true;
+		if (tick - hurtWarned >= 100)
+		{
+			hurtWarned = tick;
+			String text = "You are taking damage with your deathbank at " + bank.name
+				+ (bank.exact ? " (" + Format.coins(Items.worth(bank.items, this::price)) + ")" : "") + " waiting: a death now wipes it.";
+			say(text, true);
+			notifier.notify(text);
+		}
+	}
+
 	/** Entering a boss lair with a deathbank elsewhere: a death here would wipe it. */
 	private void watchLair()
 	{
@@ -1357,6 +1393,10 @@ public class CodexNomadPlugin extends Plugin
 		}
 		warnPiles();
 		watchFloor();
+		if (client.getTickCount() - hurtTick == 9)
+		{
+			dirty = true;
+		}
 		if (raidFloor.tick())
 		{
 			Map<Integer, Long> lost = nomad.endRaid();
@@ -1635,10 +1675,12 @@ public class CodexNomadPlugin extends Plugin
 				{
 					Store bank = nomad.deathbank();
 					String brief = bank == null ? null : Death.brief(bank.name);
+					boolean hurt = client.getTickCount() - hurtTick <= 8;
 					rows.add(new Plaque.Row(p.title, p.exact ? Format.coins(p.worth) : "?",
-						wild ? "You are in the Wilderness: dying here wipes it" : brief != null ? "Reclaim: " + brief : "Any unsafe death wipes it",
-						wild ? Theme.BLOOD : Theme.EMBER));
-					tint = wild ? Theme.BLOOD : Theme.EMBER;
+						hurt ? "You are taking damage: a death now wipes it" : wild ? "You are in the Wilderness: dying here wipes it"
+							: brief != null ? "Reclaim: " + brief : "Any unsafe death wipes it",
+						wild || hurt ? Theme.BLOOD : Theme.EMBER));
+					tint = wild || hurt ? Theme.BLOOD : Theme.EMBER;
 				}
 			}
 		}

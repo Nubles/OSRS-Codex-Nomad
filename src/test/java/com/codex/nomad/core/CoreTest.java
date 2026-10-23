@@ -436,4 +436,12 @@ public class CoreTest
 		assertNull(n.store(Nomad.floorKey(Nomad.RAID, 3300, 5200, 0)));
 		assertEquals("in raid", com.codex.nomad.ui.Format.clock(Long.MAX_VALUE - 1000));
 	}
+
+	@Test
+	public void safeDeathsAreKnownByRegion()
+	{
+		assertTrue(Death.safe(9033));
+		assertTrue(Death.safe(10536));
+		assertFalse(Death.safe(9023));
+	}
 }
