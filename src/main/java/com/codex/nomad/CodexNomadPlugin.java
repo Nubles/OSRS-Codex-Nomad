@@ -11,6 +11,7 @@ import com.codex.nomad.core.Route;
 import com.codex.nomad.core.StashBook;
 import com.codex.nomad.core.Store;
 import com.codex.nomad.core.Trip;
+import com.codex.nomad.core.WayBack;
 import com.codex.nomad.overlay.ItemTips;
 import com.codex.nomad.overlay.Marker;
 import com.codex.nomad.overlay.Plaque;
@@ -843,6 +844,48 @@ public class CodexNomadPlugin extends Plugin
 		}
 	}
 
+	/**
+	 * The quickest way back to a deathpile with what an ultimate ironman has after a death: running,
+	 * the home teleport and the minigame teleports this account has unlocked. Null when running is best.
+	 */
+	private WayBack.Way wayBack(Store pile)
+	{
+		int[] here = here();
+		if (here == null || pile == null || !pile.located() || client.isInInstancedRegion())
+		{
+			return null;
+		}
+		long now = System.currentTimeMillis();
+		int book = client.getVarbitValue(VarbitID.SPELLBOOK);
+		WayBack.Spot home = book >= 0 && book < WayBack.HOMES.length ? WayBack.HOMES[book] : null;
+		// Varps 892 and 888: the minute (since 1970) the home and minigame teleports were last cast.
+		int homeWait = WayBack.wait(client.getVarpValue(892), 30, now);
+		int gameWait = WayBack.wait(client.getVarpValue(888), 20, now);
+		List<WayBack.Spot> games = new ArrayList<>(java.util.Arrays.asList(WayBack.CASTLE_WARS, WayBack.FEROX, WayBack.SOUL_WARS, WayBack.BURTHORPE));
+		if (client.getRealSkillLevel(Skill.FISHING) >= 15)
+		{
+			games.add(WayBack.TRAWLER);
+		}
+		if (client.getLocalPlayer() != null && client.getLocalPlayer().getCombatLevel() >= 40)
+		{
+			games.add(WayBack.PEST_CONTROL);
+		}
+		if (client.getRealSkillLevel(Skill.FARMING) >= 34)
+		{
+			games.add(WayBack.TITHE);
+		}
+		if (Quest.SHADES_OF_MORTTON.getState(client) == QuestState.FINISHED)
+		{
+			games.add(WayBack.MORTTON);
+		}
+		if (client.getRealSkillLevel(Skill.COOKING) >= 40 && Quest.CABIN_FEVER.getState(client) == QuestState.FINISHED)
+		{
+			games.add(WayBack.BREWING);
+		}
+		List<WayBack.Way> ways = WayBack.plan(here, new int[]{pile.x, pile.y}, home, homeWait, games, gameWait);
+		return ways.isEmpty() || ways.get(0).how.equals("Run there") ? null : ways.get(0);
+	}
+
 	/** Taking damage with a deathbank waiting, anywhere a death is not safe: warn, at most once a minute. */
 	@Subscribe
 	public void onHitsplatApplied(HitsplatApplied event)
@@ -1213,7 +1256,9 @@ public class CodexNomadPlugin extends Plugin
 				say("That death wiped your deathbank at " + bank.name + ".", true);
 			}
 			Store pile = nomad.pile(d.lost, deathAt.getX(), deathAt.getY(), deathAt.getPlane(), now);
-			say("Deathpile left: " + Format.coins(Items.worth(pile.items, this::price)) + ", gone in an hour of play.");
+			WayBack.Way way = wayBack(pile);
+			say("Deathpile left: " + Format.coins(Items.worth(pile.items, this::price)) + ", gone in an hour of play."
+				+ (way != null ? " Quickest way back: " + way.say() + "." : ""));
 		}
 		else if (d.kind == Death.Kind.DEATHBANK)
 		{
@@ -1662,6 +1707,16 @@ public class CodexNomadPlugin extends Plugin
 		View view = Views.build(nomad, look, stash, route, account(), here, keep(), config.idleHours() * 3_600_000L,
 			System.currentTimeMillis());
 		view.loggedIn = client.getGameState() == GameState.LOGGED_IN;
+		for (View.Peril p : view.perils)
+		{
+			Store pile = p.kind == Kind.DEATHPILE ? nomad.store(p.key) : null;
+			WayBack.Way way = pile == null ? null : wayBack(pile);
+			if (way != null && way.wait == 0)
+			{
+				p.note = p.note + " · " + way.say();
+				p.way = way.say();
+			}
+		}
 		showOverlays(view, here);
 		tips.show(whereKept(view));
 		if (target != null)
@@ -1684,6 +1739,10 @@ public class CodexNomadPlugin extends Plugin
 					Color c = p.ticksLeft <= config.pileWarning() * 100L ? Theme.BLOOD : Theme.EMBER;
 					rows.add(new Plaque.Row("Deathpile", Format.ticks(p.ticksLeft),
 						p.note != null && p.note.startsWith("Needs ") ? p.note.split(" · ")[0] : Format.coins(p.worth) + " lying on the ground", c));
+					if (p.way != null)
+					{
+						rows.add(new Plaque.Row("Way back", "", p.way, Theme.GOLD));
+					}
 					tint = Theme.EMBER;
 				}
 				else if (p.kind == Kind.DEATHBANK)

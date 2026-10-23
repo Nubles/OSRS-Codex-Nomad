@@ -473,4 +473,18 @@ public class CoreTest
 		assertEquals(45_000, back.lostWorth);
 		assertEquals(Long.valueOf(1), back.losses().get(0).items.get(4151));
 	}
+
+	@Test
+	public void theWayBackToAPileIsCostedInTiles()
+	{
+		// Died near Castle Wars, respawned in Lumbridge.
+		java.util.List<WayBack.Way> ways = WayBack.plan(new int[]{3222, 3218}, new int[]{2450, 3100}, WayBack.HOMES[0], 0,
+			java.util.Arrays.asList(WayBack.CASTLE_WARS, WayBack.BURTHORPE), 0);
+		assertEquals("Minigame teleport to Castle Wars, then 10 tiles", ways.get(0).say());
+		assertEquals("Run there", ways.get(ways.size() - 1).how);
+		// The minigame teleport is on cooldown for 30 minutes: running wins.
+		ways = WayBack.plan(new int[]{3222, 3218}, new int[]{2450, 3100}, null, 0, java.util.Arrays.asList(WayBack.CASTLE_WARS), 30);
+		assertEquals("Run there", ways.get(0).how);
+		assertEquals(12, WayBack.wait(1000, 20, (1000 + 8) * 60_000L));
+	}
 }

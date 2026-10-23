@@ -82,6 +82,8 @@ public final class View
 		public String key;
 		public String title;
 		public String note;
+		/** The quickest way back, for a deathpile: "Minigame teleport to Castle Wars, then 10 tiles". */
+		public String way;
 		public long worth;
 		/** Game ticks left, or -1 for no timer. */
 		public long ticksLeft = -1;
