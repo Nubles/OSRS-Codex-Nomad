@@ -1571,7 +1571,7 @@ public class CodexNomadPlugin extends Plugin
 				{
 					Color c = p.ticksLeft <= config.pileWarning() * 100L ? Theme.BLOOD : Theme.EMBER;
 					rows.add(new Plaque.Row("Deathpile", Format.ticks(p.ticksLeft),
-						p.note != null && p.note.startsWith("Needs ") ? p.note : Format.coins(p.worth) + " lying on the ground", c));
+						p.note != null && p.note.startsWith("Needs ") ? p.note.split(" · ")[0] : Format.coins(p.worth) + " lying on the ground", c));
 					tint = Theme.EMBER;
 				}
 				else if (p.kind == Kind.DEATHBANK)

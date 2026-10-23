@@ -148,6 +148,7 @@ final class Views
 			p.key = s.key;
 			p.title = "On the floor, world " + s.world;
 			p.note = roomNote("Gone when its timer runs out", room(s.items, inv, look), 28 - v.invUsed);
+			p.note = shedNote(p.note, s.items, inv, look, room(s.items, inv, look) - (28 - v.invUsed));
 			p.worth = Items.worth(s.items, look::price);
 			p.until = s.until;
 			p.count = s.items.size();
@@ -161,6 +162,7 @@ final class Views
 			p.key = s.key;
 			p.title = "Deathpile";
 			p.note = roomNote("Lost when its timer runs out", room(s.items, inv, look), 28 - v.invUsed);
+			p.note = shedNote(p.note, s.items, inv, look, room(s.items, inv, look) - (28 - v.invUsed));
 			p.worth = Items.worth(s.items, look::price);
 			p.ticksLeft = s.ticksLeft;
 			p.count = s.items.size();
@@ -540,6 +542,68 @@ final class Views
 		}
 		return need > free ? "Needs " + need + (need == 1 ? " slot" : " slots") + "; you have " + free + " free"
 			: note + " · needs " + need + (need == 1 ? " slot" : " slots");
+	}
+
+	/**
+	 * What to drop to make room for a pile: carried items worth less per slot than the pile itself,
+	 * cheapest first, until {@code short} slots are free. Each entry is "3 Logs" or a stack's name.
+	 */
+	static List<String> shed(Map<Integer, Long> pile, Map<Integer, Long> inv, Lookup look, int shortBy)
+	{
+		List<String> out = new ArrayList<>();
+		int slots = 0;
+		for (Map.Entry<Integer, Long> e : pile.entrySet())
+		{
+			slots += look.stackable(e.getKey()) ? 1 : (int) Math.min(28, e.getValue());
+		}
+		if (shortBy <= 0 || slots == 0)
+		{
+			return out;
+		}
+		double pileRate = (double) Items.worth(pile, look::price) / slots;
+		List<Map.Entry<Integer, Long>> carried = new ArrayList<>();
+		for (Map.Entry<Integer, Long> e : inv.entrySet())
+		{
+			if (!CONTAINERS.contains(e.getKey()) && !pile.containsKey(e.getKey()) && rate(e, look) < pileRate)
+			{
+				carried.add(e);
+			}
+		}
+		carried.sort((a, b) -> Double.compare(rate(a, look), rate(b, look)));
+		int freed = 0;
+		for (Map.Entry<Integer, Long> e : carried)
+		{
+			if (freed >= shortBy)
+			{
+				break;
+			}
+			String name = look.name(e.getKey());
+			if (look.stackable(e.getKey()))
+			{
+				freed++;
+				out.add(name);
+			}
+			else
+			{
+				int n = (int) Math.min(e.getValue(), shortBy - freed);
+				freed += n;
+				out.add(n == 1 ? name : n + " " + name);
+			}
+		}
+		return out;
+	}
+
+	/** Worth per inventory slot. */
+	private static double rate(Map.Entry<Integer, Long> e, Lookup look)
+	{
+		return look.stackable(e.getKey()) ? (double) look.price(e.getKey()) * e.getValue() : look.price(e.getKey());
+	}
+
+	/** Adds "drop 3 Logs, Feathers first" to a pile's note when you lack the room. */
+	static String shedNote(String note, Map<Integer, Long> pile, Map<Integer, Long> inv, Lookup look, int shortBy)
+	{
+		List<String> drop = shed(pile, inv, look, shortBy);
+		return drop.isEmpty() ? note : note + " · drop " + String.join(", ", drop) + " first";
 	}
 
 	static View.ItemLine line(int id, long qty, Lookup look)
