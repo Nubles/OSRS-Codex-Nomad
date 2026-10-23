@@ -178,6 +178,7 @@ public class CodexNomadPlugin extends Plugin
 	/** Where to send the player when no route step is in hand, or a deathpile needs saving first. */
 	private WorldPoint errand;
 	private boolean errandUrgent;
+	private int lastRegion = -1;
 	private final List<WorldMapPoint> mapPoints = new ArrayList<>();
 	private final Map<Integer, String> names = new HashMap<>();
 	private final Set<String> warned = new HashSet<>();
@@ -685,6 +686,30 @@ public class CodexNomadPlugin extends Plugin
 		}
 	}
 
+	/** Entering a boss lair with a deathbank elsewhere: a death here would wipe it. */
+	private void watchLair()
+	{
+		Player me = client.getLocalPlayer();
+		if (me == null)
+		{
+			return;
+		}
+		WorldPoint p = WorldPoint.fromLocalInstance(client, me.getLocalLocation());
+		int region = p == null ? -1 : p.getRegionID();
+		if (region == lastRegion)
+		{
+			return;
+		}
+		lastRegion = region;
+		String lair = Death.lair(region);
+		Store bank = nomad.deathbank();
+		if (lair != null && bank != null && !lair.equals(bank.name) && config.wildWarning())
+		{
+			say("A death at " + lair + " wipes your deathbank at " + bank.name
+				+ (bank.exact ? " (" + Format.coins(Items.worth(bank.items, this::price)) + ")" : "") + ". Collect it first if you can.", true);
+		}
+	}
+
 	/** Says once, on the way in, what dying in the Wilderness would cost. */
 	private void warnWilderness()
 	{
@@ -694,11 +719,11 @@ public class CodexNomadPlugin extends Plugin
 		{
 			lose.add("your deathbank at " + bank.name + (bank.exact ? " (" + Format.coins(Items.worth(bank.items, this::price)) + ")" : ""));
 		}
-		Map<Integer, Long> carried = nomad.carried();
-		com.codex.nomad.core.Kept k = com.codex.nomad.core.Kept.of(carried, this::price, keep());
-		if (k.droppedWorth > 0)
+		com.codex.nomad.core.Kept k = com.codex.nomad.core.Kept.of(nomad.loose(), this::price, keep());
+		long drop = k.droppedWorth + Items.worth(nomad.inside(), this::price);
+		if (drop > 0)
 		{
-			lose.add(Format.coins(k.droppedWorth) + " of what you carry");
+			lose.add(Format.coins(drop) + " of what you carry");
 		}
 		if (!lose.isEmpty())
 		{
@@ -823,8 +848,7 @@ public class CodexNomadPlugin extends Plugin
 		}
 		Map<Integer, Long> before = new HashMap<>(lastInv);
 		Items.add(before, lastWorn);
-		Items.add(before, nomad.carried(Nomad.LOOTING_BAG));
-		Items.add(before, nomad.carried(Nomad.RUNE_POUCH));
+		Items.add(before, nomad.inside());
 		beforeDeath = before;
 		WorldPoint at = WorldPoint.fromLocalInstance(client, client.getLocalPlayer().getLocalLocation());
 		deathAt = at;
@@ -876,6 +900,19 @@ public class CodexNomadPlugin extends Plugin
 			nomad.put(s);
 			say("Deathbank at " + d.place + ": " + Format.coins(Items.worth(s.items, this::price))
 				+ ". Any unsafe death before you claim it wipes it.");
+		}
+		if (d.kind == Death.Kind.PILE || d.kind == Death.Kind.DEATHBANK)
+		{
+			// Whatever was inside a bag, pouch or sack went with it.
+			for (String c : nomad.containers())
+			{
+				if (!c.equals(Nomad.INVENTORY) && !c.equals(Nomad.WORN))
+				{
+					nomad.carry(c, new HashMap<>(), now);
+				}
+			}
+			readPouch();
+			readAll();
 		}
 		beforeDeath = null;
 		deathTick = -1;
@@ -1036,6 +1073,7 @@ public class CodexNomadPlugin extends Plugin
 		}
 		warnPiles();
 		watchFloor();
+		watchLair();
 		checkLogin();
 		if (loginTick >= 0 && client.getTickCount() - loginTick == READ_TICKS)
 		{

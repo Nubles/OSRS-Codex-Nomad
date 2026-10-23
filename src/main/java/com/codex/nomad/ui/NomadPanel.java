@@ -360,6 +360,11 @@ public class NomadPanel extends PluginPanel
 		tiles.add(new StatTile(Format.coins(v.carriedWorth), "Carried", (28 - v.invUsed) + " slots free", Theme.GOLD));
 		tiles.add(new StatTile(Format.coins(v.dropNow), "Dying now", "keeps " + Format.coins(v.keepNow), v.dropNow > 0 ? Theme.EMBER : Theme.TEAL));
 		p.add(tiles);
+		if (!v.kept.isEmpty())
+		{
+			p.add(new SectionHeader("Kept if you die", v.keepCount == 1 ? "1 item" : v.keepCount + " items"));
+			p.add(grid(v.kept, Theme.alpha(Theme.TEAL, 140)));
+		}
 
 		p.add(new SectionHeader("Inventory", v.invUsed + " / 28"));
 		p.add(grid(v.inventory, null));

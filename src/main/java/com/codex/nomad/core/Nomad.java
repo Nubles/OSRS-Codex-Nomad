@@ -93,6 +93,29 @@ public final class Nomad
 		return all;
 	}
 
+	/** The inventory and worn items: the only things a death can keep. */
+	public Map<Integer, Long> loose()
+	{
+		Map<Integer, Long> all = new LinkedHashMap<>();
+		Items.add(all, carried(INVENTORY));
+		Items.add(all, carried(WORN));
+		return all;
+	}
+
+	/** Everything carried inside something else: the looting bag, pouches, sacks and boxes. */
+	public Map<Integer, Long> inside()
+	{
+		Map<Integer, Long> all = new LinkedHashMap<>();
+		pack.forEach((k, m) ->
+		{
+			if (!k.equals(INVENTORY) && !k.equals(WORN))
+			{
+				Items.add(all, m);
+			}
+		});
+		return all;
+	}
+
 	/**
 	 * Notes when carried items change, so items that sit untouched for hours of play can be told
 	 * apart from the ones in use. Worn items count as in use.

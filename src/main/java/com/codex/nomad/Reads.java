@@ -231,6 +231,15 @@ final class Reads
 		VarbitID.FARMING_TOOLS_SUPERCOMPOST, VarbitID.FARMING_TOOLS_EXTRASUPERCOMPOST, VarbitID.FARMING_TOOLS_ULTRACOMPOST,
 		VarbitID.FARMING_TOOLS_BOTTOMLESS_BUCKET_TYPE, VarbitID.FARMING_TOOLS_BOTTOMLESS_BUCKET_QUANTITY};
 
+	private static final int[] POUCH_COUNTS = {
+		VarbitID.SMALL_ESSENCE_POUCH, VarbitID.MEDIUM_ESSENCE_POUCH, VarbitID.LARGE_ESSENCE_POUCH,
+		VarbitID.GIANT_ESSENCE_POUCH, VarbitID.COLOSSAL_ESSENCE_POUCH};
+	private static final int[] POUCH_TYPES = {
+		VarbitID.SMALL_ESSENCE_POUCH_TYPE, VarbitID.MEDIUM_ESSENCE_POUCH_TYPE, VarbitID.LARGE_ESSENCE_POUCH_TYPE,
+		VarbitID.GIANT_ESSENCE_POUCH_TYPE, VarbitID.COLOSSAL_ESSENCE_POUCH_TYPE};
+	/** What an essence pouch's type value holds. Not yet checked against a live client. */
+	static final int[] ESSENCES = {ItemID.BLANKRUNE, ItemID.BLANKRUNE_HIGH, ItemID.BLANKRUNE_DAEYALT, ItemID.GOTR_GUARDIAN_ESSENCE};
+
 	static final List<Read> ALL;
 	private static final Map<Integer, List<Read>> BY_BIT = new HashMap<>();
 	private static final Map<Integer, List<Read>> BY_PLAYER = new HashMap<>();
@@ -258,6 +267,15 @@ final class Reads
 		all.add(new Read("quiver", "Dizana's quiver", true, null, null, none,
 			new int[]{VarPlayerID.DIZANAS_QUIVER_TEMP_AMMO, VarPlayerID.DIZANAS_QUIVER_TEMP_AMMO_AMOUNT},
 			(v, out) -> put(out, v.player(VarPlayerID.DIZANAS_QUIVER_TEMP_AMMO), v.player(VarPlayerID.DIZANAS_QUIVER_TEMP_AMMO_AMOUNT))));
+
+		all.add(new Read("essence", "Essence pouches", true, null, null, concat(POUCH_COUNTS, POUCH_TYPES), none, (v, out) ->
+		{
+			for (int i = 0; i < POUCH_COUNTS.length; i++)
+			{
+				int type = v.bit(POUCH_TYPES[i]);
+				put(out, ESSENCES[type >= 0 && type < ESSENCES.length ? type : 1], v.bit(POUCH_COUNTS[i]));
+			}
+		}));
 
 		all.add(new Read("kept:leprechaun", "Tool leprechaun", false, Kind.KEPT, null, LEPRECHAUN_BITS, none, Reads::leprechaun));
 		all.add(new Read("kept:furnace", "Blast Furnace", false, Kind.KEPT, new int[]{1940, 4962, 0}, FURNACE_BITS, none,

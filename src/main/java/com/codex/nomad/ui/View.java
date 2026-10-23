@@ -31,6 +31,8 @@ public final class View
 	public long dropNow;
 	public long keepNow;
 	public int keepCount = 3;
+	/** The items a death now would keep. */
+	public List<ItemLine> kept = Collections.emptyList();
 	public List<Peril> perils = Collections.emptyList();
 	public List<IdleLine> idle = Collections.emptyList();
 	public int idleSlots;

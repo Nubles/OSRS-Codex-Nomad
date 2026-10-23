@@ -83,9 +83,10 @@ final class Views
 		Map<Integer, Long> carried = n.carried();
 		v.carriedWorth = Items.worth(carried, look::price);
 		v.keepCount = keep;
-		Kept k = Kept.of(carried, look::price, keep);
-		v.dropNow = k.droppedWorth;
+		Kept k = Kept.of(n.loose(), look::price, keep);
+		v.dropNow = k.droppedWorth + Items.worth(n.inside(), look::price);
 		v.keepNow = k.keptWorth;
+		v.kept = lines(k.kept, look);
 
 		// ---- perils ----
 		List<View.Peril> perils = new ArrayList<>();
