@@ -51,7 +51,11 @@ final class Views
 		net.runelite.api.gameval.ItemID.BOWSTRING_SPOOL, net.runelite.api.gameval.ItemID.MM_PREPOT_DEVICE,
 		net.runelite.api.gameval.ItemID.RCU_POUCH_SMALL, net.runelite.api.gameval.ItemID.RCU_POUCH_MEDIUM,
 		net.runelite.api.gameval.ItemID.RCU_POUCH_LARGE, net.runelite.api.gameval.ItemID.RCU_POUCH_GIANT,
-		net.runelite.api.gameval.ItemID.RCU_POUCH_COLOSSAL));
+		net.runelite.api.gameval.ItemID.RCU_POUCH_COLOSSAL, net.runelite.api.gameval.ItemID.COAL_BAG,
+		net.runelite.api.gameval.ItemID.COAL_BAG_OPEN, net.runelite.api.gameval.ItemID.GEM_BAG,
+		net.runelite.api.gameval.ItemID.GEM_BAG_OPEN, net.runelite.api.gameval.ItemID.FISH_BARREL_CLOSED,
+		net.runelite.api.gameval.ItemID.FISH_BARREL_OPEN, net.runelite.api.gameval.ItemID.LOG_BASKET_CLOSED,
+		net.runelite.api.gameval.ItemID.LOG_BASKET_OPEN));
 
 	private Views()
 	{

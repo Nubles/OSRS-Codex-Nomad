@@ -163,6 +163,18 @@ public interface CodexNomadConfig extends Config
 	}
 
 	@ConfigItem(
+		keyName = "itemTips",
+		name = "Inventory tooltips",
+		description = "Hovering an item in your inventory lists every other place you keep it",
+		section = SCENE,
+		position = 6
+	)
+	default boolean itemTips()
+	{
+		return true;
+	}
+
+	@ConfigItem(
 		keyName = "guideArrow",
 		name = "Route arrow",
 		description = "While you follow the route, point the game's hint arrow at the person to talk to or the place to go for the step in hand",

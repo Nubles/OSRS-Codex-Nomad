@@ -10,6 +10,7 @@ import com.codex.nomad.core.Route;
 import com.codex.nomad.core.StashBook;
 import com.codex.nomad.core.Store;
 import com.codex.nomad.core.Trip;
+import com.codex.nomad.overlay.ItemTips;
 import com.codex.nomad.overlay.Marker;
 import com.codex.nomad.overlay.Plaque;
 import com.codex.nomad.ui.Arrivals;
@@ -59,6 +60,10 @@ import net.runelite.api.events.ItemSpawned;
 import net.runelite.api.events.MenuOptionClicked;
 import net.runelite.api.events.MenuEntryAdded;
 import net.runelite.api.events.VarbitChanged;
+import net.runelite.api.events.WidgetLoaded;
+import net.runelite.api.gameval.InterfaceID;
+import net.runelite.api.widgets.Widget;
+import net.runelite.http.api.item.ItemPrice;
 import net.runelite.api.gameval.InventoryID;
 import net.runelite.api.gameval.ItemID;
 import net.runelite.api.gameval.VarbitID;
@@ -81,6 +86,7 @@ import net.runelite.client.ui.ClientToolbar;
 import net.runelite.client.ui.NavigationButton;
 import net.runelite.client.ui.overlay.OverlayManager;
 import net.runelite.client.ui.overlay.outline.ModelOutlineRenderer;
+import net.runelite.client.ui.overlay.tooltip.TooltipManager;
 import net.runelite.client.ui.overlay.worldmap.WorldMapPoint;
 import net.runelite.client.ui.overlay.worldmap.WorldMapPointManager;
 import net.runelite.client.util.AsyncBufferedImage;
@@ -166,6 +172,11 @@ public class CodexNomadPlugin extends Plugin
 	@Inject
 	private ModelOutlineRenderer outlines;
 
+	@Inject
+	private TooltipManager tooltipManager;
+
+	private ItemTips tips;
+
 	private final Plaque plaque = new Plaque();
 	private Marker marker;
 	private Highlights highlights;
@@ -232,6 +243,7 @@ public class CodexNomadPlugin extends Plugin
 		guide = new RouteGuide(client, eventBus, route, id -> name(itemManager.canonicalize(id)));
 		highlights = new Highlights(client, outlines, guide);
 		clicks = new Clicks(client, guide, id -> name(itemManager.canonicalize(id)));
+		tips = new ItemTips(client, tooltipManager, itemManager::canonicalize, config::itemTips);
 		Arrivals arrivals = new Arrivals();
 		ItemIcons icons = (itemId, onLoaded) ->
 		{
@@ -288,6 +300,7 @@ public class CodexNomadPlugin extends Plugin
 		overlayManager.add(marker);
 		overlayManager.add(highlights);
 		overlayManager.add(clicks);
+		overlayManager.add(tips);
 		clientThread.invokeLater(() ->
 		{
 			loadProfile();
@@ -306,6 +319,7 @@ public class CodexNomadPlugin extends Plugin
 		overlayManager.remove(marker);
 		overlayManager.remove(highlights);
 		overlayManager.remove(clicks);
+		overlayManager.remove(tips);
 		clientToolbar.removeNavigation(navButton);
 		clearMap();
 		RouteGuide g = guide;
@@ -630,6 +644,38 @@ public class CodexNomadPlugin extends Plugin
 		}
 	}
 
+	/** The box shown on checking the fish barrel or log basket. */
+	@Subscribe
+	public void onWidgetLoaded(WidgetLoaded event)
+	{
+		if (event.getGroupId() != InterfaceID.OBJECTBOX)
+		{
+			return;
+		}
+		clientThread.invokeLater(() ->
+		{
+			Widget w = client.getWidget(InterfaceID.Objectbox.TEXT);
+			if (nomad != null && w != null && w.getText() != null
+				&& Bags.checked(w.getText(), this::itemNamed, nomad, System.currentTimeMillis()))
+			{
+				changed();
+			}
+		});
+	}
+
+	/** A tradeable item by its exact name, or -1. */
+	private int itemNamed(String name)
+	{
+		for (ItemPrice p : itemManager.search(name))
+		{
+			if (p.getName().equalsIgnoreCase(name))
+			{
+				return p.getId();
+			}
+		}
+		return -1;
+	}
+
 	// ---- the floor ----
 
 	@Subscribe
@@ -943,7 +989,7 @@ public class CodexNomadPlugin extends Plugin
 		}
 		String message = Text.removeTags(event.getMessage());
 		guide.heard(message);
-		if (herbSack.heard(message, nomad, System.currentTimeMillis()))
+		if (herbSack.heard(message, nomad, System.currentTimeMillis()) | Bags.heard(message, nomad, System.currentTimeMillis()))
 		{
 			changed();
 		}
@@ -1257,6 +1303,7 @@ public class CodexNomadPlugin extends Plugin
 			plaqueRows = new ArrayList<>();
 		plaque.show(null, null, null);
 			marker.show(null);
+			tips.show(null);
 			clearMap();
 			if (target != null)
 			{
@@ -1270,6 +1317,7 @@ public class CodexNomadPlugin extends Plugin
 			System.currentTimeMillis());
 		view.loggedIn = client.getGameState() == GameState.LOGGED_IN;
 		showOverlays(view, here);
+		tips.show(whereKept(view));
 		if (target != null)
 		{
 			SwingUtilities.invokeLater(() -> target.show(view));
@@ -1384,6 +1432,25 @@ public class CodexNomadPlugin extends Plugin
 			points.clear();
 		}
 		updateMap(points, labels);
+	}
+
+	/** Every place each item is kept, by its common id, for the inventory tooltip. */
+	private Map<Integer, List<String>> whereKept(View v)
+	{
+		Map<Integer, List<String>> where = new HashMap<>();
+		for (View.StoreView s : v.stores)
+		{
+			String place = s.kind == Kind.FLOOR ? "On the floor, world " + s.world
+				: s.kind == Kind.DEATHPILE ? "Deathpile, " + Format.ticks(s.ticksLeft) + " left"
+				: s.kind == Kind.STASH ? "STASH, " + s.name
+				: s.kind == Kind.DEATHBANK ? "Deathbank, " + s.name : s.name;
+			for (View.ItemLine l : s.items)
+			{
+				where.computeIfAbsent(itemManager.canonicalize(l.id), k -> new ArrayList<>())
+					.add(l.qty > 1 ? place + ": " + Format.whole(l.qty) : place);
+			}
+		}
+		return where;
 	}
 
 	private static String takeText(View.StopView stop)

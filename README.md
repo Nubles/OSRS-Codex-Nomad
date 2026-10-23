@@ -12,8 +12,9 @@ A RuneLite plugin for ultimate ironmen. A UIM has no bank, so Nomad keeps the bo
 
 ## What it does
 
+- **Inventory tooltips.** Hover an item in your inventory to see every other place you keep it: a deathpile, a STASH unit, the costume room or a coffer.
 - **Find.** Type any item into the search box at the top and Nomad lists every place you have it, carried or kept, with how many and how far away.
-- **Pack tab.** What you carry: inventory, worn items, looting bag and rune pouch, plus the herb sack, seed box, tackle box, huntsman's kit, forestry kit, chugging barrel, essence pouches, plank sack, bolt pouch, master scroll book, bow string spool and Dizana's quiver, with free slots, worth, and the three (or four with Protect Item) items you would keep if you died now, shown by name. Whatever sits inside a bag, pouch or sack is counted as lost, since it goes with its container. Items you have not used for a while (*Dead weight after*, 3 hours by default) are marked so you know what could go into storage.
+- **Pack tab.** What you carry: inventory, worn items, looting bag and rune pouch, plus the herb sack, coal bag, gem bag, fish barrel, log basket, seed box, tackle box, huntsman's kit, forestry kit, chugging barrel, essence pouches, plank sack, bolt pouch, master scroll book, bow string spool and Dizana's quiver, with free slots, worth, and the three (or four with Protect Item) items you would keep if you died now, shown by name. Whatever sits inside a bag, pouch or sack is counted as lost, since it goes with its container. Items you have not used for a while (*Dead weight after*, 3 hours by default) are marked so you know what could go into storage.
 - **Stores tab.** Every place you keep things: items you dropped, deathpiles with their timers, your deathbank, the costume room in your house, STASH units, the seed vault and anything else you put away. The tool leprechaun, the Blast Furnace, fossil storage, the vyre well, Elnock's impling gear, Annette's drift nets, the pickaxe statue and the Nightmare Zone, Blast Furnace, Miscellania, Last Man Standing and Scar essence mine coffers are read straight from the game, so they are always right without a visit. Each store remembers what it holds, when it was last seen, and whether the count is exact or estimated.
 - **Deathpiles that tell you when.** A deathpile lasts 60 minutes of logged-in time. Nomad counts it down, warns you in chat when it is close to gone (*Deathpile warning*, 10 minutes by default), and marks the tile on the world map.
 - **Dropped items with a timer.** Drop something and Nomad keeps it in the Stores tab with the exact second it vanishes, which world it is on, a countdown on its tile, and a warning in chat before it goes (*Dropped item warning*, 30 seconds by default).
@@ -37,6 +38,7 @@ A RuneLite plugin for ultimate ironmen. A UIM has no bank, so Nomad keeps the bo
 - **Danger warnings** (on): on the way into the Wilderness or a boss lair, say what dying there would cost.
 - **Peril plaque**, **Mark the next stop**, **Route step on plaque** (on): what shows in the game view.
 - **Route arrow**, **Highlight route clicks**, **Path with Shortest Path** (on): how the route guides you.
+- **Inventory tooltips** (on): hovering an inventory item lists every other place you keep it.
 
 ## With other Codex plugins
 
@@ -44,13 +46,14 @@ Nomad writes what you hold everywhere to `codexnomad/holdingsV1`, in the same sh
 
 ## How it works
 
-The inventory, worn items, looting bag, seed box, kits, seed vault, costume room and the deathbank retrieval window are read as they change. The rune pouch, bolt pouch, plank sack, scroll book, spool, quiver, tool leprechaun, Blast Furnace, fossil storage and coffers are read from the game's own counters. The herb sack is followed from what the game says when you check, fill or empty it. Dropped items are matched to your Drop clicks, with the despawn time the game gives them. Deaths come from `ActorDeath`, STASH deposits and the item retrieval service from chat messages, and the account type from the ironman varbit. Worth comes from RuneLite's item manager. Everything is stored per account in the RuneLite profile config. A damaged save never stops the panel: whatever still reads is kept.
+The inventory, worn items, looting bag, seed box, kits, seed vault, costume room and the deathbank retrieval window are read as they change. The rune pouch, bolt pouch, plank sack, scroll book, spool, quiver, tool leprechaun, Blast Furnace, fossil storage and coffers are read from the game's own counters. The herb sack, coal bag and gem bag are followed from what the game says when you check, fill or empty them, and the fish barrel and log basket from the box shown when you check them. Dropped items are matched to your Drop clicks, with the despawn time the game gives them. Deaths come from `ActorDeath`, STASH deposits and the item retrieval service from chat messages, and the account type from the ironman varbit. Worth comes from RuneLite's item manager. Everything is stored per account in the RuneLite profile config. A damaged save never stops the panel: whatever still reads is kept.
 
 It is guidance only. It does not automate any input, send any data off the client, or read or write files. The route only points and outlines; you walk and click. The only menu changes are the two guards, which remove an option and never add or swap one.
 
 ## Credits
 
 - STASH unit and costume room data, and which game counters hold the leprechaun, sacks, pouches and coffers, are adapted from [Dude, Where's My Stuff](https://github.com/Thource/dude-wheres-my-stuff) (BSD 2-Clause).
+- The wording the game uses for the coal bag, gem bag, fish barrel and log basket follows the [Coal Bag](https://github.com/WolffTech/coal-bag-plugin), [Gem Sack](https://github.com/serenibyss/osrs-gem-sack-plugin), [Fish Barrel](https://github.com/molo-pl/runelite-plugins) and [Log Basket](https://github.com/aidanmastro/log-basket-plugin) plugins (BSD 2-Clause).
 - Where each quest starts comes from the first step of [Quest Helper](https://github.com/Zoinkwiz/quest-helper) (BSD 2-Clause).
 - The route follows the OSRS Wiki's [Ultimate Ironman Walkthrough Guide To Prifddinas](https://oldschool.runescape.wiki/w/Guide:Ultimate_Ironman_Walkthrough_Guide_To_Prifddinas), paraphrased, under [CC BY-NC-SA 3.0](https://creativecommons.org/licenses/by-nc-sa/3.0/).
 

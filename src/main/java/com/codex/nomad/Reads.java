@@ -237,8 +237,8 @@ final class Reads
 	private static final int[] POUCH_TYPES = {
 		VarbitID.SMALL_ESSENCE_POUCH_TYPE, VarbitID.MEDIUM_ESSENCE_POUCH_TYPE, VarbitID.LARGE_ESSENCE_POUCH_TYPE,
 		VarbitID.GIANT_ESSENCE_POUCH_TYPE, VarbitID.COLOSSAL_ESSENCE_POUCH_TYPE};
-	/** What an essence pouch's type value holds. Not yet checked against a live client. */
-	static final int[] ESSENCES = {ItemID.BLANKRUNE, ItemID.BLANKRUNE_HIGH, ItemID.BLANKRUNE_DAEYALT, ItemID.GOTR_GUARDIAN_ESSENCE};
+	/** What an essence pouch's type value holds, as the game's own script 3197 reads it; 0 is empty. */
+	static final int[] ESSENCES = {-1, ItemID.BLANKRUNE, ItemID.BLANKRUNE_HIGH, ItemID.BLANKRUNE_DAEYALT, ItemID.GOTR_GUARDIAN_ESSENCE};
 
 	static final List<Read> ALL;
 	private static final Map<Integer, List<Read>> BY_BIT = new HashMap<>();
@@ -273,7 +273,7 @@ final class Reads
 			for (int i = 0; i < POUCH_COUNTS.length; i++)
 			{
 				int type = v.bit(POUCH_TYPES[i]);
-				put(out, ESSENCES[type >= 0 && type < ESSENCES.length ? type : 1], v.bit(POUCH_COUNTS[i]));
+				put(out, type > 0 && type < ESSENCES.length ? ESSENCES[type] : ItemID.BLANKRUNE_HIGH, v.bit(POUCH_COUNTS[i]));
 			}
 		}));
 

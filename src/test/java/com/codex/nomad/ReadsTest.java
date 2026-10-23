@@ -86,4 +86,17 @@ public class ReadsTest
 		assertEquals(Kind.COFFER, read("coffer:nmz").kind);
 		assertEquals(read("bolt pouch"), Reads.touched(VarbitID.XBOWS_POUCH_NUM1, -1).get(0));
 	}
+
+	@Test
+	public void essencePouchesFollowTheGamesOwnTypeOrder()
+	{
+		Map<Integer, Integer> b = new HashMap<>();
+		b.put(VarbitID.GIANT_ESSENCE_POUCH, 12);
+		b.put(VarbitID.GIANT_ESSENCE_POUCH_TYPE, 2);
+		b.put(VarbitID.SMALL_ESSENCE_POUCH, 3);
+		b.put(VarbitID.SMALL_ESSENCE_POUCH_TYPE, 4);
+		Map<Integer, Long> got = read("essence").read(vars(b));
+		assertEquals(12L, (long) got.get(ItemID.BLANKRUNE_HIGH));
+		assertEquals(3L, (long) got.get(ItemID.GOTR_GUARDIAN_ESSENCE));
+	}
 }
