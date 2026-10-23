@@ -406,4 +406,16 @@ public class CoreTest
 		assertTrue(n.stores(Kind.FLOOR).isEmpty());
 		assertTrue(Kind.FLOOR.perilous());
 	}
+
+	@Test
+	public void lootingBagDropsOnlyDeepEnoughInTheWilderness()
+	{
+		assertFalse(LootingBag.dropsHere(false, 3100, 3600, 0));
+		assertFalse(LootingBag.dropsHere(true, 3100, 3523, 0));
+		assertFalse(LootingBag.dropsHere(true, 3100, 3524, 0));
+		assertTrue(LootingBag.dropsHere(true, 3100, 3525, 0));
+		assertFalse(LootingBag.dropsHere(true, 3135, 3630, 0));
+		assertTrue(LootingBag.dropsHere(true, 3200, 3700, 0));
+		assertEquals(java.util.Collections.singletonList(385), LootingBag.perishable(items(385, 5, 1513, 20), i -> i == 385));
+	}
 }

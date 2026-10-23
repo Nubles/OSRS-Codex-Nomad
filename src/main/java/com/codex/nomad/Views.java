@@ -190,7 +190,7 @@ final class Views
 			p.kind = Kind.OTHER;
 			p.key = "bag";
 			p.title = "Looting bag";
-			p.note = "Opens only in the Wilderness or on death";
+			p.note = "Empties only on death, or destroyed deep enough in the Wilderness";
 			p.worth = bagWorth;
 			p.count = v.bagUsed;
 			perils.add(p);

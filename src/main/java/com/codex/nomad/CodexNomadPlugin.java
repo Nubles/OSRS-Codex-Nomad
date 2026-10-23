@@ -5,6 +5,7 @@ import com.codex.nomad.core.Death;
 import com.codex.nomad.core.Fetch;
 import com.codex.nomad.core.Items;
 import com.codex.nomad.core.Kind;
+import com.codex.nomad.core.LootingBag;
 import com.codex.nomad.core.Nomad;
 import com.codex.nomad.core.Route;
 import com.codex.nomad.core.StashBook;
@@ -756,9 +757,21 @@ public class CodexNomadPlugin extends Plugin
 	@Subscribe
 	public void onMenuOptionClicked(MenuOptionClicked event)
 	{
-		if (nomad != null && "Drop".equals(Text.removeTags(event.getMenuOption())) && event.getItemId() > 0)
+		String option = Text.removeTags(event.getMenuOption());
+		if (nomad != null && "Drop".equals(option) && event.getItemId() > 0)
 		{
 			dropping.put(event.getItemId(), client.getTickCount());
+		}
+		else if (nomad != null && "Destroy".equals(option) && LOOTING_BAGS.contains(event.getItemId()))
+		{
+			List<String> lost = new ArrayList<>();
+			for (int i : LootingBag.perishable(nomad.carried(Nomad.LOOTING_BAG), this::perishes))
+			{
+				lost.add(itemManager.getItemComposition(i).getName());
+			}
+			say(!bagDropsHere() ? "Destroying the looting bag here deletes everything in it."
+				: lost.isEmpty() ? "Destroying the looting bag drops what is in it at your feet."
+				: "Destroying the looting bag drops the rest at your feet, but loses " + String.join(", ", lost) + ".", true);
 		}
 	}
 
@@ -1429,8 +1442,7 @@ public class CodexNomadPlugin extends Plugin
 		{
 			return;
 		}
-		if (config.guardLootingBag() && "Destroy".equals(option) && LOOTING_BAGS.contains(item)
-			&& client.getVarbitValue(VarbitID.INSIDE_WILDERNESS) == 0)
+		if (config.guardLootingBag() && "Destroy".equals(option) && LOOTING_BAGS.contains(item) && !bagDropsHere())
 		{
 			client.getMenu().removeMenuEntry(entry);
 		}
@@ -1438,6 +1450,40 @@ public class CodexNomadPlugin extends Plugin
 		{
 			client.getMenu().removeMenuEntry(entry);
 		}
+	}
+
+	/** Whether destroying the looting bag where the player stands drops its contents, not deletes them. */
+	private boolean bagDropsHere()
+	{
+		Player me = client.getLocalPlayer();
+		if (me == null)
+		{
+			return false;
+		}
+		WorldPoint p = WorldPoint.fromLocalInstance(client, me.getLocalLocation());
+		return p != null && LootingBag.dropsHere(client.getVarbitValue(VarbitID.INSIDE_WILDERNESS) == 1, p.getX(), p.getY(), p.getPlane());
+	}
+
+	/** Unnoted food, potions and vials of water, which destroying a looting bag loses. */
+	private boolean perishes(int item)
+	{
+		ItemComposition c = itemManager.getItemComposition(item);
+		if (c == null || c.getNote() != -1)
+		{
+			return false;
+		}
+		if ("Vial of water".equals(c.getName()))
+		{
+			return true;
+		}
+		for (String a : c.getInventoryActions())
+		{
+			if ("Eat".equals(a) || "Drink".equals(a))
+			{
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/** An item's worth for the sell guard: the higher of its Grand Exchange and high alchemy values. */

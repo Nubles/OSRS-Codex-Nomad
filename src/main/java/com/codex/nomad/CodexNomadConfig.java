@@ -79,7 +79,7 @@ public interface CodexNomadConfig extends Config
 	@ConfigItem(
 		keyName = "guardLootingBag",
 		name = "Looting bag Destroy",
-		description = "Take Destroy off the looting bag outside the Wilderness, where destroying it loses everything inside",
+		description = "Take Destroy off the looting bag wherever destroying it deletes what is inside: outside the Wilderness, in the Ferox Enclave and on the first two tiles past the ditch",
 		section = GUARDS,
 		position = 0
 	)
