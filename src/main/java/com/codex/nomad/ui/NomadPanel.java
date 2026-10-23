@@ -380,8 +380,15 @@ public class NomadPanel extends PluginPanel
 		}
 		for (View.Vessel vessel : v.vessels)
 		{
-			p.add(new SectionHeader(vessel.name, String.valueOf(vessel.items.size())));
-			p.add(grid(vessel.items, null));
+			p.add(new SectionHeader(vessel.name, vessel.unchecked ? "unchecked" : String.valueOf(vessel.items.size())));
+			if (vessel.unchecked)
+			{
+				p.add(note("Check your " + vessel.name.toLowerCase() + " once so Nomad knows what is inside."));
+			}
+			else
+			{
+				p.add(grid(vessel.items, null));
+			}
 		}
 		p.add(new SectionHeader("Looting bag", v.bagKnown ? v.bagUsed + " / 28" : "unchecked"));
 		if (!v.bagKnown)

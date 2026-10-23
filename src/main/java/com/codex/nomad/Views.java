@@ -58,8 +58,32 @@ final class Views
 		net.runelite.api.gameval.ItemID.FISH_BARREL_OPEN, net.runelite.api.gameval.ItemID.LOG_BASKET_CLOSED,
 		net.runelite.api.gameval.ItemID.LOG_BASKET_OPEN));
 
+	/** The bags read from what the game says, with the items that are the bag itself. */
+	private static final Map<String, int[]> HEARD = new LinkedHashMap<>();
+
+	static
+	{
+		HEARD.put(HerbSack.NAME, new int[]{net.runelite.api.gameval.ItemID.SLAYER_HERB_SACK, net.runelite.api.gameval.ItemID.SLAYER_HERB_SACK_OPEN});
+		HEARD.put(Bags.COAL, new int[]{net.runelite.api.gameval.ItemID.COAL_BAG, net.runelite.api.gameval.ItemID.COAL_BAG_OPEN});
+		HEARD.put(Bags.GEMS, new int[]{net.runelite.api.gameval.ItemID.GEM_BAG, net.runelite.api.gameval.ItemID.GEM_BAG_OPEN});
+		HEARD.put(Bags.FISH, new int[]{net.runelite.api.gameval.ItemID.FISH_BARREL_CLOSED, net.runelite.api.gameval.ItemID.FISH_BARREL_OPEN});
+		HEARD.put(Bags.LOGS, new int[]{net.runelite.api.gameval.ItemID.LOG_BASKET_CLOSED, net.runelite.api.gameval.ItemID.LOG_BASKET_OPEN});
+	}
+
 	private Views()
 	{
+	}
+
+	private static boolean carries(Nomad n, int[] ids)
+	{
+		for (int id : ids)
+		{
+			if (n.carried(Nomad.INVENTORY).getOrDefault(id, 0L) > 0)
+			{
+				return true;
+			}
+		}
+		return false;
 	}
 
 	static View build(Nomad n, Lookup look, StashBook stash, Route route, Route.Account account, int[] here, int keep,
@@ -84,6 +108,17 @@ final class Views
 				vessel.name = name;
 				vessel.items = lines(n.carried(name), look);
 				vessel.seen = n.seenAt(name);
+				vessels.add(vessel);
+			}
+		}
+		// A bag the game only describes in words stays unknown until it is first checked.
+		for (Map.Entry<String, int[]> bag : HEARD.entrySet())
+		{
+			if (!n.seen(bag.getKey()) && carries(n, bag.getValue()))
+			{
+				View.Vessel vessel = new View.Vessel();
+				vessel.name = bag.getKey();
+				vessel.unchecked = true;
 				vessels.add(vessel);
 			}
 		}

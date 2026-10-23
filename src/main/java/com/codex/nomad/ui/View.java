@@ -95,6 +95,8 @@ public final class View
 		public String name;
 		public List<ItemLine> items = Collections.emptyList();
 		public long seen;
+		/** Carried but never checked, so what it holds is unknown. */
+		public boolean unchecked;
 	}
 
 	/** A carried stack that has sat untouched. */
