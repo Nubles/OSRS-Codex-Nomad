@@ -45,9 +45,23 @@ class Clicks extends Overlay
 		Errand job = errand.get();
 		if (job != null && job.kind == Errand.Kind.FETCH && !job.take.isEmpty())
 		{
+			// An interface's own copy of the inventory shows only what is carried, so leaving out
+			// what is carried keeps the highlights on the store's side.
+			java.util.Set<Integer> want = new java.util.HashSet<>(job.take);
+			net.runelite.api.ItemContainer inv = client.getItemContainer(net.runelite.api.gameval.InventoryID.INV);
+			if (inv != null)
+			{
+				for (net.runelite.api.Item i : inv.getItems())
+				{
+					if (i.getId() > 0)
+					{
+						want.remove(canon.applyAsInt(i.getId()));
+					}
+				}
+			}
 			for (Widget root : client.getWidgetRoots())
 			{
-				fetch(g, root, job.take, 0);
+				fetch(g, root, want, 0);
 			}
 		}
 		if (job != null && job.kind == Errand.Kind.UNNOTE)
