@@ -24,9 +24,14 @@ class Clicks extends Overlay
 	private final Client client;
 	private final RouteGuide guide;
 	private final IntFunction<String> name;
+	private final java.util.function.Supplier<Errand> errand;
+	private final java.util.function.IntUnaryOperator canon;
 
-	Clicks(Client client, RouteGuide guide, IntFunction<String> name)
+	Clicks(Client client, RouteGuide guide, IntFunction<String> name, java.util.function.Supplier<Errand> errand,
+		java.util.function.IntUnaryOperator canon)
 	{
+		this.errand = errand;
+		this.canon = canon;
 		this.client = client;
 		this.guide = guide;
 		this.name = name;
@@ -37,6 +42,14 @@ class Clicks extends Overlay
 	@Override
 	public Dimension render(Graphics2D g)
 	{
+		Errand job = errand.get();
+		if (job != null && job.kind == Errand.Kind.FETCH && !job.take.isEmpty())
+		{
+			for (Widget root : client.getWidgetRoots())
+			{
+				fetch(g, root, job.take, 0);
+			}
+		}
 		com.codex.nomad.core.Route.Lead l = guide.lead();
 		if (l.isEmpty())
 		{
@@ -74,6 +87,37 @@ class Clicks extends Overlay
 			}
 		}
 		return null;
+	}
+
+	/**
+	 * Marks the items an errand asks for in any open interface but the inventory: the costume room,
+	 * the tool leprechaun, the seed vault and the rest.
+	 */
+	private void fetch(Graphics2D g, Widget w, java.util.Set<Integer> want, int depth)
+	{
+		if (w == null || w.isHidden() || depth > 12)
+		{
+			return;
+		}
+		if ((w.getId() >>> 16) == InterfaceID.INVENTORY)
+		{
+			return;
+		}
+		int id = w.getItemId();
+		if (id > 0 && want.contains(canon.applyAsInt(id)))
+		{
+			mark(g, w.getBounds());
+		}
+		for (Widget[] kids : new Widget[][]{w.getStaticChildren(), w.getDynamicChildren(), w.getNestedChildren()})
+		{
+			if (kids != null)
+			{
+				for (Widget k : kids)
+				{
+					fetch(g, k, want, depth + 1);
+				}
+			}
+		}
 	}
 
 	private void items(Graphics2D g, Widget parent, java.util.List<String> want)

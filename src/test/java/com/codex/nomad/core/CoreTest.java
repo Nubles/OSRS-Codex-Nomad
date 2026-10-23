@@ -487,4 +487,13 @@ public class CoreTest
 		assertEquals("Run there", ways.get(0).how);
 		assertEquals(12, WayBack.wait(1000, 20, (1000 + 8) * 60_000L));
 	}
+
+	@Test
+	public void pilesArePickedUpMostWorthPerSlotFirst()
+	{
+		// A whip (2M), 5 sharks (900 each, one slot each) and 10,000 feathers (3 each, one slot).
+		java.util.List<Integer> order = Pickup.order(items(4151, 1, 385, 5, 314, 10_000),
+			id -> id == 4151 ? 2_000_000 : id == 385 ? 900 : 3, id -> id == 314);
+		assertEquals(java.util.Arrays.asList(4151, 314, 385), order);
+	}
 }

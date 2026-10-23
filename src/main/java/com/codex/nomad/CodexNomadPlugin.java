@@ -40,16 +40,19 @@ import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
 import net.runelite.api.EnumComposition;
 import net.runelite.api.EnumID;
+import net.runelite.api.GameObject;
 import net.runelite.api.GameState;
 import net.runelite.api.Item;
 import net.runelite.api.ItemComposition;
 import net.runelite.api.ItemContainer;
 import net.runelite.api.MenuEntry;
+import net.runelite.api.ObjectComposition;
 import net.runelite.api.Player;
 import net.runelite.api.Prayer;
 import net.runelite.api.Quest;
 import net.runelite.api.QuestState;
 import net.runelite.api.Skill;
+import net.runelite.api.Tile;
 import net.runelite.api.TileItem;
 import net.runelite.api.TileObject;
 import net.runelite.api.coords.WorldPoint;
@@ -193,6 +196,8 @@ public class CodexNomadPlugin extends Plugin
 	private RaidFloor raidFloor;
 	/** Chests in the scene that hold some deathbank. */
 	private final List<TileObject> holders = new ArrayList<>();
+	/** The STASH unit or house furniture the errand in hand sends you to, found in the scene. */
+	private volatile List<TileObject> errandObjects = new ArrayList<>();
 	private Clicks clicks;
 	private RouteGuide guide;
 	/** The plaque as the last publish left it, before the route row is added each tick. */
@@ -201,6 +206,8 @@ public class CodexNomadPlugin extends Plugin
 	private String guidedKey;
 	/** Where to send the player when no route step is in hand, or a deathpile needs saving first. */
 	private WorldPoint errand;
+	/** The errand in hand, guided in the scene and the interfaces. */
+	private volatile Errand job;
 	private boolean errandUrgent;
 	private int lastRegion = -1;
 	/** The words last read from the dialogue and message boxes, so each is read once. */
@@ -262,8 +269,10 @@ public class CodexNomadPlugin extends Plugin
 		raidFloor = new RaidFloor(client);
 		highlights = new Highlights(client, outlines, guide, () -> raidLeft().isEmpty() || !config.guardRaidFloor()
 			? java.util.Collections.emptyList() : raidFloor.exits(), this::raidLabel,
-			() -> nomad == null || nomad.deathbank() == null || !config.pointer() ? null : nomad.deathbank().name, () -> holders);
-		clicks = new Clicks(client, guide, id -> name(itemManager.canonicalize(id)));
+			() -> nomad == null || nomad.deathbank() == null || !config.pointer() ? null : nomad.deathbank().name, () -> holders,
+			() -> config.pointer() ? job : null, () -> errandObjects, id -> name(itemManager.canonicalize(id)));
+		clicks = new Clicks(client, guide, id -> name(itemManager.canonicalize(id)), () -> config.pointer() ? job : null,
+			itemManager::canonicalize);
 		tips = new ItemTips(client, tooltipManager, itemManager::canonicalize, config::itemTips);
 		Arrivals arrivals = new Arrivals();
 		ItemIcons icons = (itemId, onLoaded) ->
@@ -1452,6 +1461,10 @@ public class CodexNomadPlugin extends Plugin
 		}
 		warnPiles();
 		watchFloor();
+		if (ticks % 3 == 0)
+		{
+			findErrandObjects();
+		}
 		if (client.getTickCount() - hurtTick == 9)
 		{
 			dirty = true;
@@ -1797,33 +1810,25 @@ public class CodexNomadPlugin extends Plugin
 				urgent = pile;
 			}
 		}
-		if (urgent != null && config.pointer())
+		Trip t = nomad.activeTrip();
+		Fetch f = t == null ? null : Views.plan(nomad, t, lookup(), here);
+		job = errand(urgent, f);
+		if (job != null && job.kind == Errand.Kind.FETCH && job.where != null)
 		{
-			errand = new WorldPoint(urgent.x, urgent.y, urgent.plane);
-			errandUrgent = true;
+			marks.add(new Marker.Mark(job.where, "Nomad: " + f.next().store.name, Theme.TEAL));
+			points.add(job.where);
+			labels.add("Next stop: " + f.next().store.name);
 		}
-		if (v.fetch != null && !v.fetch.stops.isEmpty())
+		if (job != null && config.pointer())
 		{
-			View.StopView next = v.fetch.stops.get(0);
-			if (config.plaque())
-			{
-				rows.add(new Plaque.Row("Next: " + next.name, next.distance >= 0 ? next.distance + " tiles" : "",
-					"Take " + takeText(next) + " for " + v.fetch.name, Theme.TEAL));
-			}
-			Trip t = nomad.activeTrip();
-			Fetch f = t == null ? null : Views.plan(nomad, t, lookup(), here);
-			if (config.pointer() && f != null && f.next() != null && f.next().store.located() && f.next().store.kind != Kind.DEATHPILE)
-			{
-				Store s = f.next().store;
-				WorldPoint p = new WorldPoint(s.x, s.y, s.plane);
-				marks.add(new Marker.Mark(p, "Nomad: " + s.name, Theme.TEAL));
-				points.add(p);
-				labels.add("Next stop: " + s.name);
-				if (errand == null)
-				{
-					errand = p;
-				}
-			}
+			errand = job.where;
+			errandUrgent = job.where != null;
+		}
+		if (job != null && config.plaque())
+		{
+			String way = job.where == null ? null : RouteGuide.way(here, job.where);
+			rows.add(0, new Plaque.Row("Next: " + job.title, way == null ? "" : way, job.text,
+				job.kind == Errand.Kind.FETCH ? Theme.TEAL : Theme.EMBER));
 		}
 		Route.Step step = guide.current(nomad);
 		WorldPoint target = guide.target(step);
@@ -1845,6 +1850,137 @@ public class CodexNomadPlugin extends Plugin
 		updateMap(points, labels);
 	}
 
+	/**
+	 * The one thing to do next, most pressing first: save the deathpile that runs out soonest,
+	 * reclaim a waiting deathbank, then fetch the next stop of the packing list. Null when none.
+	 */
+	private Errand errand(Store pile, Fetch f)
+	{
+		Views.Lookup look = lookup();
+		if (pile != null)
+		{
+			List<Integer> order = com.codex.nomad.core.Pickup.order(pile.items, this::price, look::stackable);
+			List<String> names = new ArrayList<>();
+			for (int i = 0; i < Math.min(3, order.size()); i++)
+			{
+				names.add(name(itemManager.canonicalize(order.get(i))));
+			}
+			Set<Integer> take = new HashSet<>();
+			order.forEach(id -> take.add(itemManager.canonicalize(id)));
+			return new Errand(Errand.Kind.PILE, "save your deathpile", "Pick up " + String.join(", then ", names)
+				+ (order.size() > 3 ? " and the rest" : ""), new WorldPoint(pile.x, pile.y, pile.plane), take, order, -1, null);
+		}
+		Store bank = nomad.deathbank();
+		if (bank != null)
+		{
+			String claim = Death.claim(bank.name);
+			long fee = Death.fee(bank.name);
+			long coins = nomad.carried(Nomad.INVENTORY).getOrDefault(ItemID.COINS, 0L);
+			String text = (claim != null ? claim : "Reclaim it at " + bank.name)
+				+ (fee > coins ? "; bring " + Format.coins(fee - coins) + " more coins" : "");
+			return new Errand(Errand.Kind.DEATHBANK, "reclaim your deathbank", text, null, null, null, -1, null);
+		}
+		Fetch.Stop next = f == null ? null : f.next();
+		if (next == null || next.store.kind == Kind.DEATHPILE)
+		{
+			return null;
+		}
+		Store s = next.store;
+		Set<Integer> take = new HashSet<>();
+		List<String> names = new ArrayList<>();
+		for (Map.Entry<Integer, Long> e : next.take.entrySet())
+		{
+			take.add(itemManager.canonicalize(e.getKey()));
+			names.add((e.getValue() > 1 ? Format.amount(e.getValue()) + " " : "") + name(itemManager.canonicalize(e.getKey())));
+		}
+		int object = -1;
+		if (s.kind == Kind.STASH && s.key.startsWith("stash:"))
+		{
+			try
+			{
+				object = STASHUnit.valueOf(s.key.substring(6)).getObjectId();
+			}
+			catch (IllegalArgumentException ex)
+			{
+				object = -1;
+			}
+		}
+		String furniture = s.kind == Kind.COSTUME ? s.name.replaceAll(" \\(.*", "") : null;
+		String verb = s.kind == Kind.STASH ? "Search the STASH unit for " : s.kind == Kind.FLOOR ? "Pick up " : "Take ";
+		String what = names.size() > 3 ? String.join(", ", names.subList(0, 3)) + " and " + (names.size() - 3) + " more" : String.join(", ", names);
+		return new Errand(Errand.Kind.FETCH, s.name + " for " + f.trip.name, verb + what,
+			s.located() ? new WorldPoint(s.x, s.y, s.plane) : null, take, null, object, furniture);
+	}
+
+	/** Looks over the player's floor of the scene for the STASH unit or furniture the errand needs. */
+	private void findErrandObjects()
+	{
+		Errand e = job;
+		Player me = client.getLocalPlayer();
+		if (e == null || me == null || e.object <= 0 && e.furniture == null)
+		{
+			if (!errandObjects.isEmpty())
+			{
+				errandObjects = new ArrayList<>();
+			}
+			return;
+		}
+		List<TileObject> found = new ArrayList<>();
+		Tile[][] plane = client.getTopLevelWorldView().getScene().getTiles()[client.getTopLevelWorldView().getPlane()];
+		for (Tile[] column : plane)
+		{
+			for (Tile tile : column)
+			{
+				if (tile == null)
+				{
+					continue;
+				}
+				List<TileObject> here = new ArrayList<>();
+				if (tile.getGameObjects() != null)
+				{
+					for (GameObject o : tile.getGameObjects())
+					{
+						if (o != null)
+						{
+							here.add(o);
+						}
+					}
+				}
+				if (tile.getWallObject() != null)
+				{
+					here.add(tile.getWallObject());
+				}
+				if (tile.getDecorativeObject() != null)
+				{
+					here.add(tile.getDecorativeObject());
+				}
+				for (TileObject o : here)
+				{
+					if (o.getId() == e.object || e.furniture != null && e.furniture.equalsIgnoreCase(objectName(o.getId())))
+					{
+						if (!found.contains(o))
+						{
+							found.add(o);
+						}
+					}
+				}
+			}
+		}
+		errandObjects = found;
+	}
+
+	/** An object's name, through its current form when it changes with the player's progress. */
+	private String objectName(int id)
+	{
+		ObjectComposition c = client.getObjectDefinition(id);
+		if (c != null && c.getImpostorIds() != null)
+		{
+			ObjectComposition i = c.getImpostor();
+			c = i != null ? i : c;
+		}
+		return c == null ? null : c.getName();
+	}
+
 	/** Every place each item is kept, by its common id, for the inventory tooltip. */
 	private Map<Integer, List<String>> whereKept(View v)
 	{
@@ -1863,16 +1999,6 @@ public class CodexNomadPlugin extends Plugin
 			}
 		}
 		return where;
-	}
-
-	private static String takeText(View.StopView stop)
-	{
-		List<String> parts = new ArrayList<>();
-		for (View.ItemLine l : stop.take)
-		{
-			parts.add(l.qty > 1 ? l.qty + " " + l.name : l.name);
-		}
-		return parts.size() > 2 ? parts.get(0) + ", " + parts.get(1) + " and " + (parts.size() - 2) + " more" : String.join(", ", parts);
 	}
 
 	private final List<WorldPoint> shownPoints = new ArrayList<>();

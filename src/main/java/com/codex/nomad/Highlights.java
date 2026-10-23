@@ -37,14 +37,21 @@ class Highlights extends Overlay
 	private final Supplier<String> warning;
 	private final Supplier<String> bank;
 	private final Supplier<List<TileObject>> holders;
+	private final Supplier<Errand> errand;
+	private final Supplier<List<TileObject>> errandObjects;
+	private final java.util.function.IntFunction<String> name;
 
 	/**
 	 * @param warnAt objects to mark in red, such as the ways out of a raid with things left on its floor
 	 * @param warning the words above them
 	 */
 	Highlights(Client client, ModelOutlineRenderer outlines, RouteGuide guide, Supplier<List<TileObject>> warnAt, Supplier<String> warning,
-		Supplier<String> bank, Supplier<List<TileObject>> holders)
+		Supplier<String> bank, Supplier<List<TileObject>> holders, Supplier<Errand> errand, Supplier<List<TileObject>> errandObjects,
+		java.util.function.IntFunction<String> name)
 	{
+		this.errand = errand;
+		this.errandObjects = errandObjects;
+		this.name = name;
 		this.bank = bank;
 		this.holders = holders;
 		this.client = client;
@@ -71,6 +78,24 @@ class Highlights extends Overlay
 				{
 					OverlayUtil.renderTextLocation(g, at, words, Theme.BLOOD);
 				}
+			}
+		}
+		Errand job = errand.get();
+		if (job != null)
+		{
+			for (TileObject o : errandObjects.get())
+			{
+				outlines.drawOutline(o, 2, Theme.TEAL, 4);
+				String words = job.kind == Errand.Kind.FETCH && job.object > 0 ? "Search" : "Take from here";
+				Point at = o.getCanvasTextLocation(g, words, 150);
+				if (at != null)
+				{
+					OverlayUtil.renderTextLocation(g, at, words, Theme.TEAL);
+				}
+			}
+			if (job.kind == Errand.Kind.PILE && job.where != null)
+			{
+				pile(g, job);
 			}
 		}
 		String lair = bank.get();
@@ -142,6 +167,62 @@ class Highlights extends Overlay
 			label(g, lp == null ? null : Perspective.getCanvasTextLocation(client, g, lp, "Take " + name, 40), "Take " + name);
 		}
 		return null;
+	}
+
+	/** Marks the deathpile's tile and names the most valuable thing still on it, to take first. */
+	private void pile(Graphics2D g, Errand job)
+	{
+		LocalPoint lp = LocalPoint.fromWorld(client.getTopLevelWorldView(), job.where);
+		if (lp == null)
+		{
+			return;
+		}
+		Tile[][][] tiles = client.getTopLevelWorldView().getScene().getTiles();
+		int plane = job.where.getPlane();
+		if (plane < 0 || plane >= tiles.length)
+		{
+			return;
+		}
+		Tile t = tiles[plane][lp.getSceneX()][lp.getSceneY()];
+		List<net.runelite.api.TileItem> lying = t == null ? null : t.getGroundItems();
+		if (lying == null || lying.isEmpty())
+		{
+			return;
+		}
+		String first = null;
+		for (int id : job.order)
+		{
+			for (net.runelite.api.TileItem i : lying)
+			{
+				if (i.getId() == id)
+				{
+					first = name.apply(id);
+					break;
+				}
+			}
+			if (first != null)
+			{
+				break;
+			}
+		}
+		Polygon poly = Perspective.getCanvasTilePoly(client, lp);
+		if (poly != null)
+		{
+			g.setColor(Theme.alpha(Theme.EMBER, 40));
+			g.fill(poly);
+			g.setColor(Theme.EMBER);
+			g.setStroke(new BasicStroke(2));
+			g.draw(poly);
+		}
+		if (first != null)
+		{
+			String words = "Take first: " + first;
+			Point at = Perspective.getCanvasTextLocation(client, g, lp, words, 40);
+			if (at != null)
+			{
+				OverlayUtil.renderTextLocation(g, at, words, Theme.EMBER);
+			}
+		}
 	}
 
 	private static void label(Graphics2D g, Point at, String text)
