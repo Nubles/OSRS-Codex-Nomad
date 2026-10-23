@@ -454,6 +454,16 @@ final class RouteGuide
 		pathTo(path ? target : null);
 	}
 
+	/** Points the way to a place off the route: a deathpile to save, or the next stop for a packing list. */
+	void head(WorldPoint target, boolean arrow, boolean path)
+	{
+		lead = new Route.Lead();
+		objects = Collections.emptyList();
+		ground = Collections.emptyList();
+		pointArrow(null, arrow ? near(target) : null);
+		pathTo(path ? target : null);
+	}
+
 	/** Finds the objects and ground items the step asks for in the scene, on the player's plane. */
 	private void scan(Route.Lead l)
 	{

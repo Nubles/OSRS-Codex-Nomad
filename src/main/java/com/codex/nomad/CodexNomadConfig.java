@@ -89,6 +89,18 @@ public interface CodexNomadConfig extends Config
 	}
 
 	@ConfigItem(
+		keyName = "wildWarning",
+		name = "Wilderness warning",
+		description = "On entering the Wilderness, say in the chat box what dying there would cost: your deathbank and what you carry",
+		section = GUARDS,
+		position = 3
+	)
+	default boolean wildWarning()
+	{
+		return true;
+	}
+
+	@ConfigItem(
 		keyName = "guardSell",
 		name = "Shop Sell",
 		description = "Take Sell off items worth more than the amount below, so valuable gear cannot be sold to a shop by mistake",

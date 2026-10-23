@@ -175,6 +175,9 @@ public class CodexNomadPlugin extends Plugin
 	private List<Plaque.Row> plaqueRows = new ArrayList<>();
 	private Color plaqueTint = Theme.GOLD;
 	private String guidedKey;
+	/** Where to send the player when no route step is in hand, or a deathpile needs saving first. */
+	private WorldPoint errand;
+	private boolean errandUrgent;
 	private final List<WorldMapPoint> mapPoints = new ArrayList<>();
 	private final Map<Integer, String> names = new HashMap<>();
 	private final Set<String> warned = new HashSet<>();
@@ -529,6 +532,10 @@ public class CodexNomadPlugin extends Plugin
 			nomad.account = event.getValue();
 			changed();
 		}
+		if (v == VarbitID.INSIDE_WILDERNESS && event.getValue() == 1 && config.wildWarning())
+		{
+			warnWilderness();
+		}
 		if (client.getGameState() == GameState.LOGGED_IN)
 		{
 			for (Reads.Read r : Reads.touched(v, v >= 0 ? -1 : event.getVarpId()))
@@ -666,6 +673,27 @@ public class CodexNomadPlugin extends Plugin
 		{
 			nomad.lift(client.getWorld(), at.getX(), at.getY(), at.getPlane(), item.getId(), item.getQuantity());
 			changed();
+		}
+	}
+
+	/** Says once, on the way in, what dying in the Wilderness would cost. */
+	private void warnWilderness()
+	{
+		List<String> lose = new ArrayList<>();
+		Store bank = nomad.deathbank();
+		if (bank != null)
+		{
+			lose.add("your deathbank at " + bank.name + (bank.exact ? " (" + Format.coins(Items.worth(bank.items, this::price)) + ")" : ""));
+		}
+		Map<Integer, Long> carried = nomad.carried();
+		com.codex.nomad.core.Kept k = com.codex.nomad.core.Kept.of(carried, this::price, keep());
+		if (k.droppedWorth > 0)
+		{
+			lose.add(Format.coins(k.droppedWorth) + " of what you carry");
+		}
+		if (!lose.isEmpty())
+		{
+			say("Wilderness: dying here costs " + String.join(" and ", lose) + ".", true);
 		}
 	}
 
@@ -1073,7 +1101,11 @@ public class CodexNomadPlugin extends Plugin
 			guidedKey = key;
 			changed();
 		}
-		if (s == null)
+		if (errand != null && (errandUrgent || s == null))
+		{
+			guide.head(errand, config.guideArrow(), config.shortestPath());
+		}
+		else if (s == null)
 		{
 			guide.stop();
 		}
@@ -1214,6 +1246,8 @@ public class CodexNomadPlugin extends Plugin
 		List<Marker.Mark> marks = new ArrayList<>();
 		List<WorldPoint> points = new ArrayList<>();
 		List<String> labels = new ArrayList<>();
+		errand = null;
+		errandUrgent = false;
 		long nowMs = System.currentTimeMillis();
 		Store soonest = null;
 		for (Store floor : nomad.stores(Kind.FLOOR))
@@ -1236,12 +1270,22 @@ public class CodexNomadPlugin extends Plugin
 				+ (soonest.world != client.getWorld() ? " · world " + soonest.world : ""), left <= config.floorWarning() * 1000L ? Theme.BLOOD : Theme.EMBER));
 			tint = Theme.EMBER;
 		}
+		Store urgent = null;
 		for (Store pile : nomad.stores(Kind.DEATHPILE))
 		{
 			WorldPoint p = new WorldPoint(pile.x, pile.y, pile.plane);
 			marks.add(new Marker.Mark(p, "Deathpile " + Format.ticks(pile.ticksLeft), Theme.EMBER));
 			points.add(p);
 			labels.add("Deathpile");
+			if (urgent == null || pile.ticksLeft < urgent.ticksLeft)
+			{
+				urgent = pile;
+			}
+		}
+		if (urgent != null && config.pointer())
+		{
+			errand = new WorldPoint(urgent.x, urgent.y, urgent.plane);
+			errandUrgent = true;
 		}
 		if (v.fetch != null && !v.fetch.stops.isEmpty())
 		{
@@ -1260,6 +1304,10 @@ public class CodexNomadPlugin extends Plugin
 				marks.add(new Marker.Mark(p, "Nomad: " + s.name, Theme.TEAL));
 				points.add(p);
 				labels.add("Next stop: " + s.name);
+				if (errand == null)
+				{
+					errand = p;
+				}
 			}
 		}
 		Route.Step step = guide.current(nomad);
