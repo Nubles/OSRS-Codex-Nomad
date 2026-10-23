@@ -30,6 +30,17 @@ public class CoreTest
 	}
 
 	@Test
+	public void everyLairSaysHowToReclaimItsDeathbank()
+	{
+		assertEquals("Reclaim from Torfinn for 100k", Death.claim("Vorkath"));
+		assertEquals(100_000L, Death.fee("Vorkath"));
+		assertEquals("Reclaim from Priestess Zul-Gwenwynig, free for ultimate ironmen", Death.claim("Zulrah"));
+		assertEquals(0L, Death.fee("Zulrah"));
+		assertEquals(-1L, Death.fee("Volcanic Mine"));
+		assertNull(Death.claim("an instance"));
+	}
+
+	@Test
 	public void savesAndReadsBack()
 	{
 		Nomad n = new Nomad();

@@ -1,5 +1,6 @@
 package com.codex.nomad;
 
+import com.codex.nomad.core.Death;
 import com.codex.nomad.core.Fetch;
 import com.codex.nomad.core.Idle;
 import com.codex.nomad.core.Items;
@@ -135,7 +136,11 @@ final class Views
 			p.kind = Kind.DEATHBANK;
 			p.key = bank.key;
 			p.title = "Deathbank: " + bank.name;
-			p.note = "Any unsafe death wipes it";
+			String claim = Death.claim(bank.name);
+			long fee = Death.fee(bank.name);
+			long coins = n.carried(Nomad.INVENTORY).getOrDefault(net.runelite.api.gameval.ItemID.COINS, 0L);
+			p.note = claim == null ? "Any unsafe death wipes it"
+				: fee > coins ? claim + "; you carry " + Format.coins(coins) : claim + " · any unsafe death wipes it";
 			p.worth = Items.worth(bank.items, look::price);
 			p.exact = bank.exact;
 			p.count = bank.items.size();

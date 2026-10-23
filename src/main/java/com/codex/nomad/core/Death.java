@@ -18,6 +18,10 @@ public final class Death
 
 	/** Lairs whose deaths go to an item retrieval service, by map region. */
 	private static final Map<Integer, String> LAIRS = new HashMap<>();
+	/** Who gives a lair's items back, and for what, as the OSRS Wiki's item retrieval service page has it. */
+	private static final Map<String, String> CLAIMS = new HashMap<>();
+	/** The fee in coins, where it is paid in coins. */
+	private static final Map<String, Long> FEES = new HashMap<>();
 
 	static
 	{
@@ -31,6 +35,38 @@ public final class Death
 		lair("Volcanic Mine", 15263, 15262);
 		lair("Theatre of Blood", 12611, 12612, 12613, 12867, 12869, 13122, 13123, 13125, 13379);
 		lair("Hallowed Sepulchre", 8797, 9051, 9052, 9053, 9054, 9309, 9563, 9565, 9821, 10074, 10075, 10077);
+		claim("Zulrah", "Priestess Zul-Gwenwynig", 0, "free for ultimate ironmen");
+		claim("Vorkath", "Torfinn", 100_000, null);
+		claim("Alchemical Hydra", "Orrvor quo Maten", 100_000, null);
+		claim("Hespori", "Arno", 25_000, null);
+		claim("The Nightmare", "Shura", 60_000, null);
+		claim("Grotesque Guardians", "the magical chest on the roof", 50_000, null);
+		claim("Nex", "the chest past the frozen door", 100_000, null);
+		claim("Volcanic Mine", "Petrified Pete", -1, "150 numulite");
+		claim("Theatre of Blood", "the chest north of Ver Sinhaza's bank", 100_000, null);
+		claim("Hallowed Sepulchre", "the Mysterious Stranger", 25_000, null);
+	}
+
+	private static void claim(String lair, String who, long fee, String note)
+	{
+		CLAIMS.put(lair, "Reclaim from " + who + (note != null ? ", " + note
+			: fee > 0 ? " for " + (fee >= 1000 ? fee / 1000 + "k" : String.valueOf(fee)) : ""));
+		if (fee >= 0)
+		{
+			FEES.put(lair, fee);
+		}
+	}
+
+	/** How to get a lair's deathbank back: "Reclaim from Torfinn for 100k", or null. */
+	public static String claim(String lair)
+	{
+		return lair == null ? null : CLAIMS.get(lair);
+	}
+
+	/** The fee in coins to reclaim a lair's deathbank, or -1 when unknown or not paid in coins. */
+	public static long fee(String lair)
+	{
+		return lair == null ? -1 : FEES.getOrDefault(lair, -1L);
 	}
 
 	private static void lair(String name, int... regions)

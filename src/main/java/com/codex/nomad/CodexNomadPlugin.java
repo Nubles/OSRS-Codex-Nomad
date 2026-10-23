@@ -945,7 +945,8 @@ public class CodexNomadPlugin extends Plugin
 			s.since = now;
 			nomad.put(s);
 			say("Deathbank at " + d.place + ": " + Format.coins(Items.worth(s.items, this::price))
-				+ ". Any unsafe death before you claim it wipes it.");
+				+ ". " + (Death.claim(d.place) != null ? Death.claim(d.place) + ". " : "")
+				+ "Any unsafe death before you claim it wipes it.");
 		}
 		if (d.kind == Death.Kind.PILE || d.kind == Death.Kind.DEATHBANK)
 		{
