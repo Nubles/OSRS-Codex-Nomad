@@ -32,6 +32,7 @@ public final class Nomad
 	public static final String DEATHBANK = "deathbank";
 	static final int TRIPS = 30;
 	static final int PILES = 6;
+	static final int FLOORS = 20;
 
 	int version = VERSION;
 	/** The ironman varbit: 2 is ultimate; -1 not yet read. */
@@ -66,6 +67,12 @@ public final class Nomad
 	{
 		Map<Integer, Long> m = pack.get(container);
 		return m == null ? Collections.emptyMap() : Collections.unmodifiableMap(m);
+	}
+
+	/** The names of every container ever read, in the order first read. */
+	public List<String> containers()
+	{
+		return new ArrayList<>(pack.keySet());
 	}
 
 	public boolean seen(String container)
@@ -190,6 +197,110 @@ public final class Nomad
 			}
 		}
 		return gone;
+	}
+
+	// ---- dropped items ----
+
+	public static String floorKey(int world, int x, int y, int plane)
+	{
+		return "floor:" + world + ":" + x + ":" + y + ":" + plane;
+	}
+
+	/** Notes items the player dropped, with when they vanish; one store per tile and world. */
+	public Store drop(int world, int x, int y, int plane, int item, long qty, long until, long now)
+	{
+		String key = floorKey(world, x, y, plane);
+		Store s = stores.get(key);
+		if (s == null)
+		{
+			List<Store> floors = stores(Kind.FLOOR);
+			floors.sort((a, b) -> Long.compare(a.until, b.until));
+			while (floors.size() >= FLOORS)
+			{
+				stores.remove(floors.remove(0).key);
+			}
+			s = new Store(key, Kind.FLOOR, "Dropped on world " + world).at(x, y, plane);
+			s.world = world;
+			s.since = now;
+			put(s);
+		}
+		if (s.expires == null)
+		{
+			s.expires = new LinkedHashMap<>();
+		}
+		s.items.merge(item, qty, Long::sum);
+		s.expires.merge(item, until, Math::max);
+		s.until = soonest(s);
+		s.seen = now;
+		s.exact = true;
+		return s;
+	}
+
+	/** Takes items off the floor: picked up, or seen to vanish. */
+	public void lift(int world, int x, int y, int plane, int item, long qty)
+	{
+		Store s = stores.get(floorKey(world, x, y, plane));
+		if (s == null)
+		{
+			return;
+		}
+		s.take(item, qty);
+		if (s.isEmpty())
+		{
+			stores.remove(s.key);
+		}
+		else
+		{
+			s.until = soonest(s);
+		}
+	}
+
+	/**
+	 * Lets dropped items whose time has come go.
+	 *
+	 * @return what vanished, by the store it lay in
+	 */
+	public Map<Store, Map<Integer, Long>> expire(long now)
+	{
+		Map<Store, Map<Integer, Long>> gone = new LinkedHashMap<>();
+		for (Store s : stores(Kind.FLOOR))
+		{
+			Map<Integer, Long> lost = new LinkedHashMap<>();
+			if (s.expires != null)
+			{
+				for (Map.Entry<Integer, Long> e : new ArrayList<>(s.expires.entrySet()))
+				{
+					if (e.getValue() <= now)
+					{
+						lost.put(e.getKey(), s.take(e.getKey(), Long.MAX_VALUE));
+					}
+				}
+			}
+			if (s.isEmpty() || s.expires == null || s.expires.isEmpty())
+			{
+				stores.remove(s.key);
+			}
+			else
+			{
+				s.until = soonest(s);
+			}
+			lost.values().removeIf(q -> q <= 0);
+			if (!lost.isEmpty())
+			{
+				gone.put(s, lost);
+			}
+		}
+		return gone;
+	}
+
+	private static long soonest(Store s)
+	{
+		long t = Long.MAX_VALUE;
+		for (long u : s.expires.values())
+		{
+			t = Math.min(t, u);
+		}
+		return t == Long.MAX_VALUE ? 0 : t;
 	}
 
 	/** Everything the account holds, carried and kept, for the rest of the suite. */
@@ -395,6 +506,10 @@ public final class Nomad
 					if (s != null && s.key != null && s.kind != null)
 					{
 						s.items = Items.clean(s.items);
+						if (s.expires == null)
+						{
+							s.expires = new LinkedHashMap<>();
+						}
 						n.stores.put(s.key, s);
 					}
 					else

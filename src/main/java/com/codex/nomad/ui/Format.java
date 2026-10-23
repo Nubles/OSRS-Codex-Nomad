@@ -74,6 +74,12 @@ public final class Format
 		return gp > 0 ? "+" + amount(gp) : gp < 0 ? "-" + amount(-gp) : "0";
 	}
 
+	/** A quantity written in full: "1,240". */
+	public static String whole(long n)
+	{
+		return String.format(Locale.ENGLISH, "%,d", n);
+	}
+
 	/** A quantity change with its sign, written in full: "+1,240", "-6". */
 	public static String count(long n)
 	{
@@ -149,6 +155,13 @@ public final class Format
 		long m = seconds % 3600 / 60;
 		long s = seconds % 60;
 		return h > 0 ? String.format(Locale.ENGLISH, "%d:%02d:%02d", h, m, s) : String.format(Locale.ENGLISH, "%d:%02d", m, s);
+	}
+
+	/** Milliseconds left as m:ss. */
+	public static String clock(long ms)
+	{
+		long seconds = (Math.max(0, ms) + 999) / 1000;
+		return String.format(Locale.ENGLISH, "%d:%02d", seconds / 60, seconds % 60);
 	}
 
 	public static String duration(long ms)

@@ -333,4 +333,28 @@ public class CoreTest
 		assertEquals(119, b.size());
 		assertFalse(b.homes(10472).isEmpty());
 	}
+
+	@Test
+	public void droppedItemsVanishOnTimeAndSurviveASave()
+	{
+		Nomad n = new Nomad();
+		n.drop(302, 3200, 3200, 0, 4151, 1, 10_000, 1);
+		n.drop(302, 3200, 3200, 0, 385, 5, 20_000, 2);
+		assertEquals(1, n.stores(Kind.FLOOR).size());
+		Store floor = n.stores(Kind.FLOOR).get(0);
+		assertEquals(10_000, floor.until);
+		assertEquals(302, floor.world);
+
+		Nomad back = Nomad.read(GSON, n.write(GSON)).nomad;
+		assertEquals(10_000L, (long) back.stores(Kind.FLOOR).get(0).expires.get(4151));
+
+		assertTrue(n.expire(9_999).isEmpty());
+		Map<Store, Map<Integer, Long>> gone = n.expire(10_000);
+		assertEquals(1L, (long) gone.values().iterator().next().get(4151));
+		assertEquals(20_000, n.stores(Kind.FLOOR).get(0).until);
+
+		n.lift(302, 3200, 3200, 0, 385, 5);
+		assertTrue(n.stores(Kind.FLOOR).isEmpty());
+		assertTrue(Kind.FLOOR.perilous());
+	}
 }

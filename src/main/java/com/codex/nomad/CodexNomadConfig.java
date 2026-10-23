@@ -53,10 +53,23 @@ public interface CodexNomadConfig extends Config
 	}
 
 	@ConfigItem(
+		keyName = "floorWarning",
+		name = "Dropped item warning",
+		description = "Say in the chat box when something you dropped has this many seconds left before it vanishes",
+		position = 2
+	)
+	@Range(min = 0, max = 170)
+	@Units(" s")
+	default int floorWarning()
+	{
+		return 30;
+	}
+
+	@ConfigItem(
 		keyName = "shareHoldings",
 		name = "Share with Codex",
 		description = "Let the other Codex plugins count what you carry and keep as your bank, since an ultimate ironman has none",
-		position = 2
+		position = 3
 	)
 	default boolean shareHoldings()
 	{

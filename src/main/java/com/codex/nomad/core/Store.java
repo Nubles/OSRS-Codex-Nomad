@@ -24,6 +24,12 @@ public final class Store
 	public long since;
 	/** Game ticks of logged-in time left before a deathpile vanishes, or -1 for no timer. */
 	public long ticksLeft = -1;
+	/** When dropped items vanish, epoch ms, or 0 for no deadline. */
+	public long until;
+	/** The world dropped items lie on, or 0. */
+	public int world;
+	/** When each dropped item vanishes, epoch ms. */
+	public Map<Integer, Long> expires = new LinkedHashMap<>();
 
 	public Store()
 	{
@@ -80,6 +86,10 @@ public final class Store
 		if (have - out <= 0)
 		{
 			items.remove(item);
+			if (expires != null)
+			{
+				expires.remove(item);
+			}
 		}
 		else
 		{

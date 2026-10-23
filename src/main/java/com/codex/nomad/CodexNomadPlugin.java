@@ -47,12 +47,16 @@ import net.runelite.api.Prayer;
 import net.runelite.api.Quest;
 import net.runelite.api.QuestState;
 import net.runelite.api.Skill;
+import net.runelite.api.TileItem;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.ActorDeath;
 import net.runelite.api.events.ChatMessage;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.GameTick;
 import net.runelite.api.events.ItemContainerChanged;
+import net.runelite.api.events.ItemDespawned;
+import net.runelite.api.events.ItemSpawned;
+import net.runelite.api.events.MenuOptionClicked;
 import net.runelite.api.events.MenuEntryAdded;
 import net.runelite.api.events.VarbitChanged;
 import net.runelite.api.gameval.InventoryID;
@@ -107,6 +111,12 @@ public class CodexNomadPlugin extends Plugin
 	/** Tiles from a deathpile within which items picked up are taken from it. */
 	private static final int PILE_REACH = 4;
 	private static final int STASH_REACH = 6;
+	/** Ticks after login before the game's counters are read whole: by then the server has sent them. */
+	private static final int READ_TICKS = 3;
+	/** Ticks a Drop click waits for its item to land. */
+	private static final int DROP_TICKS = 3;
+	/** Tiles from the player within which a vanishing item was seen to go, not just left behind. */
+	private static final int FLOOR_SIGHT = 15;
 	private static final int COSTUME = 637;
 	private static final int[] POUCH_RUNES = {
 		VarbitID.RUNE_POUCH_TYPE_1, VarbitID.RUNE_POUCH_TYPE_2, VarbitID.RUNE_POUCH_TYPE_3,
@@ -171,6 +181,8 @@ public class CodexNomadPlugin extends Plugin
 	/** Items taken out of the inventory and worn since the tick before last, for STASH deposits. */
 	private final Map<Integer, Long> removed = new HashMap<>();
 	private final Map<Integer, Long> removedBefore = new HashMap<>();
+	/** Items the player clicked Drop on, by the tick of the click. */
+	private final Map<Integer, Integer> dropping = new HashMap<>();
 
 	private NomadPanel panel;
 	private NavigationButton navButton;
@@ -309,6 +321,7 @@ public class CodexNomadPlugin extends Plugin
 		deathTick = -1;
 		removed.clear();
 		removedBefore.clear();
+		dropping.clear();
 		stashDeposit = -1;
 		stashWithdraw = -1;
 		plaqueRows = new ArrayList<>();
@@ -434,6 +447,11 @@ public class CodexNomadPlugin extends Plugin
 			nomad.carry(Nomad.LOOTING_BAG, contents(c), now);
 			changed();
 		}
+		else if (opened(id) != null)
+		{
+			nomad.carry(opened(id).name, contents(c), now);
+			changed();
+		}
 		else if (id == InventoryID.SEED_VAULT)
 		{
 			Store s = nomad.store("seedvault");
@@ -511,6 +529,180 @@ public class CodexNomadPlugin extends Plugin
 			nomad.account = event.getValue();
 			changed();
 		}
+		if (client.getGameState() == GameState.LOGGED_IN)
+		{
+			for (Reads.Read r : Reads.touched(v, v >= 0 ? -1 : event.getVarpId()))
+			{
+				apply(r);
+			}
+		}
+	}
+
+	private static Reads.Opened opened(int container)
+	{
+		for (Reads.Opened o : Reads.OPENED)
+		{
+			if (o.container == container)
+			{
+				return o;
+			}
+		}
+		return null;
+	}
+
+	private final Reads.Vars vars = new Reads.Vars()
+	{
+		@Override
+		public int bit(int id)
+		{
+			return client.getVarbitValue(id);
+		}
+
+		@Override
+		public int player(int id)
+		{
+			return client.getVarpValue(id);
+		}
+	};
+
+	/** Reads one thing the game counts by itself, into the pack or its store. */
+	private void apply(Reads.Read r)
+	{
+		long now = System.currentTimeMillis();
+		Map<Integer, Long> items = r.read(vars);
+		if (r.carried)
+		{
+			if (!items.isEmpty() || nomad.seen(r.name))
+			{
+				nomad.carry(r.name, items, now);
+				changed();
+			}
+			return;
+		}
+		Store s = nomad.store(r.key);
+		if (items.isEmpty())
+		{
+			if (s != null)
+			{
+				nomad.remove(r.key);
+				changed();
+			}
+			return;
+		}
+		if (s == null)
+		{
+			s = new Store(r.key, r.kind, r.name);
+			if (r.plane >= 0)
+			{
+				s.at(r.x, r.y, r.plane);
+			}
+			nomad.put(s);
+		}
+		if (!items.equals(s.items))
+		{
+			s.fill(items, now);
+			changed();
+		}
+	}
+
+	private void readAll()
+	{
+		for (Reads.Read r : Reads.ALL)
+		{
+			apply(r);
+		}
+	}
+
+	// ---- the floor ----
+
+	@Subscribe
+	public void onMenuOptionClicked(MenuOptionClicked event)
+	{
+		if (nomad != null && "Drop".equals(Text.removeTags(event.getMenuOption())) && event.getItemId() > 0)
+		{
+			dropping.put(event.getItemId(), client.getTickCount());
+		}
+	}
+
+	@Subscribe
+	public void onItemSpawned(ItemSpawned event)
+	{
+		TileItem item = event.getItem();
+		Player me = client.getLocalPlayer();
+		Integer clicked = dropping.get(item.getId());
+		if (nomad == null || me == null || clicked == null || item.getOwnership() != TileItem.OWNERSHIP_SELF
+			|| client.getTickCount() - clicked > DROP_TICKS)
+		{
+			return;
+		}
+		WorldPoint at = WorldPoint.fromLocalInstance(client, event.getTile().getLocalLocation());
+		WorldPoint mine = WorldPoint.fromLocalInstance(client, me.getLocalLocation());
+		if (at == null || mine == null || at.getPlane() != mine.getPlane() || at.distanceTo2D(mine) > 1)
+		{
+			return;
+		}
+		long now = System.currentTimeMillis();
+		long until = now + Math.max(0, item.getDespawnTime() - client.getTickCount()) * 600L;
+		nomad.drop(client.getWorld(), at.getX(), at.getY(), at.getPlane(), item.getId(), item.getQuantity(), until, now);
+		changed();
+	}
+
+	@Subscribe
+	public void onItemDespawned(ItemDespawned event)
+	{
+		Player me = client.getLocalPlayer();
+		if (nomad == null || me == null || client.getGameState() != GameState.LOGGED_IN)
+		{
+			return;
+		}
+		WorldPoint at = WorldPoint.fromLocalInstance(client, event.getTile().getLocalLocation());
+		WorldPoint mine = WorldPoint.fromLocalInstance(client, me.getLocalLocation());
+		if (at == null || mine == null || at.getPlane() != mine.getPlane() || at.distanceTo2D(mine) > FLOOR_SIGHT)
+		{
+			return;
+		}
+		TileItem item = event.getItem();
+		if (nomad.store(Nomad.floorKey(client.getWorld(), at.getX(), at.getY(), at.getPlane())) != null)
+		{
+			nomad.lift(client.getWorld(), at.getX(), at.getY(), at.getPlane(), item.getId(), item.getQuantity());
+			changed();
+		}
+	}
+
+	/** Lets dropped items go when their time comes, and warns before. */
+	private void watchFloor()
+	{
+		long now = System.currentTimeMillis();
+		dropping.values().removeIf(t -> client.getTickCount() - t > DROP_TICKS);
+		for (Map.Entry<Store, Map<Integer, Long>> e : nomad.expire(now).entrySet())
+		{
+			say("Dropped on world " + e.getKey().world + " and now gone: " + itemsText(e.getValue()) + ".", true);
+			changed();
+		}
+		long warnMs = config.floorWarning() * 1000L;
+		if (warnMs <= 0)
+		{
+			return;
+		}
+		for (Store s : nomad.stores(Kind.FLOOR))
+		{
+			for (Map.Entry<Integer, Long> e : s.expires.entrySet())
+			{
+				long left = e.getValue() - now;
+				if (left > 0 && left <= warnMs && warned.add(s.key + ":" + e.getKey() + ":" + e.getValue()))
+				{
+					say(name(itemManager.canonicalize(e.getKey())) + " on the floor vanishes in " + (left + 999) / 1000 + " seconds"
+						+ (s.world != client.getWorld() ? ", on world " + s.world : "") + ".", true);
+				}
+			}
+		}
+	}
+
+	private String itemsText(Map<Integer, Long> items)
+	{
+		List<String> parts = new ArrayList<>();
+		items.forEach((id, q) -> parts.add(q > 1 ? q + " x " + name(itemManager.canonicalize(id)) : name(itemManager.canonicalize(id))));
+		return parts.size() > 3 ? String.join(", ", parts.subList(0, 3)) + " and " + (parts.size() - 3) + " more" : String.join(", ", parts);
 	}
 
 	private void readCarried()
@@ -797,7 +989,12 @@ public class CodexNomadPlugin extends Plugin
 			changed();
 		}
 		warnPiles();
+		watchFloor();
 		checkLogin();
+		if (loginTick >= 0 && client.getTickCount() - loginTick == READ_TICKS)
+		{
+			readAll();
+		}
 		observeRoute();
 		guideRoute();
 		ticks++;
@@ -814,7 +1011,7 @@ public class CodexNomadPlugin extends Plugin
 
 	private boolean hasTimers()
 	{
-		return !nomad.stores(Kind.DEATHPILE).isEmpty();
+		return !nomad.stores(Kind.DEATHPILE).isEmpty() || !nomad.stores(Kind.FLOOR).isEmpty();
 	}
 
 	private void warnPiles()
@@ -1017,6 +1214,28 @@ public class CodexNomadPlugin extends Plugin
 		List<Marker.Mark> marks = new ArrayList<>();
 		List<WorldPoint> points = new ArrayList<>();
 		List<String> labels = new ArrayList<>();
+		long nowMs = System.currentTimeMillis();
+		Store soonest = null;
+		for (Store floor : nomad.stores(Kind.FLOOR))
+		{
+			if (floor.world == client.getWorld())
+			{
+				long left = floor.until - nowMs;
+				marks.add(new Marker.Mark(new WorldPoint(floor.x, floor.y, floor.plane), "Dropped " + Format.clock(left),
+					left <= config.floorWarning() * 1000L ? Theme.BLOOD : Theme.EMBER));
+			}
+			if (soonest == null || floor.until < soonest.until)
+			{
+				soonest = floor;
+			}
+		}
+		if (soonest != null && config.plaque())
+		{
+			long left = soonest.until - nowMs;
+			rows.add(0, new Plaque.Row("On the floor", Format.clock(left), itemsText(soonest.items)
+				+ (soonest.world != client.getWorld() ? " · world " + soonest.world : ""), left <= config.floorWarning() * 1000L ? Theme.BLOOD : Theme.EMBER));
+			tint = Theme.EMBER;
+		}
 		for (Store pile : nomad.stores(Kind.DEATHPILE))
 		{
 			WorldPoint p = new WorldPoint(pile.x, pile.y, pile.plane);

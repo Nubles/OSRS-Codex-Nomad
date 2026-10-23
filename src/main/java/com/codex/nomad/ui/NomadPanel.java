@@ -8,6 +8,8 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -17,10 +19,12 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import net.runelite.client.ui.PluginPanel;
 
 /**
- * The Nomad side panel: the crest, then four pages. Pack is everything carried with what is at
+ * The Nomad side panel: the crest, a search over everything owned, then four pages. Pack is everything carried with what is at
  * risk, dead weight and noting; Stores is every place things are kept; Trips is the packing lists
  * with the stops to make; Route is the way to Prifddinas step by step.
  */
@@ -58,6 +62,9 @@ public class NomadPanel extends PluginPanel
 	private final Set<String> open = new HashSet<>();
 	private final Set<String> sectionsOpen = new HashSet<>();
 	private final Field tripName = new Field("Name this setup");
+	private final Field find = new Field("Find anything you own");
+	private final JScrollPane findPage = scroller();
+	private boolean findStale = true;
 	private boolean routeAll;
 
 	private View view = new View();
@@ -77,6 +84,11 @@ public class NomadPanel extends PluginPanel
 		tabHolder.setOpaque(false);
 		tabHolder.setBorder(new EmptyBorder(8, 8, 2, 8));
 		tabHolder.add(tabs, BorderLayout.CENTER);
+		JPanel findHolder = new JPanel(new BorderLayout());
+		findHolder.setOpaque(false);
+		findHolder.setBorder(new EmptyBorder(6, 0, 0, 0));
+		findHolder.add(find, BorderLayout.CENTER);
+		tabHolder.add(findHolder, BorderLayout.SOUTH);
 		north.add(tabHolder, BorderLayout.SOUTH);
 		add(north, BorderLayout.NORTH);
 
@@ -85,8 +97,33 @@ public class NomadPanel extends PluginPanel
 		{
 			content.add(pages[i], TABS[i]);
 		}
+		content.add(findPage, "find");
 		add(content, BorderLayout.CENTER);
-		tabs.onChange(this::showTab);
+		tabs.onChange(i ->
+		{
+			find.setText("");
+			showTab(i);
+		});
+		find.getDocument().addDocumentListener(new DocumentListener()
+		{
+			@Override
+			public void insertUpdate(DocumentEvent e)
+			{
+				onFind();
+			}
+
+			@Override
+			public void removeUpdate(DocumentEvent e)
+			{
+				onFind();
+			}
+
+			@Override
+			public void changedUpdate(DocumentEvent e)
+			{
+				onFind();
+			}
+		});
 		tripName.addActionListener(e -> saveTrip());
 		updateCrest();
 		refresh(true);
@@ -110,6 +147,7 @@ public class NomadPanel extends PluginPanel
 		this.view = view;
 		updateCrest();
 		java.util.Arrays.fill(stale, true);
+		findStale = true;
 		refresh(false);
 	}
 
@@ -132,6 +170,15 @@ public class NomadPanel extends PluginPanel
 		{
 			return;
 		}
+		if (finding())
+		{
+			if (findStale)
+			{
+				findStale = false;
+				show(findPage, found());
+			}
+			return;
+		}
 		int page = tabs.getSelected();
 		if (!stale[page])
 		{
@@ -139,7 +186,11 @@ public class NomadPanel extends PluginPanel
 		}
 		stale[page] = false;
 		JComponent body = page == 0 ? pack() : page == 1 ? stores() : page == 2 ? trips() : route();
-		JScrollPane scroll = pages[page];
+		show(pages[page], body);
+	}
+
+	private static void show(JScrollPane scroll, JComponent body)
+	{
 		int y = scroll.getVerticalScrollBar().getValue();
 		scroll.setViewportView(body);
 		scroll.revalidate();
@@ -147,9 +198,32 @@ public class NomadPanel extends PluginPanel
 		scroll.repaint();
 	}
 
+	private boolean finding()
+	{
+		return !find.getText().trim().isEmpty();
+	}
+
+	private void onFind()
+	{
+		if (finding())
+		{
+			findStale = true;
+			cards.show(content, "find");
+			refresh(true);
+			findPage.getVerticalScrollBar().setValue(0);
+		}
+		else
+		{
+			cards.show(content, TABS[tabs.getSelected()]);
+			stale[tabs.getSelected()] = true;
+			refresh(true);
+		}
+	}
+
 	private void rebuild()
 	{
 		stale[tabs.getSelected()] = true;
+		findStale = true;
 		refresh(true);
 	}
 
@@ -170,8 +244,13 @@ public class NomadPanel extends PluginPanel
 		Color color;
 		View.Peril pile = null;
 		View.Peril bank = null;
+		View.Peril floor = null;
 		for (View.Peril p : v.perils)
 		{
+			if (p.kind == Kind.FLOOR && (floor == null || p.until < floor.until))
+			{
+				floor = p;
+			}
 			if (p.kind == Kind.DEATHPILE && (pile == null || p.ticksLeft < pile.ticksLeft))
 			{
 				pile = p;
@@ -181,7 +260,14 @@ public class NomadPanel extends PluginPanel
 				bank = p;
 			}
 		}
-		if (pile != null)
+		if (floor != null)
+		{
+			long left = floor.until - v.now;
+			status = "On the floor: " + Format.clock(left) + " left · " + Format.coins(floor.worth);
+			shortStatus = "Dropped: " + Format.clock(left) + " left";
+			color = left <= 30_000 ? Theme.BLOOD : Theme.EMBER;
+		}
+		else if (pile != null)
 		{
 			status = "Deathpile: " + Format.ticks(pile.ticksLeft) + " left · " + Format.coins(pile.worth);
 			shortStatus = "Deathpile: " + Format.ticks(pile.ticksLeft) + " left";
@@ -260,9 +346,11 @@ public class NomadPanel extends PluginPanel
 			p.add(new SectionHeader("At risk", String.valueOf(v.perils.size())));
 			for (View.Peril r : v.perils)
 			{
-				String figure = r.kind == Kind.DEATHPILE ? Format.ticks(r.ticksLeft) : r.exact ? Format.coins(r.worth) : "?";
-				Color c = r.kind == Kind.DEATHPILE ? r.ticksLeft <= 1000 ? Theme.BLOOD : Theme.EMBER : r.kind == Kind.DEATHBANK ? Theme.EMBER : Theme.GOLD;
-				String noteText = r.kind == Kind.DEATHPILE ? Format.coins(r.worth) + " · " + r.note
+				long left = r.until - v.now;
+				String figure = r.kind == Kind.FLOOR ? Format.clock(left) : r.kind == Kind.DEATHPILE ? Format.ticks(r.ticksLeft) : r.exact ? Format.coins(r.worth) : "?";
+				Color c = r.kind == Kind.FLOOR ? left <= 30_000 ? Theme.BLOOD : Theme.EMBER
+					: r.kind == Kind.DEATHPILE ? r.ticksLeft <= 1000 ? Theme.BLOOD : Theme.EMBER : r.kind == Kind.DEATHBANK ? Theme.EMBER : Theme.GOLD;
+				String noteText = r.kind == Kind.DEATHPILE || r.kind == Kind.FLOOR ? Format.coins(r.worth) + " · " + r.note
 					: r.exact ? r.count + " items · " + r.note : "Contents unknown · " + r.note;
 				p.add(new Row(-1, 0, null, r.title, figure, c, noteText, c));
 			}
@@ -284,6 +372,11 @@ public class NomadPanel extends PluginPanel
 		{
 			p.add(new SectionHeader("Rune pouch", String.valueOf(v.pouch.size())));
 			p.add(grid(v.pouch, null));
+		}
+		for (View.Vessel vessel : v.vessels)
+		{
+			p.add(new SectionHeader(vessel.name, String.valueOf(vessel.items.size())));
+			p.add(grid(vessel.items, null));
 		}
 		p.add(new SectionHeader("Looting bag", v.bagKnown ? v.bagUsed + " / 28" : "unchecked"));
 		if (!v.bagKnown)
@@ -346,7 +439,7 @@ public class NomadPanel extends PluginPanel
 		View v = view;
 		if (v.stores.isEmpty())
 		{
-			p.add(note("Nomad remembers every place you keep things. Deposit into a STASH unit, open a costume room piece or the seed vault, and it shows here. Deathpiles and deathbanks appear on their own."));
+			p.add(note("Nomad remembers every place you keep things. Deposit into a STASH unit, open a costume room piece or the seed vault, and it shows here. Deathpiles, deathbanks, dropped items, the tool leprechaun, the Blast Furnace, fossil storage and the coffers appear on their own."));
 			return p;
 		}
 		p.add(new StatTile(Format.coins(v.keptWorth), "Kept away", v.stores.size() + " places remembered", Theme.GOLD));
@@ -373,14 +466,16 @@ public class NomadPanel extends PluginPanel
 		boolean isOpen = open.contains(s.key);
 		Card card = new Card(new BorderLayout());
 		card.setBorder(new EmptyBorder(6, 8, 6, 8));
-		Color c = s.kind == Kind.DEATHPILE ? Theme.EMBER : s.kind == Kind.DEATHBANK ? Theme.EMBER : null;
+		Color c = s.kind == Kind.DEATHPILE || s.kind == Kind.DEATHBANK || s.kind == Kind.FLOOR ? Theme.EMBER : null;
 		if (c != null)
 		{
 			card.accent(c);
 		}
-		String figure = s.kind == Kind.DEATHPILE ? Format.ticks(s.ticksLeft) : !s.exact ? "?" : s.worth > 0 ? Format.coins(s.worth) : "";
+		String figure = s.kind == Kind.FLOOR ? Format.clock(s.until - view.now) : s.kind == Kind.DEATHPILE ? Format.ticks(s.ticksLeft)
+			: !s.exact ? "?" : s.worth > 0 ? Format.coins(s.worth) : "";
 		String sub = (s.exact ? s.items.size() + (s.items.size() == 1 ? " item" : " items") : "Estimated from your death")
-			+ (s.distance >= 0 ? " · " + s.distance + " tiles" : "") + (s.seen > 0 ? " · " + Format.ago(view.now - s.seen) : "");
+			+ (s.distance >= 0 ? " · " + s.distance + " tiles" : "")
+			+ (s.kind.automatic() ? " · read live" : s.seen > 0 ? " · " + Format.ago(view.now - s.seen) : "");
 		card.add(new Row.Plain(s.name, figure, c == null ? Theme.GOLD : c, sub), BorderLayout.NORTH);
 		StackPanel in = new StackPanel(4, 0);
 		in.setBorder(new EmptyBorder(6, 0, 0, 0));
@@ -407,6 +502,81 @@ public class NomadPanel extends PluginPanel
 			rebuild();
 		});
 		return card;
+	}
+
+	// ---- find ----
+
+	/** One item and every place it is. */
+	private static final class Hit
+	{
+		final View.ItemLine item;
+		long total;
+		final List<String> where = new ArrayList<>();
+		final List<Long> qty = new ArrayList<>();
+		boolean risky;
+
+		Hit(View.ItemLine item)
+		{
+			this.item = item;
+		}
+	}
+
+	private JComponent found()
+	{
+		StackPanel p = new StackPanel(6, 8);
+		View v = view;
+		String q = find.getText().trim().toLowerCase(Locale.ENGLISH);
+		Map<String, Hit> hits = new LinkedHashMap<>();
+		look(hits, q, v.inventory, "Inventory", false);
+		look(hits, q, v.worn, "Worn", false);
+		look(hits, q, v.bag, "Looting bag", true);
+		look(hits, q, v.pouch, "Rune pouch", false);
+		for (View.Vessel vessel : v.vessels)
+		{
+			look(hits, q, vessel.items, vessel.name, false);
+		}
+		for (View.StoreView s : v.stores)
+		{
+			String place = s.kind == Kind.FLOOR ? "Floor, world " + s.world + " (" + Format.clock(s.until - v.now) + ")"
+				: s.kind == Kind.DEATHPILE ? "Deathpile (" + Format.ticks(s.ticksLeft) + ")"
+				: s.kind == Kind.STASH ? "STASH, " + s.name
+				: s.kind == Kind.DEATHBANK ? "Deathbank, " + s.name : s.name;
+			look(hits, q, s.items, place + (s.distance >= 0 ? ", " + s.distance + " tiles" : ""), s.kind.perilous());
+		}
+		p.add(new SectionHeader("Found", String.valueOf(hits.size())));
+		if (hits.isEmpty())
+		{
+			p.add(note("Nothing you carry or keep is called that. Nomad only knows the places you have opened or used since it was installed."));
+			return p;
+		}
+		for (Hit h : hits.values())
+		{
+			List<String> where = new ArrayList<>();
+			for (int i = 0; i < h.where.size(); i++)
+			{
+				where.add(h.where.size() > 1 && h.qty.get(i) > 1 ? h.where.get(i) + " " + Format.whole(h.qty.get(i)) : h.where.get(i));
+			}
+			p.add(new Row(h.item.id, h.total, icons, h.item.name, Format.whole(h.total), h.risky ? Theme.EMBER : Theme.GOLD,
+				String.join(" · ", where), h.risky ? Theme.alpha(Theme.EMBER, 120) : null));
+		}
+		p.add(foot("Clear the search to go back."));
+		return p;
+	}
+
+	private static void look(Map<String, Hit> hits, String q, List<View.ItemLine> items, String place, boolean risky)
+	{
+		for (View.ItemLine l : items)
+		{
+			if (l.name == null || !l.name.toLowerCase(Locale.ENGLISH).contains(q))
+			{
+				continue;
+			}
+			Hit h = hits.computeIfAbsent(l.name, k -> new Hit(l));
+			h.total += l.qty;
+			h.where.add(place);
+			h.qty.add(l.qty);
+			h.risky |= risky;
+		}
 	}
 
 	// ---- trips ----

@@ -24,6 +24,8 @@ public final class View
 	public List<ItemLine> worn = Collections.emptyList();
 	public List<ItemLine> bag = Collections.emptyList();
 	public List<ItemLine> pouch = Collections.emptyList();
+	/** The other things carried that hold items: the seed box, plank sack, bolt pouch and the rest. */
+	public List<Vessel> vessels = Collections.emptyList();
 	public long carriedWorth;
 	/** What a death now would drop, and keep. */
 	public long dropNow;
@@ -79,8 +81,18 @@ public final class View
 		public long worth;
 		/** Game ticks left, or -1 for no timer. */
 		public long ticksLeft = -1;
+		/** When dropped items vanish, epoch ms, or 0. */
+		public long until;
 		public boolean exact = true;
 		public int count;
+	}
+
+	/** A carried thing that holds items. */
+	public static final class Vessel
+	{
+		public String name;
+		public List<ItemLine> items = Collections.emptyList();
+		public long seen;
 	}
 
 	/** A carried stack that has sat untouched. */
@@ -119,6 +131,9 @@ public final class View
 		public boolean exact = true;
 		public int distance = -1;
 		public long ticksLeft = -1;
+		/** When dropped items vanish, epoch ms, or 0. */
+		public long until;
+		public int world;
 	}
 
 	/** The active packing list, checked. */

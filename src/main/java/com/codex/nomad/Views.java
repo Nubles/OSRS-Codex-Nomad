@@ -60,6 +60,21 @@ final class Views
 		v.inventory = lines(inv, look);
 		v.worn = lines(n.carried(Nomad.WORN), look);
 		v.pouch = lines(n.carried(Nomad.RUNE_POUCH), look);
+		List<View.Vessel> vessels = new ArrayList<>();
+		for (String name : n.containers())
+		{
+			if (!name.equals(Nomad.INVENTORY) && !name.equals(Nomad.WORN) && !name.equals(Nomad.LOOTING_BAG)
+				&& !name.equals(Nomad.RUNE_POUCH) && !n.carried(name).isEmpty())
+			{
+				View.Vessel vessel = new View.Vessel();
+				vessel.name = name;
+				vessel.items = lines(n.carried(name), look);
+				vessel.seen = n.seenAt(name);
+				vessels.add(vessel);
+			}
+		}
+		vessels.sort((a, b) -> a.name.compareTo(b.name));
+		v.vessels = vessels;
 		v.bagKnown = n.seen(Nomad.LOOTING_BAG);
 		v.bag = lines(n.carried(Nomad.LOOTING_BAG), look);
 		v.bagUsed = n.carried(Nomad.LOOTING_BAG).size();
@@ -74,6 +89,19 @@ final class Views
 
 		// ---- perils ----
 		List<View.Peril> perils = new ArrayList<>();
+		for (Store s : n.stores(Kind.FLOOR))
+		{
+			View.Peril p = new View.Peril();
+			p.kind = Kind.FLOOR;
+			p.key = s.key;
+			p.title = "On the floor, world " + s.world;
+			p.note = "Gone when its timer runs out";
+			p.worth = Items.worth(s.items, look::price);
+			p.until = s.until;
+			p.count = s.items.size();
+			perils.add(p);
+		}
+		perils.sort((a, b) -> Long.compare(a.until, b.until));
 		for (Store s : n.stores(Kind.DEATHPILE))
 		{
 			View.Peril p = new View.Peril();
@@ -184,6 +212,8 @@ final class Views
 			sv.seen = s.seen;
 			sv.exact = s.exact;
 			sv.ticksLeft = s.ticksLeft;
+			sv.until = s.until;
+			sv.world = s.world;
 			if (here != null && s.located() && s.plane == here[2])
 			{
 				sv.distance = Math.max(Math.abs(s.x - here[0]), Math.abs(s.y - here[1]));
