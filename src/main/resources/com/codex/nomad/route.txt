@@ -297,7 +297,7 @@ Questing for Combats | Complete Troll Stronghold | quest:Troll Stronghold
 Questing for Combats | Complete Making History | quest:Making History
 Questing for Combats | Complete Bone Voyage | quest:Bone Voyage
 ~ Take the Historian Minas lamps for Herblore. Clean herbs before noting them
-Questing for Combats | Unlock Barbarian Farming so you no longer need a seed dibber | varbit:9609>=1
+Questing for Combats | Unlock Barbarian Farming so you no longer need a seed dibber | varbit:9609>=3
 Questing for Combats | Complete The Golem | quest:The Golem
 Questing for Combats | Complete Shadow of the Storm, experience on Ranged | quest:Shadow of the Storm
 Questing for Combats | Complete Recipe for Disaster: Freeing Evil Dave | quest:Recipe for Disaster - Evil Dave
