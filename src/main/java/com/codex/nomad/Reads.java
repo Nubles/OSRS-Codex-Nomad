@@ -325,6 +325,19 @@ final class Reads
 	{
 	}
 
+	/** Whether a store is read from the game's counters rather than from what it said. */
+	static boolean live(String key)
+	{
+		for (Read r : ALL)
+		{
+			if (r.key.equals(key))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
 	/** The reads a changed variable touches: a varbit id, or -1 and a varp id. */
 	static List<Read> touched(int bit, int player)
 	{

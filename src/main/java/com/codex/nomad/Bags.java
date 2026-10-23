@@ -1,6 +1,8 @@
 package com.codex.nomad;
 
+import com.codex.nomad.core.Kind;
 import com.codex.nomad.core.Nomad;
+import com.codex.nomad.core.Store;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Locale;
@@ -21,9 +23,13 @@ final class Bags
 	static final String GEMS = "Gem bag";
 	static final String FISH = "Fish barrel";
 	static final String LOGS = "Log basket";
+	static final String BUCKET = "Bottomless bucket";
+	static final String MONEYBAG = "coffer:moneybag";
+	static final String SHILO = "coffer:shilo";
 
 	private static final Pattern COAL_EMPTY = Pattern.compile("^The coal bag is (?:now\\s)?empty\\.");
 	private static final Pattern COAL_HOLDS = Pattern.compile("^The coal bag (?:still\\s)?contains ([\\d]+|one) pieces? of coal\\.");
+	private static final Pattern USES = Pattern.compile("(\\d+) uses");
 	private static final Pattern ENTRY = Pattern.compile("(\\d+)\\s*[×x]\\s*([^,]+)");
 	private static final Map<String, Integer> GEM_NAMES = new HashMap<>();
 
@@ -70,6 +76,10 @@ final class Bags
 				}
 			}
 			return changed;
+		}
+		if (message.startsWith("Your bottomless compost bucket has"))
+		{
+			return compost(message, n, now);
 		}
 		if (COAL_EMPTY.matcher(message).matches())
 		{
@@ -127,6 +137,14 @@ final class Bags
 	static boolean checked(String text, Function<String, Integer> byName, Nomad n, long now)
 	{
 		String plain = text.replaceAll("<br>", " ").replaceAll("<[^>]+>", " ").replaceAll("\\s+", " ").trim();
+		if (plain.contains("compost bucket"))
+		{
+			return compost(plain, n, now);
+		}
+		if (plain.startsWith("The money bag "))
+		{
+			return coffer(MONEYBAG, "Servant's moneybag", plain, n, now);
+		}
 		String bag = plain.startsWith("The barrel") ? FISH : plain.startsWith("The basket") ? LOGS : null;
 		if (bag == null)
 		{
@@ -157,6 +175,72 @@ final class Bags
 			return false;
 		}
 		n.carry(bag, held, now);
+		return true;
+	}
+
+	/**
+	 * Reads the bottomless compost bucket from a message or the box shown on checking it: how
+	 * many uses it holds, and of which compost.
+	 */
+	static boolean compost(String text, Nomad n, long now)
+	{
+		String t = text.replace(",", "");
+		Map<Integer, Long> held = new HashMap<>();
+		if (t.contains("currently empty") || t.contains("run out") || t.startsWith("You discard"))
+		{
+			n.carry(BUCKET, held, now);
+			return true;
+		}
+		Matcher m = USES.matcher(t);
+		long uses;
+		if (m.find())
+		{
+			uses = Long.parseLong(m.group(1));
+		}
+		else if (t.contains("one use") || t.contains("single use"))
+		{
+			uses = 1;
+		}
+		else
+		{
+			return false;
+		}
+		held.put(t.contains("ultracompost") ? ItemID.BUCKET_ULTRACOMPOST
+			: t.contains("supercompost") ? ItemID.BUCKET_SUPERCOMPOST : ItemID.BUCKET_COMPOST, uses);
+		n.carry(BUCKET, held, now);
+		return true;
+	}
+
+	/** Reads the Shilo Village furnace coffer from the title of its menu: "Furnace coffer: 1,200". */
+	static boolean shilo(String title, Nomad n, long now)
+	{
+		return title != null && title.startsWith("Furnace coffer: ")
+			&& coffer(SHILO, "Shilo Village furnace coffer", title, n, now);
+	}
+
+	/** Files the coins a coffer's words give, removing the coffer once it is empty. */
+	private static boolean coffer(String key, String name, String text, Nomad n, long now)
+	{
+		String digits = text.replaceAll("<[^>]+>", "").replaceAll("\\D+", "");
+		long coins = digits.isEmpty() || digits.length() > 12 ? 0 : Long.parseLong(digits);
+		Store s = n.store(key);
+		if (coins <= 0)
+		{
+			if (s == null)
+			{
+				return false;
+			}
+			n.remove(key);
+			return true;
+		}
+		if (s == null)
+		{
+			s = new Store(key, Kind.COFFER, name);
+			n.put(s);
+		}
+		Map<Integer, Long> held = new HashMap<>();
+		held.put(ItemID.COINS, coins);
+		s.fill(held, now);
 		return true;
 	}
 }

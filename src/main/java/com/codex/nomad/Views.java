@@ -56,7 +56,8 @@ final class Views
 		net.runelite.api.gameval.ItemID.COAL_BAG_OPEN, net.runelite.api.gameval.ItemID.GEM_BAG,
 		net.runelite.api.gameval.ItemID.GEM_BAG_OPEN, net.runelite.api.gameval.ItemID.FISH_BARREL_CLOSED,
 		net.runelite.api.gameval.ItemID.FISH_BARREL_OPEN, net.runelite.api.gameval.ItemID.LOG_BASKET_CLOSED,
-		net.runelite.api.gameval.ItemID.LOG_BASKET_OPEN));
+		net.runelite.api.gameval.ItemID.LOG_BASKET_OPEN,
+		net.runelite.api.gameval.ItemID.BOTTOMLESS_COMPOST_BUCKET, net.runelite.api.gameval.ItemID.BOTTOMLESS_COMPOST_BUCKET_FILLED));
 
 	/** The bags read from what the game says, with the items that are the bag itself. */
 	private static final Map<String, int[]> HEARD = new LinkedHashMap<>();
@@ -67,6 +68,7 @@ final class Views
 		HEARD.put(Bags.COAL, new int[]{net.runelite.api.gameval.ItemID.COAL_BAG, net.runelite.api.gameval.ItemID.COAL_BAG_OPEN});
 		HEARD.put(Bags.GEMS, new int[]{net.runelite.api.gameval.ItemID.GEM_BAG, net.runelite.api.gameval.ItemID.GEM_BAG_OPEN});
 		HEARD.put(Bags.FISH, new int[]{net.runelite.api.gameval.ItemID.FISH_BARREL_CLOSED, net.runelite.api.gameval.ItemID.FISH_BARREL_OPEN});
+		HEARD.put(Bags.BUCKET, new int[]{net.runelite.api.gameval.ItemID.BOTTOMLESS_COMPOST_BUCKET, net.runelite.api.gameval.ItemID.BOTTOMLESS_COMPOST_BUCKET_FILLED});
 		HEARD.put(Bags.LOGS, new int[]{net.runelite.api.gameval.ItemID.LOG_BASKET_CLOSED, net.runelite.api.gameval.ItemID.LOG_BASKET_OPEN});
 	}
 
@@ -265,6 +267,7 @@ final class Views
 			sv.worth = Items.worth(s.items, look::price);
 			sv.seen = s.seen;
 			sv.exact = s.exact;
+			sv.live = s.kind.automatic() && Reads.live(s.key);
 			sv.ticksLeft = s.ticksLeft;
 			sv.until = s.until;
 			sv.world = s.world;

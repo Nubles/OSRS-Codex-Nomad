@@ -133,6 +133,8 @@ public final class View
 		public long worth;
 		public long seen;
 		public boolean exact = true;
+		/** Read from the game's own counters, so always current. */
+		public boolean live;
 		public int distance = -1;
 		public long ticksLeft = -1;
 		/** When dropped items vanish, epoch ms, or 0. */

@@ -648,6 +648,19 @@ public class CodexNomadPlugin extends Plugin
 	@Subscribe
 	public void onWidgetLoaded(WidgetLoaded event)
 	{
+		if (event.getGroupId() == InterfaceID.CHATMENU)
+		{
+			clientThread.invokeLater(() ->
+			{
+				Widget menu = client.getWidget(InterfaceID.Chatmenu.OPTIONS);
+				Widget title = menu == null ? null : menu.getChild(0);
+				if (nomad != null && title != null && Bags.shilo(title.getText(), nomad, System.currentTimeMillis()))
+				{
+					changed();
+				}
+			});
+			return;
+		}
 		if (event.getGroupId() != InterfaceID.OBJECTBOX)
 		{
 			return;
