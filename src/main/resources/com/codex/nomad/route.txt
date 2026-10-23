@@ -60,7 +60,7 @@ Setting up for Agility | Buy wine from Fortunato and head to the H.A.M. Hideout 
 Setting up for Agility | Pickpocket H.A.M. members for a rusty sword and an uncut opal | item:Rusty sword; item:Uncut opal; go:3164,3252,0; npc:H.A.M. Member
 Setting up for Agility | Reclaim the X Marks the Spot lamp and keep it | item:Antique lamp; go:3054,3246,0; npc:Veos
 Setting up for Agility | Buy cheese, raw beef, raw chicken and cheap food from Wydin | item:Cheese; item:Raw beef; item:Raw chicken; go:3014,3204,0; npc:Wydin
-Setting up for Agility | Safespot a giant rat for raw rat meat, then drop the bow and arrows | item:Raw rat meat
+Setting up for Agility | Safespot a giant rat for raw rat meat, then drop the bow and arrows | item:Raw rat meat; npc:Giant rat
 Setting up for Agility | Boat to Ardougne, safespot and poison a bear for raw bear meat | item:Raw bear meat
 Setting up for Agility | Boat back to Rimmington and pick snape grass west of the Crafting Guild | item:Snape grass; ground:Snape grass
 Setting up for Agility | Complete Druidic Ritual | quest:Druidic Ritual
@@ -72,7 +72,7 @@ Setting up for Agility | Fishing Trawler teleport: view Aleck's Hunter Emporium 
 Setting up for Agility | Play a Fishing Trawler game for the diary (no need to finish) | go:2675,3170,0; obj:4977; varp:1196&5
 Setting up for Agility | Steal a silk in Ardougne and keep it | item:Silk; go:2662,3314,0
 Setting up for Agility | Ardougne diary: Wizard Cromperty's teleport, Probita's pets, the church altar | go:2683,3326,0; npc:Wizard Cromperty; varp:1196&0; varp:1196&12; varp:1196&4
-Setting up for Agility | Buy a rope at the general store | item:Rope
+Setting up for Agility | Buy a rope at the general store | item:Rope; go:2614,3292,0; npc:Aemad
 Setting up for Agility | Buy dwellberries, chocolate dust and a bucket of milk from Hudo in the Grand Tree | item:Dwellberries; item:Chocolate dust; item:Bucket of milk; go:2449,3510,0; npc:Hudo
 Setting up for Agility | Complete Plague City | quest:Plague City
 Setting up for Agility | Sell the silk to the silk trader for 60 coins, and steal some cakes | gone:Silk; go:2655,3300,0; npc:Silk trader; obj:11730
@@ -93,7 +93,7 @@ Setting up for Agility | Start Dragon Slayer I for an anti-dragon shield | item:
 Wilderness Agility | Collect 160k coins at the Agility Pyramid to start | coins:160000; go:3347,2827,0; obj:10857
 ~ Optional instead: get the Rogue outfit and earn coins with Thieving
 ~ Watch the wiki's tanking video, at least the skeleton section
-Wilderness Agility | Buy cooked karambwans at the Shrimp and Parrot for the first trip | item:Cooked karambwan
+Wilderness Agility | Buy cooked karambwans at the Shrimp and Parrot for the first trip | item:Cooked karambwan; go:2789,3183,0; npc:Alfonse the Waiter
 Wilderness Agility | Run the Wilderness Agility Course: about 50 laps on the first trip | chat:Wilderness Agility lap count; go:2997,3916,0
 ~ Paying the 150k fee hands you a looting bag. Use blighted supplies on later trips
 Wilderness Agility | Sell loot to Martin Thwait's Lost and Found after each trip, 2-3 per world | go:2905,3537,0; npc:Martin Thwait
@@ -124,9 +124,9 @@ MTA and Protect Melee | Clan Wars teleport for your coins and buy the Varrock ru
 MTA and Protect Melee | Complete Daddy's Home | quest:Daddy's Home
 MTA and Protect Melee | Make planks from Lumberyard logs and finish two beginner Mahogany Homes contracts | go:3240,3471,0; npc:Marlo; npc:Sawmill operator
 MTA and Protect Melee | Reclaim Ardougne cloak 1 for its teleport | item:Ardougne cloak 1; go:2574,3323,0; npc:Two-pints
-MTA and Protect Melee | Get a banana hat | item:Banana hat
+MTA and Protect Melee | Get a banana hat | item:Banana hat; go:3081,3250,0; npc:Diango
 MTA and Protect Melee | Take the boots of lightness in the Temple of Ikov | item:Boots of lightness; go:2676,3404,0
-MTA and Protect Melee | Buy cakes in Ardougne, plus a rope and an iron axe | item:Rope; item:Iron axe
+MTA and Protect Melee | Buy cakes in Ardougne, plus a rope and an iron axe | item:Rope; item:Iron axe; go:2614,3292,0; npc:Aemad; obj:11730
 MTA and Protect Melee | Skip the Barbarian Assault tutorial and start Alfred Grimhand's Barcrawl | started:Alfred Grimhand's Barcrawl; go:2531,3569,0; npc:Captain Cain; npc:Barbarian guard
 MTA and Protect Melee | Work through Waterfall Quest up to the maze and pebble | item:Glarial's pebble
 MTA and Protect Melee | Complete Tree Gnome Village | quest:Tree Gnome Village; npc:King Bolren
@@ -138,7 +138,7 @@ MTA and Protect Melee | Complete the Natural History Quiz | go:3256,3449,0; npc:
 MTA and Protect Melee | Buy a noose wand in Yanille and hunt feldip weasels for 4 furs | item:Noose wand; item:Feldip weasel fur; go:2557,2912,0
 MTA and Protect Melee | Make jungle camo at the Varrock Fancy Clothes Store | item:Jungle camo top; item:Jungle camo legs; go:3281,3398,0; npc:Asyff
 MTA and Protect Melee | Complete Priest in Peril | quest:Priest in Peril
-MTA and Protect Melee | Buy an adamant sword in Varrock | item:Adamant sword
+MTA and Protect Melee | Buy an adamant sword in Varrock | item:Adamant sword; go:3204,3398,0; npc:Shop keeper
 MTA and Protect Melee | Walk briefly into Morytania | area:3400,3150,3900,3620,0; go:3423,3485,0
 MTA and Protect Melee | Complete Alfred Grimhand's Barcrawl | quest:Alfred Grimhand's Barcrawl; npc:Barbarian guard
 MTA and Protect Melee | Complete Scorpion Catcher | quest:Scorpion Catcher
@@ -162,7 +162,7 @@ Tempoross Setup | Complete The Knight's Sword | quest:The Knight's Sword
 ~ The pie dish is in the Varrock kitchen after Reldo; iron bars spawn at the Sunset Coast docks
 Tempoross Setup | Complete Black Knights' Fortress | quest:Black Knights' Fortress
 Tempoross Setup | Complete Sleeping Giants | quest:Sleeping Giants
-Tempoross Setup | Get a forestry kit and do Forestry events on world 444 from now on | item:Forestry kit
+Tempoross Setup | Get a forestry kit and do Forestry events on world 444 from now on | item:Forestry kit; go:3095,3245,0; npc:Friendly Forester
 ~ Keep every leaf in the kit
 Tempoross Setup | Start The Giant Dwarf for Keldagrim | started:The Giant Dwarf
 Tempoross Setup | Smith an inventory of steel bars at the Blast Furnace | item:Steel bar; go:1940,4963,0; obj:9100
@@ -221,7 +221,7 @@ Wintertodt | Complete Tears of Guthix | quest:Tears of Guthix
 Wintertodt | Drink the tears for Sailing experience (30 at least) | skill:Sailing 30; npc:Juna
 ~ Sailing is optional for the route but helps in a few places
 Wintertodt | Complete Vale Totems for the fletching knife with maple logs | quest:Vale Totems
-Wintertodt | Get a log basket from Forestry | item:Log basket
+Wintertodt | Get a log basket from Forestry | item:Log basket; npc:Friendly Forester
 ~ A UIM can hand the Forester logs an inventory at a time; no noted logs needed
 ~ Optional: knock out 50 Crafting with the flax here
 Wintertodt | Train Wintertodt to 50 Construction from the braziers | skill:Construction 50; go:1630,3962,0; obj:29322
@@ -229,12 +229,12 @@ Wintertodt | Train Wintertodt to 50 Construction from the braziers | skill:Const
 ~ Or get 50 Construction from Mahogany Homes instead: you only need some magic logs, uncut diamonds and the points
 Wintertodt | At 38 Construction, break off and complete Scrambled! | quest:Scrambled!
 ~ Do not loot the reward cart yet
-Smithing and Renovation | Retrieve your coins and buy a few teleport runes |
+Smithing and Renovation | Retrieve your coins and buy a few teleport runes | | go:3304,3211,0; npc:Ali Morrisane
 Smithing and Renovation | Reach 60 Woodcutting and 5,000 anima-infused bark | skill:Woodcutting 60
-Smithing and Renovation | Buy a log basket if you still lack one | item:Log basket
+Smithing and Renovation | Buy a log basket if you still lack one | item:Log basket; npc:Friendly Forester
 Smithing and Renovation | Build an oak magic wardrobe and oak armour case | built:18784-18795; built:18778-18783; go:house
 Smithing and Renovation | Store the log basket, forestry kit and jungle camo in your house | gone:Log basket; gone:Forestry kit; gone:Jungle camo top; gone:Jungle camo legs; go:house
-Smithing and Renovation | Buy a Chronicle with charges | item:Chronicle
+Smithing and Renovation | Buy a Chronicle with charges | item:Chronicle; go:3081,3250,0; npc:Diango
 Smithing and Renovation | Buy pickaxes up to rune at Nurmof's and mine to 52 Mining | skill:Mining 52; npc:Nurmof
 Smithing and Renovation | Kill the Ice Queen with fire blast for ice gloves | item:Ice gloves; go:2846,3516,0; npc:Ice Queen
 Smithing and Renovation | Train Giant's Foundry to 70 Smithing with only coins, ice gloves and the Chronicle | skill:Smithing 70; go:3360,3150,0; obj:44635
@@ -273,7 +273,7 @@ Farming and Building | Buy the seed box and auto-weed | item:Seed box; go:1796,3
 ~ Keep guam, marrentill and harralander seeds for quests; save the extra points
 Farming and Building | Make a games necklace and ring of dueling, then loot Wintertodt into your looting bag | item:Looting bag; go:1630,3962,0
 ~ Keep herbs, seeds, gems, magic logs and burnt pages (teak logs optional); drop ores, other logs, fish and the rest
-Farming and Building | Buy a few thousand air runes and drop the staff of air | gone:Staff of air; item:Air rune
+Farming and Building | Buy a few thousand air runes and drop the staff of air | gone:Staff of air; item:Air rune; go:3304,3211,0; npc:Ali Morrisane
 Farming and Building | Fill the rune pouch with air, earth and law runes | item:Rune pouch; item:Air rune; item:Earth rune; item:Law rune; use:Rune pouch
 Farming and Building | Deathbank at the Nightmare | deathbank; go:3727,3300,0
 ~ Tithe Farm teleport home, then the Fenkenstrain's Castle portal back. Optional: train 70 Cooking now
@@ -282,7 +282,7 @@ Farming and Building | From the deathbank take guams, uncut sapphires, emeralds,
 Farming and Building | Cut and sell the sapphires and emeralds; give the rubies to the Museum Curator | go:3257,3448,0; npc:Curator Haig Halen; use:Chisel
 Farming and Building | Make the guams into attack potions and drop them | use:Guam leaf
 Farming and Building | Blow glass in Port Phasmatys to 50 Crafting | skill:Crafting 50; go:3687,3467,0; use:Glassblowing pipe
-Farming and Building | Take your Construction kit from the deathbank and buy a rune axe from Perry | item:Rune axe
+Farming and Building | Take your Construction kit from the deathbank and buy a rune axe from Perry | item:Rune axe; npc:Perry
 Farming and Building | Train teak Mahogany Homes to 82 Construction | skill:Construction 82; go:1780,3623,0; npc:Angelo
 ~ Buy a plank sack, then Amy's saw. Watch for the aggressive ghouls at the Salve Graveyard teleport
 Farming and Building | Build teak shelves 2, an achievement gallery and a basic jewellery box | go:house; built:29154-29156
@@ -314,7 +314,7 @@ Questing for Combats | Complete Zogre Flesh Eaters | quest:Zogre Flesh Eaters
 Questing for Combats | Complete Monkey Madness I, training Strength with Daero after | quest:Monkey Madness I
 ~ Leave a second ninja greegree with Zooknock for Monkey Madness II
 Questing for Combats | Complete Recipe for Disaster: Freeing King Awowogei | quest:Recipe for Disaster - King Awowogei
-Questing for Combats | Buy a dragon scimitar from Daga | item:Dragon scimitar
+Questing for Combats | Buy a dragon scimitar from Daga | item:Dragon scimitar; npc:Daga
 Questing for Combats | Complete Dragon Slayer I | quest:Dragon Slayer I
 Questing for Combats | Complete Heroes' Quest | quest:Heroes' Quest
 Questing for Combats | Complete Icthlarin's Little Helper | quest:Icthlarin's Little Helper
