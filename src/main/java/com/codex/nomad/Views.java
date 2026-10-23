@@ -42,7 +42,16 @@ final class Views
 		net.runelite.api.gameval.ItemID.LOOTING_BAG, net.runelite.api.gameval.ItemID.LOOTING_BAG_OPEN,
 		net.runelite.api.gameval.ItemID.BH_RUNE_POUCH, net.runelite.api.gameval.ItemID.BH_RUNE_POUCH_TROUVER,
 		net.runelite.api.gameval.ItemID.DIVINE_RUNE_POUCH, net.runelite.api.gameval.ItemID.DIVINE_RUNE_POUCH_TROUVER,
-		net.runelite.api.gameval.ItemID.COINS));
+		net.runelite.api.gameval.ItemID.COINS, net.runelite.api.gameval.ItemID.SLAYER_HERB_SACK,
+		net.runelite.api.gameval.ItemID.SLAYER_HERB_SACK_OPEN, net.runelite.api.gameval.ItemID.SEED_BOX,
+		net.runelite.api.gameval.ItemID.SEED_BOX_OPEN, net.runelite.api.gameval.ItemID.TACKLE_BOX,
+		net.runelite.api.gameval.ItemID.HUNTSMANS_KIT, net.runelite.api.gameval.ItemID.FORESTRY_KIT,
+		net.runelite.api.gameval.ItemID.PLANK_SACK, net.runelite.api.gameval.ItemID.XBOWS_BOLT_POUCH,
+		net.runelite.api.gameval.ItemID.BOOKOFSCROLLS_CHARGED, net.runelite.api.gameval.ItemID.BOOKOFSCROLLS_EMPTY,
+		net.runelite.api.gameval.ItemID.BOWSTRING_SPOOL, net.runelite.api.gameval.ItemID.MM_PREPOT_DEVICE,
+		net.runelite.api.gameval.ItemID.RCU_POUCH_SMALL, net.runelite.api.gameval.ItemID.RCU_POUCH_MEDIUM,
+		net.runelite.api.gameval.ItemID.RCU_POUCH_LARGE, net.runelite.api.gameval.ItemID.RCU_POUCH_GIANT,
+		net.runelite.api.gameval.ItemID.RCU_POUCH_COLOSSAL));
 
 	private Views()
 	{
