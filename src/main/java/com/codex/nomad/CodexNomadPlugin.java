@@ -409,6 +409,59 @@ public class CodexNomadPlugin extends Plugin
 		{
 			clientThread.invokeLater(this::publish);
 		}
+		if (com.codex.nomad.core.Kits.GROUP.equals(event.getGroup()) && com.codex.nomad.core.Kits.KEY.equals(event.getKey()))
+		{
+			clientThread.invokeLater(this::importKits);
+		}
+	}
+
+	/** Brings Codex Quartermaster's kits in as packing lists, and lets go of ones it no longer has. */
+	private void importKits()
+	{
+		if (nomad == null || profile == null)
+		{
+			return;
+		}
+		String json = configManager.getConfiguration(com.codex.nomad.core.Kits.GROUP, profile, com.codex.nomad.core.Kits.KEY);
+		List<Trip> kits = com.codex.nomad.core.Kits.read(json, nomad.holdings(), this::name);
+		boolean changedAny = false;
+		for (String gone : com.codex.nomad.core.Kits.stale(nomad.trips(), kits))
+		{
+			nomad.forget(gone);
+			changedAny = true;
+		}
+		for (Trip t : kits)
+		{
+			Trip had = nomad.trip(t.name);
+			if (had == null || !sameWants(had, t))
+			{
+				t.made = System.currentTimeMillis();
+				nomad.save(t);
+				changedAny = true;
+			}
+		}
+		if (changedAny)
+		{
+			changed();
+		}
+	}
+
+	private static boolean sameWants(Trip a, Trip b)
+	{
+		if (a.wants.size() != b.wants.size())
+		{
+			return false;
+		}
+		for (int i = 0; i < a.wants.size(); i++)
+		{
+			Trip.Want x = a.wants.get(i);
+			Trip.Want y = b.wants.get(i);
+			if (x.item != y.item || x.qty != y.qty || x.worn != y.worn)
+			{
+				return false;
+			}
+		}
+		return true;
 	}
 
 	@Subscribe
@@ -646,6 +699,7 @@ public class CodexNomadPlugin extends Plugin
 
 	private void readAll()
 	{
+		importKits();
 		for (Reads.Read r : Reads.ALL)
 		{
 			apply(r);
