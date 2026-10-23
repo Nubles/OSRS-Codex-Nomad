@@ -190,6 +190,8 @@ public class CodexNomadPlugin extends Plugin
 	private WorldPoint errand;
 	private boolean errandUrgent;
 	private int lastRegion = -1;
+	/** The words last read from the dialogue and message boxes, so each is read once. */
+	private String lastShown = "";
 	private final List<WorldMapPoint> mapPoints = new ArrayList<>();
 	private final Map<Integer, String> names = new HashMap<>();
 	private final Set<String> warned = new HashSet<>();
@@ -775,6 +777,43 @@ public class CodexNomadPlugin extends Plugin
 		}
 	}
 
+	/** Reads what a dialogue or message box says about a place that keeps things. */
+	private void readShown(long now)
+	{
+		StringBuilder shown = new StringBuilder();
+		for (int id : new int[]{InterfaceID.ChatLeft.TEXT, InterfaceID.Messagebox.TEXT, InterfaceID.Objectbox.TEXT})
+		{
+			Widget w = client.getWidget(id);
+			if (w != null && !w.isHidden() && w.getText() != null)
+			{
+				shown.append(w.getText()).append('\n');
+			}
+		}
+		String text = shown.toString();
+		if (text.equals(lastShown))
+		{
+			return;
+		}
+		lastShown = text;
+		boolean any = false;
+		for (String part : text.split("\n"))
+		{
+			any |= Sayings.shown(part, gained, nomad, now);
+		}
+		if (any)
+		{
+			changed();
+		}
+	}
+
+	/** The item in the weapon slot, or -1. */
+	private int weapon()
+	{
+		ItemContainer worn = client.getItemContainer(InventoryID.WORN);
+		Item w = worn == null ? null : worn.getItem(net.runelite.api.EquipmentInventorySlot.WEAPON.getSlotIdx());
+		return w == null ? -1 : w.getId();
+	}
+
 	/** Reads the compost bin nearby, if the game is telling us about one here. */
 	private void readBin()
 	{
@@ -1041,7 +1080,8 @@ public class CodexNomadPlugin extends Plugin
 		}
 		String message = Text.removeTags(event.getMessage());
 		guide.heard(message);
-		if (herbSack.heard(message, nomad, System.currentTimeMillis()) | Bags.heard(message, nomad, System.currentTimeMillis()))
+		if (herbSack.heard(message, nomad, System.currentTimeMillis()) | Bags.heard(message, nomad, System.currentTimeMillis())
+			| Sayings.heard(message, weapon(), this::itemNamed, nomad, System.currentTimeMillis()))
 		{
 			changed();
 		}
@@ -1156,6 +1196,7 @@ public class CodexNomadPlugin extends Plugin
 		{
 			changed();
 		}
+		readShown(nowMs);
 		gained.clear();
 		removedBefore.clear();
 		removedBefore.putAll(removed);
