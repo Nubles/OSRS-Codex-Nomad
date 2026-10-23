@@ -50,6 +50,20 @@ class Clicks extends Overlay
 				fetch(g, root, job.take, 0);
 			}
 		}
+		if (job != null && job.kind == Errand.Kind.UNNOTE)
+		{
+			Widget inv = client.getWidget(InterfaceID.Inventory.ITEMS);
+			if (inv != null && !inv.isHidden() && inv.getDynamicChildren() != null)
+			{
+				for (Widget w : inv.getDynamicChildren())
+				{
+					if (w.getItemId() > 0 && !w.isHidden() && job.take.contains(w.getItemId()))
+					{
+						mark(g, w.getBounds());
+					}
+				}
+			}
+		}
 		com.codex.nomad.core.Route.Lead l = guide.lead();
 		if (l.isEmpty())
 		{

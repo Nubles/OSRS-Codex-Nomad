@@ -93,6 +93,17 @@ class Highlights extends Overlay
 					OverlayUtil.renderTextLocation(g, at, words, Theme.TEAL);
 				}
 			}
+			if (job.npc != null)
+			{
+				for (NPC npc : client.getTopLevelWorldView().npcs())
+				{
+					if (job.npc.equalsIgnoreCase(npc.getName()))
+					{
+						outlines.drawOutline(npc, 2, Theme.TEAL, 4);
+						label(g, npc.getCanvasTextLocation(g, "Use the notes", npc.getLogicalHeight() + 40), "Use the notes");
+					}
+				}
+			}
 			if (job.kind == Errand.Kind.PILE && job.where != null)
 			{
 				pile(g, job);

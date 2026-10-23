@@ -7,6 +7,7 @@ import com.codex.nomad.core.Items;
 import com.codex.nomad.core.Kind;
 import com.codex.nomad.core.LootingBag;
 import com.codex.nomad.core.Nomad;
+import com.codex.nomad.core.Notary;
 import com.codex.nomad.core.Route;
 import com.codex.nomad.core.StashBook;
 import com.codex.nomad.core.Store;
@@ -1812,7 +1813,12 @@ public class CodexNomadPlugin extends Plugin
 		}
 		Trip t = nomad.activeTrip();
 		Fetch f = t == null ? null : Views.plan(nomad, t, lookup(), here);
+		Errand was = job;
 		job = errand(urgent, f);
+		if (t != null && job == null && was != null && (was.kind == Errand.Kind.FETCH || was.kind == Errand.Kind.UNNOTE))
+		{
+			say("Everything for " + t.name + " is packed.");
+		}
 		if (job != null && job.kind == Errand.Kind.FETCH && job.where != null)
 		{
 			marks.add(new Marker.Mark(job.where, "Nomad: " + f.next().store.name, Theme.TEAL));
@@ -1881,6 +1887,10 @@ public class CodexNomadPlugin extends Plugin
 			return new Errand(Errand.Kind.DEATHBANK, "reclaim your deathbank", text, null, null, null, -1, null);
 		}
 		Fetch.Stop next = f == null ? null : f.next();
+		if (next == null && f != null)
+		{
+			return unnote(f.trip);
+		}
 		if (next == null || next.store.kind == Kind.DEATHPILE)
 		{
 			return null;
@@ -1910,6 +1920,55 @@ public class CodexNomadPlugin extends Plugin
 		String what = names.size() > 3 ? String.join(", ", names.subList(0, 3)) + " and " + (names.size() - 3) + " more" : String.join(", ", names);
 		return new Errand(Errand.Kind.FETCH, s.name + " for " + f.trip.name, verb + what,
 			s.located() ? new WorldPoint(s.x, s.y, s.plane) : null, take, null, object, furniture);
+	}
+
+	/**
+	 * Once everything for a trip is carried, the last step: turn the banknotes it needs back into
+	 * items at the nearest merchant who will, such as Phials. Null when nothing needs unnoting.
+	 */
+	private Errand unnote(Trip t)
+	{
+		Map<Integer, Long> inv = nomad.carried(Nomad.INVENTORY);
+		int[] here = here();
+		List<String> names = new ArrayList<>();
+		Set<Integer> notesToUse = new HashSet<>();
+		Notary.Desk desk = null;
+		for (Trip.Want w : t.wants)
+		{
+			if (w.worn)
+			{
+				continue;
+			}
+			ItemComposition c = itemManager.getItemComposition(w.item);
+			int noted = c == null ? -1 : c.getLinkedNoteId();
+			long loose = inv.getOrDefault(w.item, 0L);
+			long notes = noted > 0 ? inv.getOrDefault(noted, 0L) : 0;
+			if (loose >= w.qty || notes <= 0 || c == null || c.getNote() != -1)
+			{
+				continue;
+			}
+			List<Notary.Desk> desks = Notary.desks(c.getName(), Notary.Way.UNNOTE, here);
+			Notary.Desk d = desks.isEmpty() ? null : desks.get(0);
+			if (d == null || d.plane < 0 || d.wilderness)
+			{
+				continue;
+			}
+			desk = desk == null ? d : desk;
+			if (d == desk)
+			{
+				names.add(Math.min(w.qty - loose, notes) + " " + c.getName());
+				notesToUse.add(noted);
+			}
+		}
+		if (desk == null)
+		{
+			return null;
+		}
+		Errand e = new Errand(Errand.Kind.UNNOTE, "unnote at " + desk.who + " for " + t.name,
+			"Use the notes on " + desk.who + ": " + String.join(", ", names) + (desk.fee > 0 ? " (" + desk.fee + " gp each)" : ""),
+			new WorldPoint(desk.x, desk.y, desk.plane), notesToUse, null, -1, null);
+		e.npc = desk.who;
+		return e;
 	}
 
 	/** Looks over the player's floor of the scene for the STASH unit or furniture the errand needs. */

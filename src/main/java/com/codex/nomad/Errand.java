@@ -15,7 +15,7 @@ final class Errand
 {
 	enum Kind
 	{
-		PILE, DEATHBANK, FETCH
+		PILE, DEATHBANK, FETCH, UNNOTE
 	}
 
 	final Kind kind;
@@ -33,6 +33,8 @@ final class Errand
 	final int object;
 	/** A house furniture name to outline, such as "Armour case", or null. */
 	final String furniture;
+	/** A person to outline, by name, such as "Phials", or null. */
+	String npc;
 
 	Errand(Kind kind, String title, String text, WorldPoint where, Set<Integer> take, List<Integer> order, int object, String furniture)
 	{
