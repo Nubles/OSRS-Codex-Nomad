@@ -232,6 +232,29 @@ public class CoreTest
 	}
 
 	@Test
+	public void potionsCountDoseForDose()
+	{
+		Map<Integer, String> names = new HashMap<>();
+		names.put(3024, "Super restore(4)");
+		names.put(3026, "Super restore(3)");
+		names.put(3028, "Super restore(2)");
+		names.put(385, "Shark");
+		Trip t = new Trip("Vorkath", 0);
+		t.wants.add(new Trip.Want(3024, "Super restore(4)", 3, false));
+		Store vault = new Store("stash:x", Kind.STASH, "Somewhere");
+		vault.items = items(3028, 5);
+		// Carrying one (4) and two (3): 10 doses of the 12 wanted; one (2) from the store makes it.
+		Fetch f = Fetch.plan(t, items(3024, 1, 3026, 2, 385, 1), new HashMap<>(), Arrays.asList(vault),
+			id -> id, id -> false, null, id -> false, names::get);
+		Fetch.Line line = f.lines().get(0);
+		assertEquals(2, line.have);
+		assertEquals(0, line.missing);
+		assertEquals(Long.valueOf(1), f.stops.get(0).take.get(3028));
+		assertFalse(f.extra.containsKey(3026));
+		assertTrue(f.extra.containsKey(385));
+	}
+
+	@Test
 	public void diaryTasksAreReadBitByBit()
 	{
 		Route r = Route.parse(java.util.Arrays.asList("A | Play Fishing Trawler | varp:1196&5; varp:1196 & 0"));

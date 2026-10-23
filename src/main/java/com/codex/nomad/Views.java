@@ -309,7 +309,7 @@ final class Views
 		Items.add(pocket, pouch);
 		Map<Integer, Long> bag = Items.canon(n.carried(Nomad.LOOTING_BAG), look::canon);
 		return Fetch.plan(trip, pocket, bag, n.stores(), look::canon, look::stackable, here,
-			id -> CONTAINERS.contains(id) || pouch.containsKey(id));
+			id -> CONTAINERS.contains(id) || pouch.containsKey(id), look::name);
 	}
 
 	private static View.FetchView fetch(Nomad n, Trip trip, Lookup look, int[] here)

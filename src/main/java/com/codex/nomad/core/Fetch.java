@@ -5,6 +5,9 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.function.IntFunction;
 import java.util.function.IntPredicate;
 import java.util.function.IntUnaryOperator;
 
@@ -101,6 +104,27 @@ public final class Fetch
 	public static Fetch plan(Trip trip, Map<Integer, Long> pocket, Map<Integer, Long> bag, List<Store> stores,
 		IntUnaryOperator canon, IntPredicate stackable, int[] here, IntPredicate always)
 	{
+		return plan(trip, pocket, bag, stores, canon, stackable, here, always, null);
+	}
+
+	/** "Super restore(3)": the potion or jewellery and how many doses or charges it holds. */
+	private static final Pattern USES = Pattern.compile("^(.+)\\((\\d)\\)$");
+
+	/** The name without its doses or charges, and how many it holds, or null. */
+	static Object[] uses(IntFunction<String> name, int id)
+	{
+		String n = name == null ? null : name.apply(id);
+		Matcher m = n == null ? null : USES.matcher(n);
+		return m != null && m.matches() ? new Object[]{m.group(1).trim(), Integer.parseInt(m.group(2))} : null;
+	}
+
+	/**
+	 * As above; with item names, a potion or charged jewellery wanted at one dose count is met by
+	 * the same thing at any other, dose for dose: four super restore(3) stand in for three (4).
+	 */
+	public static Fetch plan(Trip trip, Map<Integer, Long> pocket, Map<Integer, Long> bag, List<Store> stores,
+		IntUnaryOperator canon, IntPredicate stackable, int[] here, IntPredicate always, IntFunction<String> name)
+	{
 		Fetch f = new Fetch(trip);
 		List<Store> order = new ArrayList<>();
 		Map<Store, Map<Integer, Long>> left = new LinkedHashMap<>();
@@ -164,6 +188,59 @@ public final class Fetch
 					need -= n;
 				}
 			}
+			Object[] wantUses = need > 0 ? uses(name, w.item) : null;
+			if (wantUses != null && (int) wantUses[1] > 0)
+			{
+				int each = (int) wantUses[1];
+				long doses = need * each;
+				// Carried first: other dose counts in the pack count as had.
+				for (Map.Entry<Integer, Long> e : pocket.entrySet())
+				{
+					Object[] u = e.getKey() == w.item || doses <= 0 ? null : uses(name, e.getKey());
+					if (u == null || !u[0].equals(wantUses[0]) || (int) u[1] <= 0)
+					{
+						continue;
+					}
+					long free = e.getValue() - wanted.getOrDefault(e.getKey(), 0L);
+					long k = Math.min(free, (doses + (int) u[1] - 1) / (int) u[1]);
+					if (k > 0)
+					{
+						wanted.merge(e.getKey(), k, Long::sum);
+						doses -= k * (int) u[1];
+					}
+				}
+				long fromPocket = need - Math.max(0, (doses + each - 1) / each);
+				line.have = Math.min(w.qty, line.have + fromPocket);
+				for (Store st : order)
+				{
+					if (doses <= 0)
+					{
+						break;
+					}
+					Map<Integer, Long> there = left.get(st);
+					for (Map.Entry<Integer, Long> e : new ArrayList<>(there.entrySet()))
+					{
+						Object[] u = e.getKey() == w.item || doses <= 0 ? null : uses(name, e.getKey());
+						if (u == null || !u[0].equals(wantUses[0]) || (int) u[1] <= 0 || e.getValue() <= 0)
+						{
+							continue;
+						}
+						long k = Math.min(e.getValue(), (doses + (int) u[1] - 1) / (int) u[1]);
+						there.put(e.getKey(), e.getValue() - k);
+						doses -= k * (int) u[1];
+						line.from.merge(st.key, k, Long::sum);
+						Stop stop = byStore.computeIfAbsent(st, x ->
+						{
+							Stop sp = new Stop();
+							sp.store = x;
+							sp.distance = distance.get(x);
+							return sp;
+						});
+						stop.take.merge(e.getKey(), k, Long::sum);
+					}
+				}
+				need = Math.max(0, (doses + each - 1) / each);
+			}
 			if (need > 0)
 			{
 				line.bagged = Math.min(need, bag.getOrDefault(w.item, 0L));
@@ -194,7 +271,7 @@ public final class Fetch
 		for (Map.Entry<Integer, Long> e : pocket.entrySet())
 		{
 			long beyond = e.getValue() - wanted.getOrDefault(e.getKey(), 0L);
-			boolean listed = false;
+			boolean listed = wanted.getOrDefault(e.getKey(), 0L) > 0;
 			for (Trip.Want w : trip.wants)
 			{
 				listed |= w.item == e.getKey();
