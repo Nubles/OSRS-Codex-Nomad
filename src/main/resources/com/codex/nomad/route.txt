@@ -332,7 +332,7 @@ Barrows Gloves | Complete the easy Karamja diary | varbit:3578
 Barrows Gloves | Complete Shilo Village | quest:Shilo Village
 Barrows Gloves | Complete One Small Favour | quest:One Small Favour
 Barrows Gloves | Move your house to Taverley and deathbank at Hespori | house:2; deathbank; go:1231,3729,0; say:move my house; say:Taverley
-Barrows Gloves | Play the Rogues' Den for the full Rogue equipment, storing pieces at home | go:2905,3537,0; npc:Brian O'Richard
+Barrows Gloves | Play the Rogues' Den for the full Rogue equipment, storing pieces at home | go:2905,3537,0; npc:Brian O'Richard; owned:Rogue mask; owned:Rogue top; owned:Rogue trousers; owned:Rogue gloves; owned:Rogue boots
 Barrows Gloves | Get a fighter torso while still deathbanked | item:Fighter torso; go:2531,3569,0; npc:Captain Cain
 ~ Leave the rune pouch in the deathbank: it cannot come in
 Barrows Gloves | Make prayer potions from your ranarrs at the Grand Exchange and note them | use:Ranarr potion (unf); use:Snape grass
@@ -373,7 +373,7 @@ Guardians of the Rift | Complete the easy Varrock diary and keep the armour | va
 Guardians of the Rift | Deathbank and play Guardians of the Rift to 65 Runecraft | skill:Runecraft 65; go:3104,9571,0; obj:43700
 ~ At 50, search for a large pouch and 25+ pearls. Hope for a catalytic talisman
 Guardians of the Rift | Complete Mourning's End Part II | quest:Mourning's End Part II
-Guardians of the Rift | Finish the full Raiments of the Eye set | obj:43700
+Guardians of the Rift | Finish the full Raiments of the Eye set | obj:43700; owned:Hat of the eye; owned:Robe top of the eye; owned:Robe bottoms of the eye; owned:Boots of the eye
 ~ The abyssal lantern now stores in your house. Put a catalytic talisman on the hat if you have one
 Slayer | Complete Ghosts Ahoy | quest:Ghosts Ahoy
 ~ Alch your nature runes away as you go
