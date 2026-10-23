@@ -15,7 +15,7 @@ final class Errand
 {
 	enum Kind
 	{
-		PILE, DEATHBANK, FETCH, UNNOTE
+		PILE, DEATHBANK, FETCH, UNNOTE, STASH_AWAY
 	}
 
 	final Kind kind;

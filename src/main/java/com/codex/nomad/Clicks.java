@@ -64,14 +64,14 @@ class Clicks extends Overlay
 				fetch(g, root, want, 0);
 			}
 		}
-		if (job != null && job.kind == Errand.Kind.UNNOTE)
+		if (job != null && (job.kind == Errand.Kind.UNNOTE || job.kind == Errand.Kind.STASH_AWAY))
 		{
 			Widget inv = client.getWidget(InterfaceID.Inventory.ITEMS);
 			if (inv != null && !inv.isHidden() && inv.getDynamicChildren() != null)
 			{
 				for (Widget w : inv.getDynamicChildren())
 				{
-					if (w.getItemId() > 0 && !w.isHidden() && job.take.contains(w.getItemId()))
+					if (w.getItemId() > 0 && !w.isHidden() && job.take.contains(job.kind == Errand.Kind.UNNOTE ? w.getItemId() : canon.applyAsInt(w.getItemId())))
 					{
 						mark(g, w.getBounds());
 					}

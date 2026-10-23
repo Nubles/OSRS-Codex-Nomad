@@ -86,7 +86,7 @@ class Highlights extends Overlay
 			for (TileObject o : errandObjects.get())
 			{
 				outlines.drawOutline(o, 2, Theme.TEAL, 4);
-				String words = job.kind == Errand.Kind.FETCH && job.object > 0 ? "Search" : "Take from here";
+				String words = job.kind == Errand.Kind.STASH_AWAY ? "Deposit" : job.kind == Errand.Kind.FETCH && job.object > 0 ? "Search" : "Take from here";
 				Point at = o.getCanvasTextLocation(g, words, 150);
 				if (at != null)
 				{

@@ -1873,7 +1873,7 @@ public class CodexNomadPlugin extends Plugin
 		if (job != null && config.pointer())
 		{
 			errand = job.where;
-			errandUrgent = job.where != null;
+			errandUrgent = job.where != null && job.kind != Errand.Kind.STASH_AWAY;
 		}
 		if (job != null && config.plaque())
 		{
@@ -1935,6 +1935,10 @@ public class CodexNomadPlugin extends Plugin
 		if (next == null && f != null)
 		{
 			return unnote(f.trip);
+		}
+		if (f == null)
+		{
+			return stashAway();
 		}
 		if (next == null || next.store.kind == Kind.DEATHPILE)
 		{
@@ -2014,6 +2018,88 @@ public class CodexNomadPlugin extends Plugin
 			new WorldPoint(desk.x, desk.y, desk.plane), notesToUse, null, -1, null);
 		e.npc = desk.who;
 		return e;
+	}
+
+	/**
+	 * With no packing list to fetch: a full set of emote clue items carried for a STASH unit that is
+	 * not yet filled. The game takes only the whole set at once, into a unit already built.
+	 */
+	private Errand stashAway()
+	{
+		Map<Integer, Long> carried = new HashMap<>();
+		for (Map.Entry<Integer, Long> e : nomad.carried(Nomad.INVENTORY).entrySet())
+		{
+			carried.merge(itemManager.canonicalize(e.getKey()), e.getValue(), Long::sum);
+		}
+		for (Map.Entry<Integer, Long> e : nomad.carried(Nomad.WORN).entrySet())
+		{
+			carried.merge(itemManager.canonicalize(e.getKey()), e.getValue(), Long::sum);
+		}
+		int[] here = here();
+		Errand best = null;
+		int bestDistance = Integer.MAX_VALUE;
+		Set<String> tried = new HashSet<>();
+		for (int item : carried.keySet())
+		{
+			for (StashBook.Home h : stash.homes(item))
+			{
+				if (!tried.add(h.unit))
+				{
+					continue;
+				}
+				Store kept = nomad.store("stash:" + h.unit);
+				StashBook.Unit u = stash.unit(h.unit);
+				if (kept != null && !kept.isEmpty() || u == null)
+				{
+					continue;
+				}
+				Set<Integer> set = new HashSet<>();
+				List<String> names = new ArrayList<>();
+				boolean whole = true;
+				for (StashBook.Need need : u.needs)
+				{
+					Integer got = null;
+					for (int id : need.ids)
+					{
+						if (carried.containsKey(id))
+						{
+							got = id;
+							break;
+						}
+					}
+					if (got == null)
+					{
+						whole = false;
+						break;
+					}
+					set.add(got);
+					names.add(name(got));
+				}
+				STASHUnit unit;
+				try
+				{
+					unit = STASHUnit.valueOf(h.unit);
+				}
+				catch (IllegalArgumentException ex)
+				{
+					continue;
+				}
+				if (!whole || set.isEmpty())
+				{
+					continue;
+				}
+				WorldPoint at = unit.getWorldPoints()[0];
+				int d = here == null ? 0 : Math.max(Math.abs(at.getX() - here[0]), Math.abs(at.getY() - here[1]));
+				if (d < bestDistance)
+				{
+					bestDistance = d;
+					best = new Errand(Errand.Kind.STASH_AWAY, "stash a clue set at " + h.place,
+						"Deposit " + String.join(", ", names) + " in the STASH unit (if built) and carry them no more",
+						at, set, null, unit.getObjectId(), null);
+				}
+			}
+		}
+		return best;
 	}
 
 	/** Looks over the player's floor of the scene for the STASH unit or furniture the errand needs. */
