@@ -1,5 +1,6 @@
 package com.codex.nomad;
 
+import com.codex.nomad.core.Death;
 import com.codex.nomad.ui.Theme;
 import java.awt.BasicStroke;
 import java.awt.Dimension;
@@ -27,18 +28,25 @@ import net.runelite.client.ui.overlay.outline.ModelOutlineRenderer;
  */
 class Highlights extends Overlay
 {
+	private static final String HOLDS = "Your deathbank";
+
 	private final Client client;
 	private final ModelOutlineRenderer outlines;
 	private final RouteGuide guide;
 	private final Supplier<List<TileObject>> warnAt;
 	private final Supplier<String> warning;
+	private final Supplier<String> bank;
+	private final Supplier<List<TileObject>> holders;
 
 	/**
 	 * @param warnAt objects to mark in red, such as the ways out of a raid with things left on its floor
 	 * @param warning the words above them
 	 */
-	Highlights(Client client, ModelOutlineRenderer outlines, RouteGuide guide, Supplier<List<TileObject>> warnAt, Supplier<String> warning)
+	Highlights(Client client, ModelOutlineRenderer outlines, RouteGuide guide, Supplier<List<TileObject>> warnAt, Supplier<String> warning,
+		Supplier<String> bank, Supplier<List<TileObject>> holders)
 	{
+		this.bank = bank;
+		this.holders = holders;
 		this.client = client;
 		this.outlines = outlines;
 		this.guide = guide;
@@ -62,6 +70,34 @@ class Highlights extends Overlay
 				if (at != null)
 				{
 					OverlayUtil.renderTextLocation(g, at, words, Theme.BLOOD);
+				}
+			}
+		}
+		String lair = bank.get();
+		if (lair != null)
+		{
+			for (NPC npc : client.getTopLevelWorldView().npcs())
+			{
+				if (Death.holds(lair, npc.getId(), false))
+				{
+					outlines.drawOutline(npc, 2, Theme.EMBER, 4);
+					Point at = npc.getCanvasTextLocation(g, HOLDS, npc.getLogicalHeight() + 40);
+					if (at != null)
+					{
+						OverlayUtil.renderTextLocation(g, at, HOLDS, Theme.EMBER);
+					}
+				}
+			}
+			for (TileObject o : holders.get())
+			{
+				if (Death.holds(lair, o.getId(), true))
+				{
+					outlines.drawOutline(o, 2, Theme.EMBER, 4);
+					Point at = o.getCanvasTextLocation(g, HOLDS, 150);
+					if (at != null)
+					{
+						OverlayUtil.renderTextLocation(g, at, HOLDS, Theme.EMBER);
+					}
 				}
 			}
 		}

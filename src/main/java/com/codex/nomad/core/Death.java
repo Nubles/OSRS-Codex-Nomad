@@ -43,6 +43,9 @@ public final class Death
 		12127, 7512, 7768 // the Gauntlet
 	));
 
+	/** Who holds each lair's deathbank: npc ids, and object ids for the chests. */
+	private static final Map<String, int[]> HOLDER_NPCS = new HashMap<>();
+	private static final Map<String, int[]> HOLDER_OBJECTS = new HashMap<>();
 	/** Who gives a lair's items back, and for what, as the OSRS Wiki's item retrieval service page has it. */
 	private static final Map<String, String> CLAIMS = new HashMap<>();
 	/** The fee in coins, where it is paid in coins. */
@@ -67,6 +70,7 @@ public final class Death
 		lair("Nex", 11601);
 		lair("Volcanic Mine", 15263, 15262);
 		lair("Theatre of Blood", 12611, 12612, 12613, 12867, 12869, 13122, 13123, 13125, 13379);
+		lair("Tombs of Amascut", 14160, 14162, 14164, 14674, 14676, 15184, 15186, 15188, 15696, 15698, 15700);
 		lair("Hallowed Sepulchre", 8797, 9051, 9052, 9053, 9054, 9309, 9563, 9565, 9821, 10074, 10075, 10077);
 		claim("Zulrah", "Priestess Zul-Gwenwynig", 0, "free for ultimate ironmen");
 		claim("Vorkath", "Torfinn", 100_000, null);
@@ -78,6 +82,19 @@ public final class Death
 		claim("Volcanic Mine", "Petrified Pete", -1, "150 numulite");
 		claim("Theatre of Blood", "the chest north of Ver Sinhaza's bank", 100_000, null);
 		claim("Hallowed Sepulchre", "the Mysterious Stranger", 25_000, null);
+		claim("Tombs of Amascut", "the chest in the Tombs lobby", -1, "up to 500k");
+		// Who to click, from Deathbank Utility (BSD 2-Clause): npc ids, and object ids for the chests.
+		holder("Zulrah", new int[]{1617, 2033}, null);
+		holder("Vorkath", new int[]{7504, 7505, 8131, 10403, 10404, 10405, 10406}, null);
+		holder("Alchemical Hydra", new int[]{8608}, null);
+		holder("Hespori", new int[]{8588}, null);
+		holder("The Nightmare", new int[]{9459, 9413, 9414}, null);
+		holder("Volcanic Mine", new int[]{7776}, null);
+		holder("Hallowed Sepulchre", new int[]{9639, 9640}, null);
+		holder("Grotesque Guardians", null, new int[]{31675});
+		holder("Nex", null, new int[]{42854, 42858});
+		holder("Theatre of Blood", null, new int[]{32656});
+		holder("Tombs of Amascut", null, new int[]{46078, 46079});
 	}
 
 	private static void claim(String lair, String who, long fee, String note)
@@ -91,6 +108,51 @@ public final class Death
 		String who2 = who.startsWith("the ") ? Character.toUpperCase(who.charAt(4)) + who.substring(5) : who;
 		BRIEFS.put(lair, who2.replaceAll(" (on|past|north of) .*", "") + ", "
 			+ (fee > 0 ? (fee >= 1000 ? fee / 1000 + "k" : String.valueOf(fee)) : fee == 0 ? "free" : note));
+	}
+
+	private static void holder(String lair, int[] npcs, int[] objects)
+	{
+		if (npcs != null)
+		{
+			HOLDER_NPCS.put(lair, npcs);
+		}
+		if (objects != null)
+		{
+			HOLDER_OBJECTS.put(lair, objects);
+		}
+	}
+
+	/** Whether this npc or object (by id) holds the lair's deathbank. */
+	public static boolean holds(String lair, int id, boolean object)
+	{
+		int[] ids = lair == null ? null : (object ? HOLDER_OBJECTS : HOLDER_NPCS).get(lair);
+		if (ids != null)
+		{
+			for (int i : ids)
+			{
+				if (i == id)
+				{
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	/** Every object that holds some deathbank. */
+	public static boolean holderObject(int id)
+	{
+		for (int[] ids : HOLDER_OBJECTS.values())
+		{
+			for (int i : ids)
+			{
+				if (i == id)
+				{
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	/** Who holds a lair's deathbank and the price, in a few words, or null. */

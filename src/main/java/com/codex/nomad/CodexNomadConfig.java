@@ -153,7 +153,7 @@ public interface CodexNomadConfig extends Config
 	@ConfigItem(
 		keyName = "pointer",
 		name = "Mark the next stop",
-		description = "Mark the next place to call at on the ground and the world map: a deathpile, or a STASH unit holding what a packing list needs",
+		description = "Mark the next place to call at on the ground and the world map: a deathpile, or a STASH unit holding what a packing list needs. Also outlines whoever holds your deathbank",
 		section = SCENE,
 		position = 1
 	)

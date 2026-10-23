@@ -50,6 +50,7 @@ import net.runelite.api.Quest;
 import net.runelite.api.QuestState;
 import net.runelite.api.Skill;
 import net.runelite.api.TileItem;
+import net.runelite.api.TileObject;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.ActorDeath;
 import net.runelite.api.events.ChatMessage;
@@ -189,6 +190,8 @@ public class CodexNomadPlugin extends Plugin
 	private Marker marker;
 	private Highlights highlights;
 	private RaidFloor raidFloor;
+	/** Chests in the scene that hold some deathbank. */
+	private final List<TileObject> holders = new ArrayList<>();
 	private Clicks clicks;
 	private RouteGuide guide;
 	/** The plaque as the last publish left it, before the route row is added each tick. */
@@ -257,7 +260,8 @@ public class CodexNomadPlugin extends Plugin
 		guide = new RouteGuide(client, eventBus, route, id -> name(itemManager.canonicalize(id)));
 		raidFloor = new RaidFloor(client);
 		highlights = new Highlights(client, outlines, guide, () -> raidLeft().isEmpty() || !config.guardRaidFloor()
-			? java.util.Collections.emptyList() : raidFloor.exits(), this::raidLabel);
+			? java.util.Collections.emptyList() : raidFloor.exits(), this::raidLabel,
+			() -> nomad == null || nomad.deathbank() == null || !config.pointer() ? null : nomad.deathbank().name, () -> holders);
 		clicks = new Clicks(client, guide, id -> name(itemManager.canonicalize(id)));
 		tips = new ItemTips(client, tooltipManager, itemManager::canonicalize, config::itemTips);
 		Arrivals arrivals = new Arrivals();
@@ -498,6 +502,7 @@ public class CodexNomadPlugin extends Plugin
 		else if (state == GameState.LOADING)
 		{
 			raidFloor.sceneLoading();
+			holders.clear();
 		}
 		else if (state == GameState.LOGGING_IN)
 		{
@@ -932,6 +937,7 @@ public class CodexNomadPlugin extends Plugin
 	public void onGameObjectDespawned(GameObjectDespawned event)
 	{
 		raidFloor.despawned(event.getGameObject());
+		holders.remove(event.getGameObject());
 	}
 
 	/** What lies on the Chambers of Xeric floor, all piles together. */
@@ -963,6 +969,10 @@ public class CodexNomadPlugin extends Plugin
 	public void onGameObjectSpawned(GameObjectSpawned event)
 	{
 		raidFloor.spawned(event.getGameObject());
+		if (Death.holderObject(event.getGameObject().getId()))
+		{
+			holders.add(event.getGameObject());
+		}
 		int[] capes = nomad == null ? null : CapeHanger.holds(event.getGameObject().getId());
 		if (capes == null)
 		{

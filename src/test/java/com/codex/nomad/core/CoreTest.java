@@ -444,4 +444,15 @@ public class CoreTest
 		assertTrue(Death.safe(10536));
 		assertFalse(Death.safe(9023));
 	}
+
+	@Test
+	public void deathbankHoldersAreKnown()
+	{
+		assertTrue(Death.holds("Vorkath", 10405, false));
+		assertFalse(Death.holds("Vorkath", 10405, true));
+		assertTrue(Death.holds("Theatre of Blood", 32656, true));
+		assertTrue(Death.holderObject(46078));
+		assertEquals("Tombs of Amascut", Death.lair(14160));
+		assertEquals(-1, Death.fee("Tombs of Amascut"));
+	}
 }
