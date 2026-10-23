@@ -37,16 +37,28 @@ public final class Route
 		public final int id;
 		public final int value;
 		public final boolean exact;
+		/** A bit that must be set, written id&amp;bit, as the diaries keep their tasks; -1 for a value. */
+		public final int bit;
 
 		Var(int id, int value, boolean exact)
+		{
+			this(id, value, exact, -1);
+		}
+
+		Var(int id, int value, boolean exact, int bit)
 		{
 			this.id = id;
 			this.value = value;
 			this.exact = exact;
+			this.bit = bit;
 		}
 
 		boolean test(int now)
 		{
+			if (bit >= 0)
+			{
+				return (now >> bit & 1) == 1;
+			}
 			return exact ? now == value : now >= value;
 		}
 	}
@@ -558,6 +570,11 @@ public final class Route
 	private static Var var(String value)
 	{
 		String v = value.replace(" ", "");
+		if (v.contains("&"))
+		{
+			String[] p = v.split("&");
+			return new Var(Integer.parseInt(p[0]), 1, false, Integer.parseInt(p[1]));
+		}
 		boolean exact = v.contains("=") && !v.contains(">=");
 		String[] p = v.split(">=|=");
 		return new Var(Integer.parseInt(p[0]), p.length > 1 ? Integer.parseInt(p[1]) : 1, exact);

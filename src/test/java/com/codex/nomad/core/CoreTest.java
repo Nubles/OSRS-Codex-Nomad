@@ -232,6 +232,17 @@ public class CoreTest
 	}
 
 	@Test
+	public void diaryTasksAreReadBitByBit()
+	{
+		Route r = Route.parse(java.util.Arrays.asList("A | Play Fishing Trawler | varp:1196&5; varp:1196 & 0"));
+		Route.Var trawler = r.steps().get(0).varps.get(0);
+		assertEquals(1196, trawler.id);
+		assertTrue(trawler.test(1 << 5 | 1));
+		assertFalse(trawler.test(1 << 4));
+		assertTrue(r.steps().get(0).varps.get(1).test(1));
+	}
+
+	@Test
 	public void stepsInHandTickInTheMoment()
 	{
 		Route r = Route.parse(java.util.Arrays.asList(

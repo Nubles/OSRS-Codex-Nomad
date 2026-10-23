@@ -1,7 +1,7 @@
 # Route to Prifddinas for ultimate ironmen.
 # Steps paraphrased from the OSRS Wiki's "Guide:Ultimate Ironman Walkthrough Guide To Prifddinas"
 # (https://oldschool.runescape.wiki/w/Guide:Ultimate_Ironman_Walkthrough_Guide_To_Prifddinas),
-# CC BY-NC-SA 3.0. Format: section | step | tags (quest:, skill:Name level, item:, diary:), tags optional.
+# CC BY-NC-SA 3.0. Format: section | step | tags (quest:, skill:Name level, item:, diary:), tags optional; varp:id&bit needs that bit set (diary tasks).
 # A line starting with "~" is a tip shown under the step before it.
 Setting up for Agility | Sell your starting items to the general store, except Bread and Shrimps | gone:Bronze dagger; gone:Wooden shield; item:Bread; item:Shrimps; go:3211,3247,0; npc:Shop keeper
 Setting up for Agility | Teleport to the Stronghold of Security with Count Check | at:3081,3421,0,10; go:3238,3199,0; npc:Count Check; say:Stronghold
@@ -68,10 +68,10 @@ Setting up for Agility | Complete Witch's House, safespotting the boss with pois
 ~ Optional: start Wilderness agility now for more risk, and finish this section later
 Setting up for Agility | Collect the 1k experience lamp from Historian Minas | go:3256,3449,0; npc:Historian Minas; use:Antique lamp
 Setting up for Agility | Use the X Marks the Spot lamp on Herblore | skill:Herblore 5; use:Antique lamp
-Setting up for Agility | Fishing Trawler teleport: view Aleck's Hunter Emporium and have Tindel identify the rusty sword | gone:Rusty sword; go:2676,3152,0; npc:Tindel Marchant
-Setting up for Agility | Play a Fishing Trawler game for the diary (no need to finish) | go:2675,3170,0; obj:4977
+Setting up for Agility | Fishing Trawler teleport: view Aleck's Hunter Emporium and have Tindel identify the rusty sword | gone:Rusty sword; go:2676,3152,0; npc:Tindel Marchant; varp:1196&11; varp:1196&7
+Setting up for Agility | Play a Fishing Trawler game for the diary (no need to finish) | go:2675,3170,0; obj:4977; varp:1196&5
 Setting up for Agility | Steal a silk in Ardougne and keep it | item:Silk; go:2662,3314,0
-Setting up for Agility | Ardougne diary: Wizard Cromperty's teleport, Probita's pets, the church altar | go:2683,3326,0; npc:Wizard Cromperty
+Setting up for Agility | Ardougne diary: Wizard Cromperty's teleport, Probita's pets, the church altar | go:2683,3326,0; npc:Wizard Cromperty; varp:1196&0; varp:1196&12; varp:1196&4
 Setting up for Agility | Buy a rope at the general store | item:Rope
 Setting up for Agility | Buy dwellberries, chocolate dust and a bucket of milk from Hudo in the Grand Tree | item:Dwellberries; item:Chocolate dust; item:Bucket of milk; go:2449,3510,0; npc:Hudo
 Setting up for Agility | Complete Plague City | quest:Plague City
