@@ -98,6 +98,17 @@ public final class Route
 		/** Head for your house portal, wherever the house is. */
 		public boolean goHouse;
 		public final List<String> npcs = new ArrayList<>();
+		public final List<Integer> npcIds = new ArrayList<>();
+		/** Objects to click, by id. */
+		public final List<Integer> objects = new ArrayList<>();
+		/** Items to click in the inventory, by name. */
+		public final List<String> use = new ArrayList<>();
+		/** Items to buy in a shop, by name. */
+		public final List<String> shop = new ArrayList<>();
+		/** Items to pick up off the ground, by name. */
+		public final List<String> ground = new ArrayList<>();
+		/** Chat options to choose, by their text. */
+		public final List<String> say = new ArrayList<>();
 		public boolean optional;
 
 		Step(int index, String section, String text)
@@ -137,6 +148,23 @@ public final class Route
 		public boolean watched()
 		{
 			return lasting() || moment();
+		}
+	}
+
+	/** Everything to click for a step: people, objects, items in the inventory, a shop or on the ground, chat options. */
+	public static final class Lead
+	{
+		public final List<String> npcs = new ArrayList<>();
+		public final List<Integer> npcIds = new ArrayList<>();
+		public final List<Integer> objects = new ArrayList<>();
+		public final List<String> use = new ArrayList<>();
+		public final List<String> shop = new ArrayList<>();
+		public final List<String> ground = new ArrayList<>();
+		public final List<String> say = new ArrayList<>();
+
+		public boolean isEmpty()
+		{
+			return npcs.isEmpty() && npcIds.isEmpty() && objects.isEmpty() && use.isEmpty() && shop.isEmpty() && ground.isEmpty() && say.isEmpty();
 		}
 	}
 
@@ -215,11 +243,14 @@ public final class Route
 	/** For each step, the index of the next lasting step after it, or -1. */
 	private final int[] nextLasting;
 	private final Map<String, int[]> questStarts;
+	/** Who or what starts each quest: npc or object ids, the first entry 0 for npcs and 1 for objects. */
+	private final Map<String, int[]> questLeads;
 
-	private Route(List<Step> steps, Map<String, int[]> questStarts)
+	private Route(List<Step> steps, Map<String, int[]> questStarts, Map<String, int[]> questLeads)
 	{
 		this.steps = steps;
 		this.questStarts = questStarts;
+		this.questLeads = questLeads;
 		List<String> s = new ArrayList<>();
 		for (Step step : steps)
 		{
@@ -243,7 +274,8 @@ public final class Route
 
 	public static Route load()
 	{
-		return parse(lines("/com/codex/nomad/route.txt"), starts(lines("/com/codex/nomad/quest-starts.txt")));
+		List<String> starts = lines("/com/codex/nomad/quest-starts.txt");
+		return parse(lines("/com/codex/nomad/route.txt"), starts(starts), leads(starts));
 	}
 
 	private static List<String> lines(String resource)
@@ -268,20 +300,56 @@ public final class Route
 		return lines;
 	}
 
+	/** Lines of "quest | x,y,plane | npc:ids or obj:ids". */
 	static Map<String, int[]> starts(List<String> lines)
 	{
 		Map<String, int[]> out = new HashMap<>();
 		for (String line : lines)
 		{
-			int bar = line.lastIndexOf('|');
-			if (line.startsWith("#") || bar < 0)
+			String[] parts = line.split("\\|");
+			if (line.startsWith("#") || parts.length < 2)
 			{
 				continue;
 			}
-			int[] p = ints(line.substring(bar + 1));
-			if (p != null && p.length == 3)
+			try
 			{
-				out.put(line.substring(0, bar).trim(), p);
+				int[] p = ints(parts[1]);
+				if (p.length == 3)
+				{
+					out.put(parts[0].trim(), p);
+				}
+			}
+			catch (RuntimeException ignored)
+			{
+				// A malformed line names no place.
+			}
+		}
+		return out;
+	}
+
+	static Map<String, int[]> leads(List<String> lines)
+	{
+		Map<String, int[]> out = new HashMap<>();
+		for (String line : lines)
+		{
+			String[] parts = line.split("\\|");
+			if (line.startsWith("#") || parts.length < 3)
+			{
+				continue;
+			}
+			String lead = parts[2].trim();
+			int colon = lead.indexOf(':');
+			try
+			{
+				int[] ids = ints(lead.substring(colon + 1));
+				int[] entry = new int[ids.length + 1];
+				entry[0] = lead.startsWith("obj") ? 1 : 0;
+				System.arraycopy(ids, 0, entry, 1, ids.length);
+				out.put(parts[0].trim(), entry);
+			}
+			catch (RuntimeException ignored)
+			{
+				// A malformed lead names no one.
 			}
 		}
 		return out;
@@ -289,10 +357,10 @@ public final class Route
 
 	static Route parse(List<String> lines)
 	{
-		return parse(lines, Collections.emptyMap());
+		return parse(lines, Collections.emptyMap(), Collections.emptyMap());
 	}
 
-	static Route parse(List<String> lines, Map<String, int[]> questStarts)
+	static Route parse(List<String> lines, Map<String, int[]> questStarts, Map<String, int[]> questLeads)
 	{
 		List<Step> steps = new ArrayList<>();
 		for (String raw : lines)
@@ -325,7 +393,7 @@ public final class Route
 			}
 			steps.add(step);
 		}
-		return new Route(steps, questStarts);
+		return new Route(steps, questStarts, questLeads);
 	}
 
 	private static void tag(Step step, String tag)
@@ -450,6 +518,30 @@ public final class Route
 				case "npc":
 					step.npcs.add(value);
 					break;
+				case "npcid":
+					for (int id : ids(value))
+					{
+						step.npcIds.add(id);
+					}
+					break;
+				case "obj":
+					for (int id : ids(value))
+					{
+						step.objects.add(id);
+					}
+					break;
+				case "use":
+					step.use.add(value);
+					break;
+				case "shop":
+					step.shop.add(value);
+					break;
+				case "ground":
+					step.ground.add(value);
+					break;
+				case "say":
+					step.say.add(value);
+					break;
 				case "optional":
 					step.optional = true;
 					break;
@@ -469,6 +561,28 @@ public final class Route
 		boolean exact = v.contains("=") && !v.contains(">=");
 		String[] p = v.split(">=|=");
 		return new Var(Integer.parseInt(p[0]), p.length > 1 ? Integer.parseInt(p[1]) : 1, exact);
+	}
+
+	/** Ids separated by commas, with ranges written a-b. */
+	private static int[] ids(String value)
+	{
+		List<Integer> ids = new ArrayList<>();
+		for (String part : value.split(","))
+		{
+			String[] range = part.trim().split("-");
+			int from = Integer.parseInt(range[0].trim());
+			int to = range.length > 1 ? Integer.parseInt(range[1].trim()) : from;
+			for (int id = from; id <= to; id++)
+			{
+				ids.add(id);
+			}
+		}
+		int[] out = new int[ids.size()];
+		for (int i = 0; i < out.length; i++)
+		{
+			out[i] = ids.get(i);
+		}
+		return out;
 	}
 
 	private static int[] ints(String s)
@@ -747,6 +861,71 @@ public final class Route
 			if (p != null)
 			{
 				return p;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * What to click for a step: what it names, the items it asks for (bought in a shop when the
+	 * step is to buy them, picked up when it is to take them), and who starts the quest it needs.
+	 */
+	public Lead lead(Step s, Account a)
+	{
+		Lead l = new Lead();
+		if (s == null)
+		{
+			return l;
+		}
+		l.npcs.addAll(s.npcs);
+		l.npcIds.addAll(s.npcIds);
+		l.objects.addAll(s.objects);
+		l.use.addAll(s.use);
+		l.shop.addAll(s.shop);
+		l.ground.addAll(s.ground);
+		l.say.addAll(s.say);
+		String verb = s.text.toLowerCase(Locale.ENGLISH);
+		if (verb.startsWith("buy ") || verb.contains(", buy ") || verb.contains(" and buy ") || verb.contains(" then buy "))
+		{
+			l.shop.addAll(s.items);
+		}
+		if (verb.startsWith("take ") || verb.startsWith("pick up "))
+		{
+			l.ground.addAll(s.items);
+		}
+		List<String> qs = new ArrayList<>(s.started);
+		qs.addAll(s.quests);
+		for (String q : qs)
+		{
+			if (a != null && a.questStarted(q))
+			{
+				continue;
+			}
+			int[] lead = questLeads.get(q);
+			if (lead != null)
+			{
+				for (int i = 1; i < lead.length; i++)
+				{
+					(lead[0] == 1 ? l.objects : l.npcIds).add(lead[i]);
+				}
+				break;
+			}
+		}
+		return l;
+	}
+
+	/** The quest a step needs that is under way but not done, or null: inside it, Quest Helper leads. */
+	public static String inQuest(Step s, Account a)
+	{
+		if (s == null || a == null)
+		{
+			return null;
+		}
+		for (String q : s.quests)
+		{
+			if (a.questStarted(q) && !a.questDone(q))
+			{
+				return q;
 			}
 		}
 		return null;

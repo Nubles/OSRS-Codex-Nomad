@@ -293,6 +293,40 @@ public class CoreTest
 	}
 
 	@Test
+	public void stepsSayWhatToClick()
+	{
+		Route r = Route.load();
+		Route.Account fresh = new Route.Account()
+		{
+			public boolean questDone(String quest)
+			{
+				return false;
+			}
+
+			public int level(String skill)
+			{
+				return 1;
+			}
+		};
+		int leads = 0;
+		for (Route.Step s : r.steps())
+		{
+			Route.Lead l = r.lead(s, fresh);
+			if (!l.isEmpty())
+			{
+				leads++;
+			}
+			if (s.text.startsWith("Buy ") && !s.items.isEmpty())
+			{
+				assertTrue(s.text, l.shop.containsAll(s.items));
+			}
+		}
+		assertTrue("only " + leads + " steps say what to click", leads >= 250);
+		Route.Step xmts = r.steps().get(5);
+		assertFalse(r.lead(xmts, fresh).npcIds.isEmpty());
+	}
+
+	@Test
 	public void everyStashUnitIsKnown()
 	{
 		StashBook b = StashBook.load(GSON);

@@ -293,6 +293,10 @@ final class Views
 				rv.done++;
 			}
 			sv.check = check(s);
+			if (current != null && s.index == current.index)
+			{
+				sv.clicks = clicks(route.lead(s, account));
+			}
 			steps.add(sv);
 		}
 		rv.steps = steps;
@@ -304,6 +308,41 @@ final class Views
 		}
 		rv.progress = progress;
 		return rv;
+	}
+
+	/** What the in-game highlights point at, in words. */
+	static String clicks(Route.Lead l)
+	{
+		List<String> parts = new ArrayList<>();
+		if (!l.npcs.isEmpty())
+		{
+			parts.add("Talk to " + String.join(" or ", l.npcs));
+		}
+		else if (!l.npcIds.isEmpty())
+		{
+			parts.add("Talk to the outlined person");
+		}
+		if (!l.objects.isEmpty())
+		{
+			parts.add("Click the outlined object");
+		}
+		if (!l.shop.isEmpty())
+		{
+			parts.add("Buy " + String.join(", ", l.shop));
+		}
+		if (!l.ground.isEmpty())
+		{
+			parts.add("Pick up " + String.join(", ", l.ground));
+		}
+		if (!l.use.isEmpty())
+		{
+			parts.add("Use " + String.join(", ", l.use));
+		}
+		for (String say : l.say)
+		{
+			parts.add("Choose \"" + say + "\"");
+		}
+		return parts.isEmpty() ? null : String.join(" · ", parts);
 	}
 
 	/** What the game watches to tick a step, in a few words. */

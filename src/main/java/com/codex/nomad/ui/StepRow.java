@@ -43,6 +43,10 @@ class StepRow extends Card
 		{
 			text.add(Ui.label("Optional", Theme.small(), Theme.TEXT_FAINT));
 		}
+		if (current && s.clicks != null)
+		{
+			text.add(Ui.wrapped(s.clicks, Theme.small(), Theme.GOLD_BRIGHT, NomadPanel.WIDTH - 40));
+		}
 		if (s.check != null && (current || !s.done))
 		{
 			text.add(Ui.wrapped(s.met ? "Done in game" : (current ? "Watching: " : "") + s.check, Theme.small(),

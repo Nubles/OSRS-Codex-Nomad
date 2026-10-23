@@ -11,7 +11,6 @@ import com.codex.nomad.core.StashBook;
 import com.codex.nomad.core.Store;
 import com.codex.nomad.core.Trip;
 import com.codex.nomad.overlay.Marker;
-import com.codex.nomad.overlay.People;
 import com.codex.nomad.overlay.Plaque;
 import com.codex.nomad.ui.Arrivals;
 import com.codex.nomad.ui.Format;
@@ -159,7 +158,8 @@ public class CodexNomadPlugin extends Plugin
 
 	private final Plaque plaque = new Plaque();
 	private Marker marker;
-	private People people;
+	private Highlights highlights;
+	private Clicks clicks;
 	private RouteGuide guide;
 	/** The plaque as the last publish left it, before the route row is added each tick. */
 	private List<Plaque.Row> plaqueRows = new ArrayList<>();
@@ -210,7 +210,8 @@ public class CodexNomadPlugin extends Plugin
 		route = Route.load();
 		marker = new Marker(client);
 		guide = new RouteGuide(client, eventBus, route, id -> name(itemManager.canonicalize(id)));
-		people = new People(client, outlines, guide::people);
+		highlights = new Highlights(client, outlines, guide);
+		clicks = new Clicks(client, guide, id -> name(itemManager.canonicalize(id)));
 		Arrivals arrivals = new Arrivals();
 		ItemIcons icons = (itemId, onLoaded) ->
 		{
@@ -265,7 +266,8 @@ public class CodexNomadPlugin extends Plugin
 		clientToolbar.addNavigation(navButton);
 		overlayManager.add(plaque);
 		overlayManager.add(marker);
-		overlayManager.add(people);
+		overlayManager.add(highlights);
+		overlayManager.add(clicks);
 		clientThread.invokeLater(() ->
 		{
 			loadProfile();
@@ -282,7 +284,8 @@ public class CodexNomadPlugin extends Plugin
 	{
 		overlayManager.remove(plaque);
 		overlayManager.remove(marker);
-		overlayManager.remove(people);
+		overlayManager.remove(highlights);
+		overlayManager.remove(clicks);
 		clientToolbar.removeNavigation(navButton);
 		clearMap();
 		RouteGuide g = guide;
@@ -886,6 +889,11 @@ public class CodexNomadPlugin extends Plugin
 		{
 			String way = RouteGuide.way(here(), guide.target(s));
 			rows.add(new Plaque.Row("Route " + (s.index + 1) + " of " + route.size(), way == null ? "" : way, s.text, Theme.GOLD));
+			String quest = Route.inQuest(s, guide.account());
+			if (quest != null)
+			{
+				rows.add(new Plaque.Row("Inside the quest", "", "Open " + quest + " in Quest Helper for each click", Theme.TEAL));
+			}
 		}
 		plaque.show("Nomad", plaqueTint, rows);
 	}

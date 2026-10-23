@@ -184,5 +184,7 @@ public final class View
 		/** Done because a later step the game confirms is done. */
 		public boolean passed;
 		public boolean optional;
+		/** What to click, for the step in hand: "Talk to Bob · Buy Spade". */
+		public String clicks;
 	}
 }

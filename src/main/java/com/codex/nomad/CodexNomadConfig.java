@@ -151,8 +151,8 @@ public interface CodexNomadConfig extends Config
 
 	@ConfigItem(
 		keyName = "guideNpcs",
-		name = "Outline route people",
-		description = "While you follow the route, outline the people the step in hand names",
+		name = "Highlight route clicks",
+		description = "While you follow the route, highlight what the step in hand asks you to click: people, objects, ground items, shop stock, inventory items and chat options",
 		section = SCENE,
 		position = 4
 	)

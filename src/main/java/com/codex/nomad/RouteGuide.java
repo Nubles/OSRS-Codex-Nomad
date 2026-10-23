@@ -26,6 +26,8 @@ import net.runelite.api.QuestState;
 import net.runelite.api.Scene;
 import net.runelite.api.Skill;
 import net.runelite.api.Tile;
+import net.runelite.api.TileItem;
+import net.runelite.api.TileObject;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.gameval.InventoryID;
 import net.runelite.api.gameval.ItemID;
@@ -37,7 +39,7 @@ import net.runelite.client.events.PluginMessage;
 /**
  * Reads the game for the route: what is true for good (quests, levels, unlocks) and what is true
  * this moment (items, place, coins, chat, furniture), ticks the step in hand when it holds, and
- * guides the player to it with the hint arrow, outlined people and the Shortest Path plugin.
+ * guides the player to it with the hint arrow, outlines on everything to click and the Shortest Path plugin.
  */
 final class RouteGuide
 {
@@ -67,8 +69,12 @@ final class RouteGuide
 	private WorldPoint pathed;
 	private WorldPoint arrowPoint;
 	private NPC arrowNpc;
-	/** People the step in hand names, for the outline overlay. */
-	private Set<String> people = Collections.emptySet();
+	/** What to click for the step in hand, for the overlays. */
+	private Route.Lead lead = new Route.Lead();
+	/** Objects in the scene to click, found by the last scan. */
+	private List<TileObject> objects = Collections.emptyList();
+	/** Ground items to pick up, found by the last scan: the tile and the item's name. */
+	private List<Object[]> ground = Collections.emptyList();
 
 	RouteGuide(Client client, EventBus eventBus, Route route, IntFunction<String> name)
 	{
@@ -276,7 +282,7 @@ final class RouteGuide
 			{
 				if (seen == null)
 				{
-					seen = objects();
+					seen = sceneObjects();
 				}
 				for (int id : objects)
 				{
@@ -291,7 +297,7 @@ final class RouteGuide
 	}
 
 	/** Every game object id in the scene on the player's plane. */
-	private Set<Integer> objects()
+	private Set<Integer> sceneObjects()
 	{
 		Set<Integer> out = new HashSet<>();
 		Scene scene = client.getTopLevelWorldView().getScene();
@@ -355,37 +361,66 @@ final class RouteGuide
 		return t == null ? null : new WorldPoint(t[0], t[1], t[2]);
 	}
 
-	Set<String> people()
+	Route.Lead lead()
 	{
-		return people;
+		return lead;
+	}
+
+	List<TileObject> objects()
+	{
+		return objects;
+	}
+
+	List<Object[]> ground()
+	{
+		return ground;
+	}
+
+	/** True when this NPC is one the step in hand names. */
+	boolean wanted(NPC npc)
+	{
+		return wanted(npc, lead);
+	}
+
+	private static boolean wanted(NPC npc, Route.Lead lead)
+	{
+		if (lead.npcIds.contains(npc.getId()))
+		{
+			return true;
+		}
+		String n = npc.getName();
+		if (n == null)
+		{
+			return false;
+		}
+		for (String want : lead.npcs)
+		{
+			if (want.equalsIgnoreCase(n))
+			{
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**
-	 * Points the way to the step in hand: the hint arrow at a named person in sight or else the place,
-	 * and the Shortest Path plugin's path to the place.
+	 * Points the way to the step in hand: the hint arrow at a named person in sight, else the thing
+	 * to click, else the place; outlines everything to click; and asks Shortest Path for the way.
 	 */
 	void guide(Route.Step s, boolean arrow, boolean outline, boolean path)
 	{
 		WorldPoint target = target(s);
-		Set<String> names = new HashSet<>();
-		if (s != null)
-		{
-			for (String p : s.npcs)
-			{
-				names.add(p.toLowerCase(Locale.ENGLISH));
-			}
-		}
-		people = outline ? names : Collections.emptySet();
-
+		Route.Lead l = route.lead(s, account());
+		lead = outline ? l : new Route.Lead();
+		scan(l);
+		Player me = client.getLocalPlayer();
 		NPC npc = null;
-		if (!names.isEmpty())
+		int best = Integer.MAX_VALUE;
+		if (me != null && (!l.npcs.isEmpty() || !l.npcIds.isEmpty()))
 		{
-			Player me = client.getLocalPlayer();
-			int best = Integer.MAX_VALUE;
 			for (NPC c : client.getTopLevelWorldView().npcs())
 			{
-				String n = c.getName();
-				if (n != null && names.contains(n.toLowerCase(Locale.ENGLISH)) && me != null)
+				if (wanted(c, l))
 				{
 					int d = c.getWorldLocation().distanceTo(me.getWorldLocation());
 					if (d < best)
@@ -396,8 +431,96 @@ final class RouteGuide
 				}
 			}
 		}
-		pointArrow(arrow ? npc : null, arrow && npc == null ? near(target) : null);
+		WorldPoint point = near(target);
+		if (npc == null && me != null)
+		{
+			best = Integer.MAX_VALUE;
+			for (TileObject o : objects)
+			{
+				int d = o.getWorldLocation().distanceTo(me.getWorldLocation());
+				if (d < best)
+				{
+					best = d;
+					point = o.getWorldLocation();
+				}
+			}
+		}
+		if (!outline)
+		{
+			objects = Collections.emptyList();
+			ground = Collections.emptyList();
+		}
+		pointArrow(arrow ? npc : null, arrow && npc == null ? point : null);
 		pathTo(path ? target : null);
+	}
+
+	/** Finds the objects and ground items the step asks for in the scene, on the player's plane. */
+	private void scan(Route.Lead l)
+	{
+		if (l.objects.isEmpty() && l.ground.isEmpty())
+		{
+			objects = Collections.emptyList();
+			ground = Collections.emptyList();
+			return;
+		}
+		if (client.getTickCount() % 2 != 0 && (!objects.isEmpty() || !ground.isEmpty()))
+		{
+			return;
+		}
+		Set<Integer> ids = new HashSet<>(l.objects);
+		Set<String> items = new HashSet<>();
+		for (String g : l.ground)
+		{
+			items.add(g.toLowerCase(Locale.ENGLISH));
+		}
+		List<TileObject> found = new ArrayList<>();
+		List<Object[]> lying = new ArrayList<>();
+		Scene scene = client.getTopLevelWorldView().getScene();
+		Tile[][][] tiles = scene == null ? null : scene.getTiles();
+		int plane = client.getTopLevelWorldView().getPlane();
+		if (tiles != null && plane >= 0 && plane < tiles.length)
+		{
+			for (Tile[] row : tiles[plane])
+			{
+				for (Tile t : row)
+				{
+					if (t == null)
+					{
+						continue;
+					}
+					if (!ids.isEmpty())
+					{
+						for (GameObject o : t.getGameObjects())
+						{
+							if (o != null && ids.contains(o.getId()) && !found.contains(o))
+							{
+								found.add(o);
+							}
+						}
+						for (TileObject o : new TileObject[]{t.getWallObject(), t.getDecorativeObject(), t.getGroundObject()})
+						{
+							if (o != null && ids.contains(o.getId()))
+							{
+								found.add(o);
+							}
+						}
+					}
+					if (!items.isEmpty() && t.getGroundItems() != null)
+					{
+						for (TileItem i : t.getGroundItems())
+						{
+							String n = name.apply(i.getId()).toLowerCase(Locale.ENGLISH);
+							if (items.contains(n))
+							{
+								lying.add(new Object[]{t, name.apply(i.getId())});
+							}
+						}
+					}
+				}
+			}
+		}
+		objects = found;
+		ground = lying;
 	}
 
 	/** The target, if it is close enough for the hint arrow to show. */
@@ -478,7 +601,9 @@ final class RouteGuide
 	{
 		pointArrow(null, null);
 		pathTo(null);
-		people = Collections.emptySet();
+		lead = new Route.Lead();
+		objects = Collections.emptyList();
+		ground = Collections.emptyList();
 	}
 
 	/** "212 tiles north-east", or null. */

@@ -21,7 +21,7 @@ A RuneLite plugin for ultimate ironmen. A UIM has no bank, so Nomad keeps the bo
 - **Guards.** Hides *Destroy* on the looting bag outside the Wilderness (*Looting bag Destroy*), and *Sell* on items worth more than a set amount in shops (*Shop Sell*, *Protect items over* 50,000 gp).
 - **Peril plaque.** A small plaque in the game view with your free slots, the value at risk and the most urgent deathpile (*Peril plaque*).
 - **Route tab.** The OSRS Wiki's Ultimate Ironman walkthrough to Prifddinas, all thirteen sections from a fresh account to Song of the Elves: over 300 steps. Nomad ticks them itself. Quests, levels, quest points, unlocks, diaries and combat achievements are read from the game. Steps about items, places, coins, chat, your deathbank, where your house is and the furniture in it are watched while the step is in hand. The few it cannot see tick once you are past them. You can still tick any step by hand.
-- **Guided steps.** While you follow the route, the step in hand shows on the plaque with how far away it is and which way. Its place is marked on the ground and the world map, the game's hint arrow points at the person to talk to or the spot to go to, and the people it names are outlined. If you have the Shortest Path plugin, Nomad asks it to draw the way there (*Route arrow*, *Outline route people*, *Path with Shortest Path*). Quest steps lead to where the quest starts.
+- **Guided steps, click by click.** While you follow the route, the step in hand shows on the plaque with how far away it is and which way, and is marked on the ground and the world map. In the game, Nomad highlights what to click, the way Quest Helper does: the person to talk to (outlined, with the hint arrow on them), the stall, altar, door or obstacle to use, the item to pick up off the ground, the items to buy in the shop, the item to use in your inventory, and the chat option to choose. Quest steps outline whoever starts the quest; once a quest is under way, the plaque hands you to Quest Helper for the clicks inside it. If you have the Shortest Path plugin, Nomad asks it to draw the way there (*Route arrow*, *Highlight route clicks*, *Path with Shortest Path*).
 
 ## Settings
 
@@ -30,7 +30,7 @@ A RuneLite plugin for ultimate ironmen. A UIM has no bank, so Nomad keeps the bo
 - **Share with Codex** (on): share what you hold with other Codex plugins.
 - **Looting bag Destroy** and **Shop Sell** (on), **Protect items over** (50,000 gp): the guards.
 - **Peril plaque**, **Mark the next stop**, **Route step on plaque** (on): what shows in the game view.
-- **Route arrow**, **Outline route people**, **Path with Shortest Path** (on): how the route guides you.
+- **Route arrow**, **Highlight route clicks**, **Path with Shortest Path** (on): how the route guides you.
 
 ## With other Codex plugins
 

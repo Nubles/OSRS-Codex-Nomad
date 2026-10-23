@@ -4,29 +4,29 @@
 # CC BY-NC-SA 3.0. Format: section | step | tags (quest:, skill:Name level, item:, diary:), tags optional.
 # A line starting with "~" is a tip shown under the step before it.
 Setting up for Agility | Sell your starting items to the general store, except Bread and Shrimps | gone:Bronze dagger; gone:Wooden shield; item:Bread; item:Shrimps; go:3211,3247,0; npc:Shop keeper
-Setting up for Agility | Teleport to the Stronghold of Security with Count Check | at:3081,3421,0,10; go:3238,3199,0; npc:Count Check
+Setting up for Agility | Teleport to the Stronghold of Security with Count Check | at:3081,3421,0,10; go:3238,3199,0; npc:Count Check; say:Stronghold
 ~ Pick up the cooked meat in the longhouse to the north, and hop worlds for more
 Setting up for Agility | Finish the first three Stronghold of Security floors for 10k coins | coins:10000; go:3081,3421,0
 Setting up for Agility | Home teleport and buy a bronze axe and a steel axe from Bob | item:Bronze axe; item:Steel axe; go:3231,3203,0; npc:Bob
 Setting up for Agility | Drop extra food, then buy a spade and an empty jug at the general store | item:Spade; item:Jug; go:3211,3247,0; npc:Shop keeper
 Setting up for Agility | Complete X Marks the Spot | quest:X Marks the Spot
 ~ Fill the jug with water in the kitchen. Do not use the lamp: destroy it to reclaim later
-Setting up for Agility | Reach 20 Agility at the Draynor Village Rooftop Course | skill:Agility 20; go:3103,3279,0
+Setting up for Agility | Reach 20 Agility at the Draynor Village Rooftop Course | skill:Agility 20; go:3103,3279,0; obj:11404
 Setting up for Agility | Buy a Chronicle and 20 teleport cards | item:Chronicle; go:3081,3250,0; npc:Diango
 Setting up for Agility | Walk to Ardougne and complete Hazeel Cult, siding with Hazeel | quest:Hazeel Cult
 ~ The boat from Rimmington reaches Ardougne
 Setting up for Agility | Complete Monk's Friend | quest:Monk's Friend
 ~ Chop some logs nearby, and pop the balloons
 Setting up for Agility | Buy swamp paste and a tinderbox at the Port Khazard general store | item:Swamp paste; item:Tinderbox; go:2667,3157,0
-Setting up for Agility | Chop and burn logs to 30 Firemaking | skill:Firemaking 30
+Setting up for Agility | Chop and burn logs to 30 Firemaking | skill:Firemaking 30; use:Tinderbox
 Setting up for Agility | Complete Sea Slug | quest:Sea Slug
 Setting up for Agility | Drop everything except coins | empty:Coins
-Setting up for Agility | Reach 25 Thieving at the cake stalls | skill:Thieving 25; go:2668,3311,0
-Setting up for Agility | Complete Tribal Totem | quest:Tribal Totem
-Setting up for Agility | Take a full inventory of cakes to the Brimhaven Agility Arena | item:Cake; at:2809,3191,0,12; go:2809,3191,0
-Setting up for Agility | Train at Brimhaven to 50 Agility | skill:Agility 50; go:2809,3191,0
+Setting up for Agility | Reach 25 Thieving at the cake stalls | skill:Thieving 25; go:2668,3311,0; obj:11730
+Setting up for Agility | Complete Tribal Totem | quest:Tribal Totem; npc:Kangai Mau
+Setting up for Agility | Take a full inventory of cakes to the Brimhaven Agility Arena | item:Cake; at:2809,3191,0,12; go:2809,3191,0; obj:3617
+Setting up for Agility | Train at Brimhaven to 50 Agility | skill:Agility 50; go:2809,3191,0; obj:3617
 ~ Start on the floor spikes until tickets come steadily (30 Agility for most, 40 for all)
-Setting up for Agility | Reach 52 Agility at the Agility Pyramid, earning coins | skill:Agility 52; go:3347,2827,0
+Setting up for Agility | Reach 52 Agility at the Agility Pyramid, earning coins | skill:Agility 52; go:3347,2827,0; obj:10857
 Setting up for Agility | Chronicle to Varrock and complete Shield of Arrav, joining the Phoenix Gang | quest:Shield of Arrav
 Setting up for Agility | Buy a shortbow and iron arrows and kill Jonny the Beard | item:Shortbow; item:Iron arrow; go:3233,3421,0; npc:Lowe
 ~ Optional: an alt in the Black Arm Gang can have the Weaponsmaster killed
@@ -41,7 +41,7 @@ Setting up for Agility | Head to Aldarin and complete Death on the Isle | quest:
 ~ Let the first fight end near death: prop sword attacks give no experience
 Setting up for Agility | Minigame teleport to Clan Wars and store your coins in the coffer | area:3120,3615,3160,3645,0; coins:<0; go:3133,3621,0
 Setting up for Agility | Empty your inventory completely | empty
-Setting up for Agility | Reach 40 Prayer with big bones at the Chaos Altar | skill:Prayer 40; go:2949,3820,0
+Setting up for Agility | Reach 40 Prayer with big bones at the Chaos Altar | skill:Prayer 40; go:2949,3820,0; obj:411; use:Big bones
 ~ Skip Protect from Melee for now, and do not kill anything for a looting bag yet
 Setting up for Agility | Pickpocket Rogues in the deep Wilderness for an iron dagger(p) and a lockpick | item:Iron dagger(p); item:Lockpick; go:3286,3930,0; npc:Rogue
 ~ Ardougne cakes make good food. Track poison with RuneLite's Poison plugin to save combat experience
@@ -55,42 +55,42 @@ Setting up for Agility | Take the leather gloves spawn by Father Urhney | item:L
 Setting up for Agility | Speak to Archmage Sedridor, buy another Chronicle, then see Aubury | item:Research notes; go:3253,3401,0; npc:Aubury
 Setting up for Agility | Complete The Restless Ghost | quest:The Restless Ghost
 Setting up for Agility | Claim a training bow and arrows from the Ranged combat tutor | item:Training bow; go:3218,3238,0; npc:Ranged combat tutor
-Setting up for Agility | Complete Rune Mysteries | quest:Rune Mysteries
+Setting up for Agility | Complete Rune Mysteries | quest:Rune Mysteries; npc:Duke Horacio
 Setting up for Agility | Buy wine from Fortunato and head to the H.A.M. Hideout | item:Jug of wine; go:3085,3251,0; npc:Fortunato
 Setting up for Agility | Pickpocket H.A.M. members for a rusty sword and an uncut opal | item:Rusty sword; item:Uncut opal; go:3164,3252,0; npc:H.A.M. Member
 Setting up for Agility | Reclaim the X Marks the Spot lamp and keep it | item:Antique lamp; go:3054,3246,0; npc:Veos
 Setting up for Agility | Buy cheese, raw beef, raw chicken and cheap food from Wydin | item:Cheese; item:Raw beef; item:Raw chicken; go:3014,3204,0; npc:Wydin
 Setting up for Agility | Safespot a giant rat for raw rat meat, then drop the bow and arrows | item:Raw rat meat
 Setting up for Agility | Boat to Ardougne, safespot and poison a bear for raw bear meat | item:Raw bear meat
-Setting up for Agility | Boat back to Rimmington and pick snape grass west of the Crafting Guild | item:Snape grass
+Setting up for Agility | Boat back to Rimmington and pick snape grass west of the Crafting Guild | item:Snape grass; ground:Snape grass
 Setting up for Agility | Complete Druidic Ritual | quest:Druidic Ritual
 Setting up for Agility | Complete Witch's House, safespotting the boss with poison | quest:Witch's House
 ~ Optional: start Wilderness agility now for more risk, and finish this section later
-Setting up for Agility | Collect the 1k experience lamp from Historian Minas | go:3256,3449,0; npc:Historian Minas
-Setting up for Agility | Use the X Marks the Spot lamp on Herblore | skill:Herblore 5
+Setting up for Agility | Collect the 1k experience lamp from Historian Minas | go:3256,3449,0; npc:Historian Minas; use:Antique lamp
+Setting up for Agility | Use the X Marks the Spot lamp on Herblore | skill:Herblore 5; use:Antique lamp
 Setting up for Agility | Fishing Trawler teleport: view Aleck's Hunter Emporium and have Tindel identify the rusty sword | gone:Rusty sword; go:2676,3152,0; npc:Tindel Marchant
-Setting up for Agility | Play a Fishing Trawler game for the diary (no need to finish) | go:2675,3170,0
+Setting up for Agility | Play a Fishing Trawler game for the diary (no need to finish) | go:2675,3170,0; obj:4977
 Setting up for Agility | Steal a silk in Ardougne and keep it | item:Silk; go:2662,3314,0
 Setting up for Agility | Ardougne diary: Wizard Cromperty's teleport, Probita's pets, the church altar | go:2683,3326,0; npc:Wizard Cromperty
 Setting up for Agility | Buy a rope at the general store | item:Rope
 Setting up for Agility | Buy dwellberries, chocolate dust and a bucket of milk from Hudo in the Grand Tree | item:Dwellberries; item:Chocolate dust; item:Bucket of milk; go:2449,3510,0; npc:Hudo
 Setting up for Agility | Complete Plague City | quest:Plague City
-Setting up for Agility | Sell the silk to the silk trader for 60 coins, and steal some cakes | gone:Silk; go:2655,3300,0; npc:Silk trader
+Setting up for Agility | Sell the silk to the silk trader for 60 coins, and steal some cakes | gone:Silk; go:2655,3300,0; npc:Silk trader; obj:11730
 Setting up for Agility | Complete Biohazard, keeping the poisoned Mourner in combat | quest:Biohazard
-Setting up for Agility | Enter the Combat Training Camp for the last Ardougne easy diary task | varbit:4458; go:2518,3356,0
+Setting up for Agility | Enter the Combat Training Camp for the last Ardougne easy diary task | varbit:4458; go:2518,3356,0; obj:2041
 ~ Do not collect the Ardougne diary rewards yet
-Setting up for Agility | Complete Jungle Potion | quest:Jungle Potion
+Setting up for Agility | Complete Jungle Potion | quest:Jungle Potion; npc:Trufitus
 Setting up for Agility | Buy the Dig Site supplies on Karamja, and tea from the east Varrock stall | item:Cup of tea; go:3271,3410,0
 Setting up for Agility | Complete The Dig Site | quest:The Dig Site
 Setting up for Agility | Complete Merlin's Crystal | quest:Merlin's Crystal
 ~ Keep enough combat experience for two poison kills on Sir Mordred; clean finds if short
-Setting up for Agility | Claim the Historian Minas lamps and use them on Hitpoints | go:3256,3449,0; npc:Historian Minas
-Setting up for Agility | Clean Varrock Museum finds for lamps to 30 Hitpoints | skill:Hitpoints 30; go:3256,3449,0
+Setting up for Agility | Claim the Historian Minas lamps and use them on Hitpoints | go:3256,3449,0; npc:Historian Minas; use:Antique lamp
+Setting up for Agility | Clean Varrock Museum finds for lamps to 30 Hitpoints | skill:Hitpoints 30; go:3256,3449,0; use:Antique lamp
 ~ Lamping is optional: try fewer Hitpoints and decide later if unsure
-Setting up for Agility | Collect the Ardougne easy diary reward and lamp to 32 Hitpoints | skill:Hitpoints 32; go:2574,3323,0; npc:Two-pints
+Setting up for Agility | Collect the Ardougne easy diary reward and lamp to 32 Hitpoints | skill:Hitpoints 32; go:2574,3323,0; npc:Two-pints; use:Antique lamp
 Setting up for Agility | Start Dragon Slayer I for an anti-dragon shield | item:Anti-dragon shield; go:3210,3220,1; npc:Duke Horacio
 ~ Default tank build: 32 Hitpoints, 40 Prayer, 13 combat
-Wilderness Agility | Collect 160k coins at the Agility Pyramid to start | coins:160000; go:3347,2827,0
+Wilderness Agility | Collect 160k coins at the Agility Pyramid to start | coins:160000; go:3347,2827,0; obj:10857
 ~ Optional instead: get the Rogue outfit and earn coins with Thieving
 ~ Watch the wiki's tanking video, at least the skeleton section
 Wilderness Agility | Buy cooked karambwans at the Shrimp and Parrot for the first trip | item:Cooked karambwan
@@ -102,7 +102,7 @@ Wilderness Agility | Store spare coins in the Last Man Standing coffer | go:3138
 Wilderness Agility | Later trips: 100-150+ laps, mass worlds for safety | skill:Agility 70; go:2997,3916,0
 Wilderness Agility | Bank 10m coins at least, 15-20m ideally |
 ~ On mass worlds, pray Protect from Missiles against dark bow pures and never bank loot there
-MTA and Protect Melee | Place a 2m bond offer at the Grand Exchange, then cancel it | area:3140,3465,3190,3515,0; go:3164,3480,0
+MTA and Protect Melee | Place a 2m bond offer at the Grand Exchange, then cancel it | area:3140,3465,3190,3515,0; go:3164,3480,0; npc:Grand Exchange Clerk
 ~ Keep every blighted supply: they become bounty crates later
 MTA and Protect Melee | Walk to Ferox Enclave and put the rest of your coins in its coffer | area:3120,3615,3160,3645,0; coins:<0; go:3150,3635,0
 ~ Unnote some food first in case you are attacked on the way to the Mage Arena bank
@@ -113,25 +113,25 @@ MTA and Protect Melee | Collect the bond money and buy the rune list for the Mag
 MTA and Protect Melee | Back at Ferox, coffer all but 4,000 coins | area:3120,3615,3160,3645,0; coins:<4000; go:3150,3635,0
 MTA and Protect Melee | Buy a staff of air and a staff of fire in Varrock | item:Staff of air; item:Staff of fire; go:3202,3434,0; npc:Zaff
 MTA and Protect Melee | Kill thugs in the Edgeville Dungeon for 15 Magic and a looting bag | skill:Magic 15; item:Looting bag; go:3097,3468,0; npc:Thug
-MTA and Protect Melee | Bag the blighted supplies and drop the mind runes | gone:Mind rune
-MTA and Protect Melee | Creature Graveyard: 351 points (831 for the master wand) | go:3362,3318,0
-MTA and Protect Melee | Telekinetic Theatre: 351 points (831 for the master wand) | go:3362,3318,0
-MTA and Protect Melee | Enchanting Chamber with Lvl-3 Enchant: 3,515 points (8,315 for the wand) | go:3362,3318,0
-MTA and Protect Melee | Alchemists' Playground: 501 points (1,031 for the wand) | go:3362,3318,0
+MTA and Protect Melee | Bag the blighted supplies and drop the mind runes | gone:Mind rune; use:Looting bag
+MTA and Protect Melee | Creature Graveyard: 351 points (831 for the master wand) | go:3362,3318,0; obj:10721
+MTA and Protect Melee | Telekinetic Theatre: 351 points (831 for the master wand) | go:3362,3318,0; obj:10721
+MTA and Protect Melee | Enchanting Chamber with Lvl-3 Enchant: 3,515 points (8,315 for the wand) | go:3362,3318,0; obj:10721
+MTA and Protect Melee | Alchemists' Playground: 501 points (1,031 for the wand) | go:3362,3318,0; obj:10721
 MTA and Protect Melee | Unlock Bones to Peaches; keep the staff of air and drop the staff of fire | varbit:1505; go:3362,3318,0; npc:Rewards Guardian
 MTA and Protect Melee | Clan Wars teleport for your coins and buy the Varrock rune list | item:Death rune; item:Fire rune; go:3253,3401,0; npc:Aubury
 ~ 500 fire, 500 earth, 500 water, 20 air and 500 death runes
 MTA and Protect Melee | Complete Daddy's Home | quest:Daddy's Home
-MTA and Protect Melee | Make planks from Lumberyard logs and finish two beginner Mahogany Homes contracts | go:3240,3471,0
+MTA and Protect Melee | Make planks from Lumberyard logs and finish two beginner Mahogany Homes contracts | go:3240,3471,0; npc:Marlo; npc:Sawmill operator
 MTA and Protect Melee | Reclaim Ardougne cloak 1 for its teleport | item:Ardougne cloak 1; go:2574,3323,0; npc:Two-pints
 MTA and Protect Melee | Get a banana hat | item:Banana hat
 MTA and Protect Melee | Take the boots of lightness in the Temple of Ikov | item:Boots of lightness; go:2676,3404,0
 MTA and Protect Melee | Buy cakes in Ardougne, plus a rope and an iron axe | item:Rope; item:Iron axe
-MTA and Protect Melee | Skip the Barbarian Assault tutorial and start Alfred Grimhand's Barcrawl | started:Alfred Grimhand's Barcrawl; go:2531,3569,0
+MTA and Protect Melee | Skip the Barbarian Assault tutorial and start Alfred Grimhand's Barcrawl | started:Alfred Grimhand's Barcrawl; go:2531,3569,0; npc:Captain Cain; npc:Barbarian guard
 MTA and Protect Melee | Work through Waterfall Quest up to the maze and pebble | item:Glarial's pebble
-MTA and Protect Melee | Complete Tree Gnome Village | quest:Tree Gnome Village
+MTA and Protect Melee | Complete Tree Gnome Village | quest:Tree Gnome Village; npc:King Bolren
 MTA and Protect Melee | Complete Fight Arena | quest:Fight Arena
-MTA and Protect Melee | Destroy the looting bag in the Wilderness to recover the blighted supplies | gone:Looting bag; varbit:5963
+MTA and Protect Melee | Destroy the looting bag in the Wilderness to recover the blighted supplies | gone:Looting bag; varbit:5963; use:Looting bag
 MTA and Protect Melee | Turn the supplies into bounty crates and sell them at the Rogues' Den | go:2905,3537,0; npc:Martin Thwait
 MTA and Protect Melee | Complete Waterfall Quest | quest:Waterfall Quest
 MTA and Protect Melee | Complete the Natural History Quiz | go:3256,3449,0; npc:Orlando Smith
@@ -140,7 +140,7 @@ MTA and Protect Melee | Make jungle camo at the Varrock Fancy Clothes Store | it
 MTA and Protect Melee | Complete Priest in Peril | quest:Priest in Peril
 MTA and Protect Melee | Buy an adamant sword in Varrock | item:Adamant sword
 MTA and Protect Melee | Walk briefly into Morytania | area:3400,3150,3900,3620,0; go:3423,3485,0
-MTA and Protect Melee | Complete Alfred Grimhand's Barcrawl | quest:Alfred Grimhand's Barcrawl
+MTA and Protect Melee | Complete Alfred Grimhand's Barcrawl | quest:Alfred Grimhand's Barcrawl; npc:Barbarian guard
 MTA and Protect Melee | Complete Scorpion Catcher | quest:Scorpion Catcher
 MTA and Protect Melee | Complete Vampyre Slayer | quest:Vampyre Slayer
 MTA and Protect Melee | Complete Ernest the Chicken | quest:Ernest the Chicken
@@ -165,21 +165,21 @@ Tempoross Setup | Complete Sleeping Giants | quest:Sleeping Giants
 Tempoross Setup | Get a forestry kit and do Forestry events on world 444 from now on | item:Forestry kit
 ~ Keep every leaf in the kit
 Tempoross Setup | Start The Giant Dwarf for Keldagrim | started:The Giant Dwarf
-Tempoross Setup | Smith an inventory of steel bars at the Blast Furnace | item:Steel bar; go:1940,4963,0
+Tempoross Setup | Smith an inventory of steel bars at the Blast Furnace | item:Steel bar; go:1940,4963,0; obj:9100
 ~ Pay the fee, withdraw 5 at a time, and cool the bars with the nearby bucket and water
-Tempoross Setup | Reach 26 Construction with Mahogany Homes and the Auburnvale sawmill | skill:Construction 26; go:3240,3471,0; npc:Amy
+Tempoross Setup | Reach 26 Construction with Mahogany Homes and the Auburnvale sawmill | skill:Construction 26; go:3240,3471,0; npc:Marlo
 ~ Beginner contracts to 20, oak to 26. Buy an adamant axe (and a mithril one below 31 Woodcutting)
-Tempoross Setup | Chop logs and fletch 900 arrow shafts | item:Arrow shaft
+Tempoross Setup | Chop logs and fletch 900 arrow shafts | item:Arrow shaft; use:Knife
 Tempoross Setup | Complete The Tourist Trap, with the reward on Fletching | quest:The Tourist Trap
 ~ Buy 15,000 feathers from Shantay and fletch 900 headless arrows first for 10 Fletching
-Tempoross Setup | Fletch 14,100 more arrow shafts, oak then willow at 30 Fletching |
+Tempoross Setup | Fletch 14,100 more arrow shafts, oak then willow at 30 Fletching | use:Knife
 ~ Deathpile and let the forestry kit despawn: it keeps the bark. Nettles and a Draynor jail guard make a quick death
-Tempoross Setup | Fletch 15,000 headless arrows while questing | item:Headless arrow
-Tempoross Setup | Buy 15,000 steel arrowtips at Hickton's, 250 a world, and fletch them | skill:Fletching 50; go:2823,3443,0; npc:Hickton
+Tempoross Setup | Fletch 15,000 headless arrows while questing | item:Headless arrow; use:Feather
+Tempoross Setup | Buy 15,000 steel arrowtips at Hickton's, 250 a world, and fletch them | skill:Fletching 50; go:2823,3443,0; npc:Hickton; use:Steel arrowtips
 ~ Drop the arrows afterwards: they are only for the experience
 Tempoross Setup | Complete Elemental Workshop I | quest:Elemental Workshop I
 Tempoross Setup | Complete Elemental Workshop II | quest:Elemental Workshop II
-Tempoross Setup | Make rings of dueling and a games necklace for teleports | item:Ring of dueling(8); item:Games necklace(8); go:3274,3186,0
+Tempoross Setup | Make rings of dueling and a games necklace for teleports | item:Ring of dueling(8); item:Games necklace(8); go:3274,3186,0; use:Gold bar
 ~ Telegrab gold bars in the Varrock West Bank basement; gems in Al Kharid. 3-4 rings at a time, wear one necklace
 Tempoross Setup | Complete Horror from the Deep | quest:Horror from the Deep
 Tempoross Setup | Complete Pandemonium | quest:Pandemonium
@@ -197,10 +197,10 @@ Tempoross Setup | Complete Sheep Herder | quest:Sheep Herder
 Tempoross Setup | Complete Observatory Quest | quest:Observatory Quest
 Tempoross Setup | Complete Clock Tower | quest:Clock Tower
 Tempoross Setup | Cook raw sardines from Gerrant's on the nearby range to 15 Cooking | skill:Cooking 15; go:3013,3224,0; npc:Gerrant
-Tempoross Setup | Fly fish and cook at Barbarian Village to 35 Fishing | skill:Fishing 35; go:3104,3424,0
+Tempoross Setup | Fly fish and cook at Barbarian Village to 35 Fishing | skill:Fishing 35; go:3104,3424,0; npc:Rod Fishing spot
 Tempoross Setup | Coffer your coins at Ferox and drop all runes and items | area:3120,3615,3160,3645,0; coins:<0; gone:Law rune; go:3150,3635,0
 ~ Keep the Ardougne cloak, boots of lightness, staff of air and jungle camo. Optional: an Imcando hammer
-Tempoross Setup | Train at Tempoross to 53 Fishing | skill:Fishing 53; go:3148,2832,0
+Tempoross Setup | Train at Tempoross to 53 Fishing | skill:Fishing 53; go:3148,2832,0; obj:41305-41307
 ~ Repair masts and totems for Construction experience; skip cooking. Get the combat achievements except Dress Like You Mean It and Why Cook?
 Tempoross Setup | Pull your loot: drop spirit flakes, open caskets and sell at the Rogues' Den | gone:Spirit flakes; go:2905,3537,0
 ~ Drop soaked pages unless you have the Tome of Water; drop the fish barrel, tackle box and big harpoonfish
@@ -212,19 +212,19 @@ Wintertodt | Get a tinderbox and a forestry kit from Draynor's Forestry shop | i
 ~ The Ardougne cloak can go now. Do all Woodcutting on world 444
 Wintertodt | Buy a rainbow scarf from Diango | item:Rainbow scarf; go:3081,3250,0; npc:Diango
 Wintertodt | Coffer your coins at Ferox again | area:3120,3615,3160,3645,0; coins:<0; go:3150,3635,0
-Wintertodt | Cut and burn logs to 50 Firemaking | skill:Firemaking 50
+Wintertodt | Cut and burn logs to 50 Firemaking | skill:Firemaking 50; use:Tinderbox
 ~ Do every Forestry event: you need a log basket, and leaves become supercompost with a compost potion
 ~ At 35 Woodcutting and Firemaking, cut teaks on the north of the Isle of Souls
 Wintertodt | Complete Death to the Dorgeshuun | quest:Death to the Dorgeshuun
 Wintertodt | Complete Tears of Guthix | quest:Tears of Guthix
 ~ Bring swamp tar, buy an empty bullseye lantern from Miltog and light it with oil from his still
-Wintertodt | Drink the tears for Sailing experience (30 at least) | skill:Sailing 30
+Wintertodt | Drink the tears for Sailing experience (30 at least) | skill:Sailing 30; npc:Juna
 ~ Sailing is optional for the route but helps in a few places
 Wintertodt | Complete Vale Totems for the fletching knife with maple logs | quest:Vale Totems
 Wintertodt | Get a log basket from Forestry | item:Log basket
 ~ A UIM can hand the Forester logs an inventory at a time; no noted logs needed
 ~ Optional: knock out 50 Crafting with the flax here
-Wintertodt | Train Wintertodt to 50 Construction from the braziers | skill:Construction 50; go:1630,3962,0
+Wintertodt | Train Wintertodt to 50 Construction from the braziers | skill:Construction 50; go:1630,3962,0; obj:29322
 ~ Get every Wintertodt combat achievement. Mass worlds with the Wintertodt Scouter plugin are the efficient way
 ~ Or get 50 Construction from Mahogany Homes instead: you only need some magic logs, uncut diamonds and the points
 Wintertodt | At 38 Construction, break off and complete Scrambled! | quest:Scrambled!
@@ -237,7 +237,7 @@ Smithing and Renovation | Store the log basket, forestry kit and jungle camo in 
 Smithing and Renovation | Buy a Chronicle with charges | item:Chronicle
 Smithing and Renovation | Buy pickaxes up to rune at Nurmof's and mine to 52 Mining | skill:Mining 52; npc:Nurmof
 Smithing and Renovation | Kill the Ice Queen with fire blast for ice gloves | item:Ice gloves; go:2846,3516,0; npc:Ice Queen
-Smithing and Renovation | Train Giant's Foundry to 70 Smithing with only coins, ice gloves and the Chronicle | skill:Smithing 70; go:3360,3150,0
+Smithing and Renovation | Train Giant's Foundry to 70 Smithing with only coins, ice gloves and the Chronicle | skill:Smithing 70; go:3360,3150,0; obj:44635
 ~ Buy the moulds first. Consider staying for the Smiths' uniform, and buy the tunic last
 Smithing and Renovation | Store your coins and the uniform, then clear all items and equipment | empty
 Smithing and Renovation | Complete Recruitment Drive | quest:Recruitment Drive
@@ -258,7 +258,7 @@ Smithing and Renovation | Buy the portal runes from Ali Morrisane or the Mage Ar
 ~ 1,800 law, 500 soul, 200 mind, 500 water, 400 fire, 1,400 air and 700 earth runes
 Smithing and Renovation | Direct your portals: Salve Graveyard, Fenkenstrain's Castle, Battlefront, Arceuus Library, Draynor Manor, West Ardougne, Mind Altar | go:house
 Smithing and Renovation | Direct your portals: Varrock, Ardougne, Falador, Lumbridge, Camelot, Kourend, Civitas illa Fortis | go:house
-Smithing and Renovation | Move your house to Hosidius | house:8; npc:Estate agent
+Smithing and Renovation | Move your house to Hosidius | house:8; npc:Estate agent; say:move my house; say:Hosidius
 ~ Deathbanked, take the Tithe Farm teleport home, then Battlefront to the Farming Guild
 Farming and Building | Complete Nature Spirit | quest:Nature Spirit
 Farming and Building | Complete Lost City | quest:Lost City
@@ -268,22 +268,22 @@ Farming and Building | Work through Fairytale II until you can use fairy rings |
 Farming and Building | Complete The Garden of Death | quest:The Garden of Death
 Farming and Building | Reach 34 Farming | skill:Farming 34
 ~ Optimal: The Giant Dwarf, Forgettable Tale, Creature of Fenkenstrain and Garden of Tranquillity. Lazy: bagged plants and garden pies
-Farming and Building | Train Tithe Farm to 65 Farming | skill:Farming 65; go:1796,3501,0
+Farming and Building | Train Tithe Farm to 65 Farming | skill:Farming 65; go:1796,3501,0; obj:1762
 Farming and Building | Buy the seed box and auto-weed | item:Seed box; go:1796,3501,0
 ~ Keep guam, marrentill and harralander seeds for quests; save the extra points
 Farming and Building | Make a games necklace and ring of dueling, then loot Wintertodt into your looting bag | item:Looting bag; go:1630,3962,0
 ~ Keep herbs, seeds, gems, magic logs and burnt pages (teak logs optional); drop ores, other logs, fish and the rest
 Farming and Building | Buy a few thousand air runes and drop the staff of air | gone:Staff of air; item:Air rune
-Farming and Building | Fill the rune pouch with air, earth and law runes | item:Rune pouch; item:Air rune; item:Earth rune; item:Law rune
+Farming and Building | Fill the rune pouch with air, earth and law runes | item:Rune pouch; item:Air rune; item:Earth rune; item:Law rune; use:Rune pouch
 Farming and Building | Deathbank at the Nightmare | deathbank; go:3727,3300,0
 ~ Tithe Farm teleport home, then the Fenkenstrain's Castle portal back. Optional: train 70 Cooking now
 Farming and Building | From the deathbank take guams, uncut sapphires, emeralds, rubies, coins and the rune pouch | item:Rune pouch; item:Coins
 ~ Leave the uncut diamonds: you need them at the end of the route
-Farming and Building | Cut and sell the sapphires and emeralds; give the rubies to the Museum Curator | go:3257,3448,0; npc:Curator Haig Halen
-Farming and Building | Make the guams into attack potions and drop them |
-Farming and Building | Blow glass in Port Phasmatys to 50 Crafting | skill:Crafting 50; go:3687,3467,0
+Farming and Building | Cut and sell the sapphires and emeralds; give the rubies to the Museum Curator | go:3257,3448,0; npc:Curator Haig Halen; use:Chisel
+Farming and Building | Make the guams into attack potions and drop them | use:Guam leaf
+Farming and Building | Blow glass in Port Phasmatys to 50 Crafting | skill:Crafting 50; go:3687,3467,0; use:Glassblowing pipe
 Farming and Building | Take your Construction kit from the deathbank and buy a rune axe from Perry | item:Rune axe
-Farming and Building | Train teak Mahogany Homes to 82 Construction | skill:Construction 82; go:1780,3623,0
+Farming and Building | Train teak Mahogany Homes to 82 Construction | skill:Construction 82; go:1780,3623,0; npc:Angelo
 ~ Buy a plank sack, then Amy's saw. Watch for the aggressive ghouls at the Salve Graveyard teleport
 Farming and Building | Build teak shelves 2, an achievement gallery and a basic jewellery box | go:house
 Farming and Building | Build a portal nexus and a mounted digsite pendant | go:house
@@ -322,7 +322,7 @@ Questing for Combats | Complete Contact!, experience on Ranged | quest:Contact!
 Questing for Combats | Complete The Fremennik Trials | quest:The Fremennik Trials
 ~ You will need to deathpile for this one
 Questing for Combats | Complete The Fremennik Isles, experience on Strength | quest:The Fremennik Isles
-Questing for Combats | Train at ammonite crabs to 65 Attack and 65 Strength | skill:Attack 65; skill:Strength 65; go:3723,3807,0
+Questing for Combats | Train at ammonite crabs to 65 Attack and 65 Strength | skill:Attack 65; skill:Strength 65; go:3723,3807,0; npc:Ammonite Crab
 ~ 56 Strength, 60 Attack, 65 Strength, 65 Attack. Helm of neitiznot at 55 Defence
 Questing for Combats | Do birdhouse runs to 57 Hunter | skill:Hunter 57; go:3723,3807,0
 ~ Farm fruit trees for a Hespori seed; keep fossils for lamps
@@ -331,11 +331,11 @@ Barrows Gloves | Complete Shades of Mort'ton | quest:Shades of Mort'ton
 Barrows Gloves | Complete the easy Karamja diary | varbit:3578
 Barrows Gloves | Complete Shilo Village | quest:Shilo Village
 Barrows Gloves | Complete One Small Favour | quest:One Small Favour
-Barrows Gloves | Move your house to Taverley and deathbank at Hespori | house:2; deathbank; go:1231,3729,0
-Barrows Gloves | Play the Rogues' Den for the full Rogue equipment, storing pieces at home | go:2905,3537,0
-Barrows Gloves | Get a fighter torso while still deathbanked | item:Fighter torso; go:2531,3569,0
+Barrows Gloves | Move your house to Taverley and deathbank at Hespori | house:2; deathbank; go:1231,3729,0; say:move my house; say:Taverley
+Barrows Gloves | Play the Rogues' Den for the full Rogue equipment, storing pieces at home | go:2905,3537,0; npc:Brian O'Richard
+Barrows Gloves | Get a fighter torso while still deathbanked | item:Fighter torso; go:2531,3569,0; npc:Captain Cain
 ~ Leave the rune pouch in the deathbank: it cannot come in
-Barrows Gloves | Make prayer potions from your ranarrs at the Grand Exchange and note them |
+Barrows Gloves | Make prayer potions from your ranarrs at the Grand Exchange and note them | use:Ranarr potion (unf); use:Snape grass
 ~ Keep one unfinished potion for the next quest. Move your house back to Hosidius
 Barrows Gloves | Complete His Faithful Servants | quest:His Faithful Servants
 Barrows Gloves | Complete Eadgar's Ruse | quest:Eadgar's Ruse
@@ -348,9 +348,9 @@ Barrows Gloves | Complete Tale of the Righteous | quest:Tale of the Righteous
 Barrows Gloves | Complete Eagles' Peak | quest:Eagles' Peak
 Barrows Gloves | Complete the Kourend and Kebos easy and medium diaries | varbit:7925; varbit:7926
 Barrows Gloves | Complete the easy combat achievements | ca:easy
-Barrows Gloves | Get a rune defender at the Warriors' Guild and show it to Lorelai | item:Rune defender; go:2876,3546,0
+Barrows Gloves | Get a rune defender at the Warriors' Guild and show it to Lorelai | item:Rune defender; go:2876,3546,0; npc:Kamfreena; npc:Lorelai
 Barrows Gloves | Complete Family Crest | quest:Family Crest
-Barrows Gloves | Complete Underground Pass, alching the staff after | quest:Underground Pass
+Barrows Gloves | Complete Underground Pass, alching the staff after | quest:Underground Pass; npc:King Lathas
 Barrows Gloves | Complete Legends' Quest, all experience on Herblore | quest:Legends' Quest
 Barrows Gloves | Complete Recipe for Disaster: Freeing Sir Amik Varze | quest:Recipe for Disaster - Sir Amik Varze
 Barrows Gloves | Complete A Kingdom Divided | quest:A Kingdom Divided
@@ -370,10 +370,10 @@ Guardians of the Rift | Complete Mourning's End Part I | quest:Mourning's End Pa
 Guardians of the Rift | Work through Mourning's End Part II until the death talisman | started:Mourning's End Part II
 Guardians of the Rift | Complete Temple of the Eye | quest:Temple of the Eye
 Guardians of the Rift | Complete the easy Varrock diary and keep the armour | varbit:4479
-Guardians of the Rift | Deathbank and play Guardians of the Rift to 65 Runecraft | skill:Runecraft 65; go:3104,9571,0
+Guardians of the Rift | Deathbank and play Guardians of the Rift to 65 Runecraft | skill:Runecraft 65; go:3104,9571,0; obj:43700
 ~ At 50, search for a large pouch and 25+ pearls. Hope for a catalytic talisman
 Guardians of the Rift | Complete Mourning's End Part II | quest:Mourning's End Part II
-Guardians of the Rift | Finish the full Raiments of the Eye set |
+Guardians of the Rift | Finish the full Raiments of the Eye set | obj:43700
 ~ The abyssal lantern now stores in your house. Put a catalytic talisman on the hat if you have one
 Slayer | Complete Ghosts Ahoy | quest:Ghosts Ahoy
 ~ Alch your nature runes away as you go
@@ -381,14 +381,14 @@ Slayer | Complete Lunar Diplomacy | quest:Lunar Diplomacy
 Slayer | Complete Dream Mentor if you have 85 combat | quest:Dream Mentor; optional
 Slayer | Build a lunar altar and a mahogany eagle lectern | built:29148; built:13642-13648; go:house
 Slayer | Reach 250 quest points | qp:250
-Slayer | Make super attack potions and about 250 teleport to house tablets | item:Teleport to house
+Slayer | Make super attack potions and about 250 teleport to house tablets | item:Teleport to house; use:Irit potion (unf); use:Eye of newt
 Slayer | Point boost: Turael tasks, Mazchna every 10th, Konar every 50th, to task 250 or 500 | varbit:4069>=250; npc:Turael
 Slayer | Train Slayer to 58 | skill:Slayer 58
 ~ At 30 Slayer, The Slug Menace gives proselyte armour
 Slayer | Complete Rum Deal | quest:Rum Deal
 Slayer | Complete Cabin Fever | quest:Cabin Fever
-Slayer | Kill cave horrors for a black mask and make an imbued Slayer helmet | item:Slayer helmet (i); go:3740,9373,0
-Slayer | Get a dragon defender | item:Dragon defender; go:2876,3546,0
+Slayer | Kill cave horrors for a black mask and make an imbued Slayer helmet | item:Slayer helmet (i); go:3740,9373,0; npc:Cave horror
+Slayer | Get a dragon defender | item:Dragon defender; go:2876,3546,0; npc:Lorelai
 Slayer | Build the master STASH unit in the Warriors' Guild for your helmet, battleaxe and defender |
 70 Herblore | Reach 70 Hunter | skill:Hunter 70
 70 Herblore | Reach 70 Mining | skill:Mining 70
@@ -409,7 +409,7 @@ Slayer | Build the master STASH unit in the Warriors' Guild for your helmet, bat
 70 Herblore | Finish 70 Herblore farming herbs for Mastering Mixology | skill:Herblore 70; go:1388,2920,0
 ~ Keep a cadantine seed and belladonna seeds for Song of the Elves
 Song of the Elves | Plant belladonna for a stack of nightshade | item:Nightshade
-Song of the Elves | Reclaim Iban's staff and upgrade it for the fight | item:Iban's staff (u)
+Song of the Elves | Reclaim Iban's staff and upgrade it for the fight | item:Iban's staff (u); npc:Dark mage
 Song of the Elves | Complete Song of the Elves | quest:Song of the Elves
 ~ Phoenix necklaces triggered by nightshade cancel Seren's big attack. Iban Blast with mystic and a shortbow
 ~ A death here is a deathbank, not a deathpile: dying again before reclaiming loses it
