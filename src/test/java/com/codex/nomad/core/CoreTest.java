@@ -496,4 +496,18 @@ public class CoreTest
 			id -> id == 4151 ? 2_000_000 : id == 385 ? 900 : 3, id -> id == 314);
 		assertEquals(java.util.Arrays.asList(4151, 314, 385), order);
 	}
+
+	@Test
+	public void theInventoryForecastFollowsThePaceOfFilling()
+	{
+		Forecast f = new Forecast();
+		f.note(0, 10);
+		assertEquals(-1, f.untilFull(30_000, 10));
+		f.note(60_000, 12);
+		f.note(120_000, 14);
+		// 4 slots in 2 minutes: 14 left takes 7 minutes.
+		assertEquals(420_000, f.untilFull(120_000, 14));
+		f.note(130_000, 5);
+		assertEquals(-1, f.untilFull(130_000, 5));
+	}
 }

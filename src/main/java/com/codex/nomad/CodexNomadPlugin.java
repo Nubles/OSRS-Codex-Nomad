@@ -207,6 +207,8 @@ public class CodexNomadPlugin extends Plugin
 	private String guidedKey;
 	/** Where to send the player when no route step is in hand, or a deathpile needs saving first. */
 	private WorldPoint errand;
+	/** When the inventory fills at the pace it is filling. */
+	private final com.codex.nomad.core.Forecast forecast = new com.codex.nomad.core.Forecast();
 	/** The errand in hand, guided in the scene and the interfaces. */
 	private volatile Errand job;
 	private boolean errandUrgent;
@@ -550,6 +552,7 @@ public class CodexNomadPlugin extends Plugin
 				pickUp(Items.minus(after, before));
 				lastInv = after;
 				readPouch();
+				forecast.note(nomad.played, slotsUsed(c));
 			}
 			else
 			{
@@ -1847,6 +1850,12 @@ public class CodexNomadPlugin extends Plugin
 				urgent = pile;
 			}
 		}
+		long full = forecast.untilFull(nomad.played, v.invUsed);
+		if (config.plaque() && full > 0 && full <= 10 * 60_000L)
+		{
+			rows.add(new Plaque.Row("Inventory full", "~" + Math.max(1, (full + 30_000) / 60_000) + " min",
+				(28 - v.invUsed) + ((28 - v.invUsed) == 1 ? " slot" : " slots") + " left at this pace", full <= 2 * 60_000L ? Theme.EMBER : Theme.GOLD));
+		}
 		Trip t = nomad.activeTrip();
 		Fetch f = t == null ? null : Views.plan(nomad, t, lookup(), here);
 		Errand was = job;
@@ -2074,6 +2083,16 @@ public class CodexNomadPlugin extends Plugin
 			c = i != null ? i : c;
 		}
 		return c == null ? null : c.getName();
+	}
+
+	private static int slotsUsed(ItemContainer c)
+	{
+		int n = 0;
+		for (Item i : c.getItems())
+		{
+			n += i.getId() > 0 ? 1 : 0;
+		}
+		return n;
 	}
 
 	/** Every place each item is kept, by its common id, for the inventory tooltip. */
