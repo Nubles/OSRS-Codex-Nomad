@@ -84,4 +84,46 @@ public final class Ui
 	{
 		return skill.getName();
 	}
+
+	/**
+	 * Breaks text into rows no wider than the room, at spaces where it can and inside a word
+	 * only when one word is wider than a whole row, so every letter shows.
+	 */
+	public static java.util.List<String> wrap(String text, java.awt.FontMetrics fm, int room)
+	{
+		java.util.List<String> rows = new java.util.ArrayList<>();
+		if (text == null || text.isEmpty())
+		{
+			rows.add("");
+			return rows;
+		}
+		room = Math.max(20, room);
+		String row = "";
+		for (String word : text.trim().split(" +"))
+		{
+			String next = row.isEmpty() ? word : row + " " + word;
+			if (fm.stringWidth(next) <= room)
+			{
+				row = next;
+				continue;
+			}
+			if (!row.isEmpty())
+			{
+				rows.add(row);
+			}
+			row = word;
+			while (fm.stringWidth(row) > room && row.length() > 1)
+			{
+				int cut = row.length() - 1;
+				while (cut > 1 && fm.stringWidth(row.substring(0, cut)) > room)
+				{
+					cut--;
+				}
+				rows.add(row.substring(0, cut));
+				row = row.substring(cut);
+			}
+		}
+		rows.add(row);
+		return rows;
+	}
 }

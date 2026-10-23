@@ -2,11 +2,12 @@ package com.codex.nomad.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.util.Collections;
+import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.border.EmptyBorder;
 
@@ -31,7 +32,7 @@ class Row extends Card
 			+ (note == null ? "" : "<br>" + Ui.escape(note)) + "</html>");
 	}
 
-	private static final class Body extends JComponent
+	private static final class Body extends Fitted
 	{
 		private final int icon;
 		private final long qty;
@@ -50,8 +51,13 @@ class Row extends Card
 			this.figure = figure;
 			this.figureColor = figureColor;
 			this.note = note;
-			setOpaque(false);
-			setPreferredSize(new Dimension(10, icon >= 0 ? Row.HEIGHT - 4 : note == null ? 18 : 32));
+		}
+
+		@Override
+		int heightFor(int width)
+		{
+			int h = lay(null, width, icon >= 0 ? Well.SIZE + 10 : 0, 14, 15);
+			return icon >= 0 ? Math.max(Row.HEIGHT - 4, h) : h;
 		}
 
 		@Override
@@ -59,7 +65,6 @@ class Row extends Card
 		{
 			Graphics2D g = (Graphics2D) graphics.create();
 			Theme.smooth(g);
-			int w = getWidth();
 			int x = 0;
 			if (icon >= 0)
 			{
@@ -72,28 +77,55 @@ class Row extends Card
 				}
 				x = Well.SIZE + 10;
 			}
-			g.setFont(Theme.title());
-			FontMetrics bold = g.getFontMetrics();
-			int fw = figure == null ? 0 : bold.stringWidth(figure);
-			if (figure != null)
-			{
-				Ui.shadowed(g, figure, w - fw, 14, figureColor);
-			}
-			g.setFont(Theme.body());
-			FontMetrics body = g.getFontMetrics();
-			Ui.shadowed(g, Ui.clip(name, body, w - x - fw - 6), x, 14, Theme.TEXT);
-			if (note != null)
-			{
-				g.setFont(Theme.small());
-				FontMetrics small = g.getFontMetrics();
-				Ui.shadowed(g, Ui.clip(note, small, w - x), x, 29, Theme.TEXT_MUTED);
-			}
+			lay(g, getWidth(), x, 14, 15);
 			g.dispose();
+		}
+
+		private int lay(Graphics2D g, int w, int x, int top, int gap)
+		{
+			return Row.lay(this, g, w, x, top, gap, name, figure, figureColor, note);
 		}
 	}
 
+	/**
+	 * Paints a name with its figure and a quieter note beneath, both wrapping to the width, or
+	 * with no graphics only measures them.
+	 *
+	 * @return the height used
+	 */
+	static int lay(JComponent c, Graphics2D g, int w, int x, int top, int gap, String name, String figure, Color figureColor, String note)
+	{
+		FontMetrics bold = c.getFontMetrics(Theme.title());
+		FontMetrics body = c.getFontMetrics(Theme.body());
+		FontMetrics small = c.getFontMetrics(Theme.small());
+		int fw = figure == null ? 0 : bold.stringWidth(figure);
+		List<String> names = Ui.wrap(name, body, w - x - fw - 6);
+		List<String> notes = note == null ? Collections.emptyList() : Ui.wrap(note, small, w - x);
+		int noteTop = top + (names.size() - 1) * 13 + gap;
+		int bottom = notes.isEmpty() ? top + (names.size() - 1) * 13 + 4 : noteTop + (notes.size() - 1) * 11 + 4;
+		if (g != null)
+		{
+			if (figure != null)
+			{
+				g.setFont(Theme.title());
+				Ui.shadowed(g, figure, w - fw, top, figureColor);
+			}
+			g.setFont(Theme.body());
+			for (int i = 0; i < names.size(); i++)
+			{
+				Ui.shadowed(g, names.get(i), x, top + i * 13, Theme.TEXT);
+			}
+			g.setFont(Theme.small());
+			for (int i = 0; i < notes.size(); i++)
+			{
+				Ui.shadowed(g, notes.get(i), x, noteTop + i * 11, Theme.TEXT_MUTED);
+			}
+		}
+		return bottom;
+	}
+
 	/** A title and figure with an optional quiet line, for use inside another card. */
-	static final class Plain extends JComponent
+	static final class Plain extends Fitted
 	{
 		private final String name;
 		private final String figure;
@@ -106,9 +138,13 @@ class Row extends Card
 			this.figure = figure == null || figure.isEmpty() ? null : figure;
 			this.figureColor = figureColor;
 			this.note = note == null || note.isEmpty() ? null : note;
-			setOpaque(false);
-			setPreferredSize(new Dimension(10, this.note == null ? 16 : 30));
 			setToolTipText(this.note == null ? name : "<html><b>" + Ui.escape(name) + "</b><br>" + Ui.escape(this.note) + "</html>");
+		}
+
+		@Override
+		int heightFor(int width)
+		{
+			return Row.lay(this, null, width, 0, 13, 14, name, figure, figureColor, note);
 		}
 
 		@Override
@@ -116,21 +152,7 @@ class Row extends Card
 		{
 			Graphics2D g = (Graphics2D) graphics.create();
 			Theme.smooth(g);
-			int w = getWidth();
-			g.setFont(Theme.title());
-			FontMetrics bold = g.getFontMetrics();
-			int fw = figure == null ? 0 : bold.stringWidth(figure);
-			if (figure != null)
-			{
-				Ui.shadowed(g, figure, w - fw, 13, figureColor);
-			}
-			g.setFont(Theme.body());
-			Ui.shadowed(g, Ui.clip(name, g.getFontMetrics(), w - fw - 6), 0, 13, Theme.TEXT);
-			if (note != null)
-			{
-				g.setFont(Theme.small());
-				Ui.shadowed(g, Ui.clip(note, g.getFontMetrics(), w), 0, 27, Theme.TEXT_MUTED);
-			}
+			Row.lay(this, g, getWidth(), 0, 13, 14, name, figure, figureColor, note);
 			g.dispose();
 		}
 	}
