@@ -1379,6 +1379,11 @@ public class CodexNomadPlugin extends Plugin
 
 	private int keep()
 	{
+		// An ultimate ironman keeps nothing on an unsafe death, Protect Item included (OSRS Wiki).
+		if (nomad != null && nomad.account == 2)
+		{
+			return 0;
+		}
 		Player me = client.getLocalPlayer();
 		if (me != null && me.getSkullIcon() >= 0)
 		{

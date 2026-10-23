@@ -358,8 +358,8 @@ public class NomadPanel extends PluginPanel
 		}
 		JPanel tiles = new JPanel(new GridLayout(1, 2, 6, 0));
 		tiles.setOpaque(false);
-		tiles.add(new StatTile(Format.coins(v.carriedWorth), "Carried", (28 - v.invUsed) + " slots free", Theme.GOLD));
-		tiles.add(new StatTile(Format.coins(v.dropNow), "Dying now", "keeps " + Format.coins(v.keepNow), v.dropNow > 0 ? Theme.EMBER : Theme.TEAL));
+		tiles.add(new StatTile(Format.coins(v.carriedWorth), "Carried", (28 - v.invUsed) + (28 - v.invUsed == 1 ? " slot free" : " slots free"), Theme.GOLD));
+		tiles.add(new StatTile(Format.coins(v.dropNow), "Dying now", v.keepCount == 0 ? "keeps nothing" : "keeps " + Format.coins(v.keepNow), v.dropNow > 0 ? Theme.EMBER : Theme.TEAL));
 		p.add(tiles);
 		if (!v.kept.isEmpty())
 		{
