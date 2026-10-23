@@ -1434,8 +1434,11 @@ public class CodexNomadPlugin extends Plugin
 				}
 				else if (p.kind == Kind.DEATHBANK)
 				{
+					Store bank = nomad.deathbank();
+					String brief = bank == null ? null : Death.brief(bank.name);
 					rows.add(new Plaque.Row(p.title, p.exact ? Format.coins(p.worth) : "?",
-						wild ? "You are in the Wilderness: dying here wipes it" : "Any unsafe death wipes it", wild ? Theme.BLOOD : Theme.EMBER));
+						wild ? "You are in the Wilderness: dying here wipes it" : brief != null ? "Reclaim: " + brief : "Any unsafe death wipes it",
+						wild ? Theme.BLOOD : Theme.EMBER));
 					tint = wild ? Theme.BLOOD : Theme.EMBER;
 				}
 			}

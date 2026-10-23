@@ -1,5 +1,6 @@
 package com.codex.nomad.ui;
 
+import com.codex.nomad.core.Death;
 import com.codex.nomad.core.Kind;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
@@ -487,7 +488,8 @@ public class NomadPanel extends PluginPanel
 			: !s.exact ? "?" : s.worth > 0 ? Format.coins(s.worth) : "";
 		String sub = (s.exact ? s.items.size() + (s.items.size() == 1 ? " item" : " items") : "Estimated from your death")
 			+ (s.distance >= 0 ? " · " + s.distance + " tiles" : "")
-			+ (s.live ? " · read live" : s.seen > 0 ? " · " + Format.ago(view.now - s.seen) : "");
+			+ (s.live ? " · read live" : s.seen > 0 ? " · " + Format.ago(view.now - s.seen) : "")
+			+ (s.kind == Kind.DEATHBANK && Death.claim(s.name) != null ? " · " + Death.claim(s.name) : "");
 		card.add(new Row.Plain(s.name, figure, c == null ? Theme.GOLD : c, sub), BorderLayout.NORTH);
 		StackPanel in = new StackPanel(4, 0);
 		in.setBorder(new EmptyBorder(6, 0, 0, 0));

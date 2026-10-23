@@ -38,6 +38,10 @@ public class CoreTest
 		assertEquals(0L, Death.fee("Zulrah"));
 		assertEquals(-1L, Death.fee("Volcanic Mine"));
 		assertNull(Death.claim("an instance"));
+		assertEquals("Torfinn, 100k", Death.brief("Vorkath"));
+		assertEquals("Priestess Zul-Gwenwynig, free", Death.brief("Zulrah"));
+		assertEquals("Magical chest, 50k", Death.brief("Grotesque Guardians"));
+		assertEquals("Petrified Pete, 150 numulite", Death.brief("Volcanic Mine"));
 	}
 
 	@Test

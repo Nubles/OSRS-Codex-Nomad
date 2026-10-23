@@ -22,6 +22,8 @@ public final class Death
 	private static final Map<String, String> CLAIMS = new HashMap<>();
 	/** The fee in coins, where it is paid in coins. */
 	private static final Map<String, Long> FEES = new HashMap<>();
+	/** The same in a few words, for tight places: "Torfinn, 100k". */
+	private static final Map<String, String> BRIEFS = new HashMap<>();
 
 	static
 	{
@@ -55,6 +57,15 @@ public final class Death
 		{
 			FEES.put(lair, fee);
 		}
+		String who2 = who.startsWith("the ") ? Character.toUpperCase(who.charAt(4)) + who.substring(5) : who;
+		BRIEFS.put(lair, who2.replaceAll(" (on|past|north of) .*", "") + ", "
+			+ (fee > 0 ? (fee >= 1000 ? fee / 1000 + "k" : String.valueOf(fee)) : fee == 0 ? "free" : note));
+	}
+
+	/** Who holds a lair's deathbank and the price, in a few words, or null. */
+	public static String brief(String lair)
+	{
+		return lair == null ? null : BRIEFS.get(lair);
 	}
 
 	/** How to get a lair's deathbank back: "Reclaim from Torfinn for 100k", or null. */
