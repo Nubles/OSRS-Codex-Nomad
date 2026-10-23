@@ -98,7 +98,7 @@ Wilderness Agility | Run the Wilderness Agility Course: about 50 laps on the fir
 ~ Paying the 150k fee hands you a looting bag. Use blighted supplies on later trips
 Wilderness Agility | Sell loot to Martin Thwait's Lost and Found after each trip, 2-3 per world | go:2905,3537,0; npc:Martin Thwait
 ~ Destroy the looting bag inside the Wilderness to get its loot: other players can see it
-Wilderness Agility | Store spare coins in the Last Man Standing coffer | go:3138,3635,0
+Wilderness Agility | Store spare coins in the Last Man Standing coffer | go:3138,3635,0; varbit:5305>=1
 Wilderness Agility | Later trips: 100-150+ laps, mass worlds for safety | skill:Agility 70; go:2997,3916,0
 Wilderness Agility | Bank 10m coins at least, 15-20m ideally |
 ~ On mass worlds, pray Protect from Missiles against dark bow pures and never bank loot there
@@ -285,7 +285,7 @@ Farming and Building | Blow glass in Port Phasmatys to 50 Crafting | skill:Craft
 Farming and Building | Take your Construction kit from the deathbank and buy a rune axe from Perry | item:Rune axe
 Farming and Building | Train teak Mahogany Homes to 82 Construction | skill:Construction 82; go:1780,3623,0; npc:Angelo
 ~ Buy a plank sack, then Amy's saw. Watch for the aggressive ghouls at the Salve Graveyard teleport
-Farming and Building | Build teak shelves 2, an achievement gallery and a basic jewellery box | go:house
+Farming and Building | Build teak shelves 2, an achievement gallery and a basic jewellery box | go:house; built:29154-29156
 Farming and Building | Build a portal nexus and a mounted digsite pendant | go:house
 ~ Optional: a restoration pool, a servant's money bag, and teak or mahogany storage furniture
 Questing for Combats | Take your items from the deathbank into your looting bag, keeping a marrentill out | nodeathbank; item:Looting bag
@@ -297,7 +297,7 @@ Questing for Combats | Complete Troll Stronghold | quest:Troll Stronghold
 Questing for Combats | Complete Making History | quest:Making History
 Questing for Combats | Complete Bone Voyage | quest:Bone Voyage
 ~ Take the Historian Minas lamps for Herblore. Clean herbs before noting them
-Questing for Combats | Unlock Barbarian Farming so you no longer need a seed dibber |
+Questing for Combats | Unlock Barbarian Farming so you no longer need a seed dibber | varbit:9609>=1
 Questing for Combats | Complete The Golem | quest:The Golem
 Questing for Combats | Complete Shadow of the Storm, experience on Ranged | quest:Shadow of the Storm
 Questing for Combats | Complete Recipe for Disaster: Freeing Evil Dave | quest:Recipe for Disaster - Evil Dave
