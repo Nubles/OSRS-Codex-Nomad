@@ -99,4 +99,16 @@ public class ReadsTest
 		assertEquals(12L, (long) got.get(ItemID.BLANKRUNE_HIGH));
 		assertEquals(3L, (long) got.get(ItemID.GOTR_GUARDIAN_ESSENCE));
 	}
+
+	@Test
+	public void compostBinsCountOnlyWhatIsReady()
+	{
+		assertEquals(Long.valueOf(15), CompostBins.read(false, 94).get(ItemID.BUCKET_COMPOST));
+		assertEquals(Long.valueOf(7), CompostBins.read(false, 54).get(ItemID.BUCKET_SUPERCOMPOST));
+		assertEquals(Long.valueOf(30), CompostBins.read(true, 205).get(ItemID.BUCKET_ULTRACOMPOST));
+		assertEquals(Long.valueOf(30), CompostBins.read(true, 93).get(ItemID.BUCKET_COMPOST));
+		assertTrue(CompostBins.read(false, 5).isEmpty());
+		assertEquals("Compost bin, Farming Guild", CompostBins.near(4922).name);
+		assertTrue(CompostBins.near(4922).big);
+	}
 }

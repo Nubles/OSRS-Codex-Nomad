@@ -556,6 +556,11 @@ public class CodexNomadPlugin extends Plugin
 			nomad.account = event.getValue();
 			changed();
 		}
+		CompostBins.Bin bin = CompostBins.near(lastRegion);
+		if (bin != null && v == bin.varbit)
+		{
+			readBin();
+		}
 		if (v == VarbitID.INSIDE_WILDERNESS && event.getValue() == 1 && config.wildWarning())
 		{
 			warnWilderness();
@@ -760,12 +765,45 @@ public class CodexNomadPlugin extends Plugin
 			return;
 		}
 		lastRegion = region;
+		readBin();
 		String lair = Death.lair(region);
 		Store bank = nomad.deathbank();
 		if (lair != null && bank != null && !lair.equals(bank.name) && config.wildWarning())
 		{
 			say("A death at " + lair + " wipes your deathbank at " + bank.name
 				+ (bank.exact ? " (" + Format.coins(Items.worth(bank.items, this::price)) + ")" : "") + ". Collect it first if you can.", true);
+		}
+	}
+
+	/** Reads the compost bin nearby, if the game is telling us about one here. */
+	private void readBin()
+	{
+		CompostBins.Bin bin = CompostBins.near(lastRegion);
+		if (bin == null || nomad == null)
+		{
+			return;
+		}
+		long now = System.currentTimeMillis();
+		Map<Integer, Long> items = CompostBins.read(bin.big, client.getVarbitValue(bin.varbit));
+		Store s = nomad.store(bin.key);
+		if (items.isEmpty())
+		{
+			if (s != null)
+			{
+				nomad.remove(bin.key);
+				changed();
+			}
+			return;
+		}
+		if (s == null)
+		{
+			s = new Store(bin.key, Kind.KEPT, bin.name);
+			nomad.put(s);
+		}
+		if (!items.equals(s.items))
+		{
+			s.fill(items, now);
+			changed();
 		}
 	}
 
