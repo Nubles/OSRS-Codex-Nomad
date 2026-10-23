@@ -147,7 +147,7 @@ final class Views
 			p.kind = Kind.FLOOR;
 			p.key = s.key;
 			p.title = "On the floor, world " + s.world;
-			p.note = "Gone when its timer runs out";
+			p.note = roomNote("Gone when its timer runs out", room(s.items, inv, look), 28 - v.invUsed);
 			p.worth = Items.worth(s.items, look::price);
 			p.until = s.until;
 			p.count = s.items.size();
@@ -160,7 +160,7 @@ final class Views
 			p.kind = Kind.DEATHPILE;
 			p.key = s.key;
 			p.title = "Deathpile";
-			p.note = "Lost when its timer runs out";
+			p.note = roomNote("Lost when its timer runs out", room(s.items, inv, look), 28 - v.invUsed);
 			p.worth = Items.worth(s.items, look::price);
 			p.ticksLeft = s.ticksLeft;
 			p.count = s.items.size();
@@ -513,6 +513,33 @@ final class Views
 			n += look.stackable(e.getKey()) ? 1 : (int) Math.min(28, e.getValue());
 		}
 		return Math.min(28, n);
+	}
+
+	/** Inventory slots it takes to pick a pile up, counting stacks you already carry as free. */
+	static int room(Map<Integer, Long> pile, Map<Integer, Long> inv, Lookup look)
+	{
+		int n = 0;
+		for (Map.Entry<Integer, Long> e : pile.entrySet())
+		{
+			boolean stacks = look.stackable(e.getKey());
+			if (stacks && inv.getOrDefault(e.getKey(), 0L) > 0)
+			{
+				continue;
+			}
+			n += stacks ? 1 : (int) Math.min(28, e.getValue());
+		}
+		return n;
+	}
+
+	/** "Needs 21 slots; you have 3 free", or the plain note when there is room. */
+	static String roomNote(String note, int need, int free)
+	{
+		if (need <= 0)
+		{
+			return note;
+		}
+		return need > free ? "Needs " + need + (need == 1 ? " slot" : " slots") + "; you have " + free + " free"
+			: note + " · needs " + need + (need == 1 ? " slot" : " slots");
 	}
 
 	static View.ItemLine line(int id, long qty, Lookup look)
