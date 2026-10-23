@@ -214,6 +214,8 @@ final class Views
 			idle.add(line);
 		}
 		v.idle = idle;
+		v.losses = losses(n, look);
+		v.lostWorth = n.lostWorth;
 		v.idleSlots = 0;
 		for (View.IdleLine i : idle)
 		{
@@ -515,6 +517,41 @@ final class Views
 			n += look.stackable(e.getKey()) ? 1 : (int) Math.min(28, e.getValue());
 		}
 		return Math.min(28, n);
+	}
+
+	static List<View.LossLine> losses(Nomad n, Lookup look)
+	{
+		List<View.LossLine> out = new ArrayList<>();
+		for (com.codex.nomad.core.Loss l : n.losses())
+		{
+			View.LossLine line = new View.LossLine();
+			line.at = l.at;
+			line.cause = l.cause;
+			line.worth = l.worth;
+			List<Map.Entry<Integer, Long>> items = new ArrayList<>(l.items.entrySet());
+			items.sort((a, b) -> Long.compare(look.price(b.getKey()) * b.getValue(), look.price(a.getKey()) * a.getValue()));
+			line.item = items.isEmpty() ? -1 : items.get(0).getKey();
+			line.what = what(items, look);
+			out.add(line);
+		}
+		return out;
+	}
+
+	/** The two most valuable things by name, and how many more. */
+	static String what(List<Map.Entry<Integer, Long>> byWorth, Lookup look)
+	{
+		StringBuilder b = new StringBuilder();
+		for (int i = 0; i < Math.min(2, byWorth.size()); i++)
+		{
+			Map.Entry<Integer, Long> e = byWorth.get(i);
+			b.append(i == 0 ? "" : byWorth.size() == 2 ? " and " : ", ").append(look.name(e.getKey()))
+				.append(e.getValue() > 1 ? " x" + Format.amount(e.getValue()) : "");
+		}
+		if (byWorth.size() > 2)
+		{
+			b.append(" and ").append(byWorth.size() - 2).append(" more");
+		}
+		return b.toString();
 	}
 
 	/** Inventory slots it takes to pick a pile up, counting stacks you already carry as free. */

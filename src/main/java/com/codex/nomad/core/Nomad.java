@@ -33,6 +33,7 @@ public final class Nomad
 	static final int TRIPS = 30;
 	static final int PILES = 6;
 	static final int FLOORS = 20;
+	static final int LOSSES = 40;
 
 	int version = VERSION;
 	/** The ironman varbit: 2 is ultimate; -1 not yet read. */
@@ -54,6 +55,10 @@ public final class Nomad
 	Set<String> ticked = new HashSet<>();
 	/** True while the player follows the route to Prifddinas. */
 	public boolean following;
+	/** What was lost for good, newest last, the latest {@link #LOSSES}. */
+	List<Loss> losses = new ArrayList<>();
+	/** All that was ever lost, in coins at the time, including losses too old to list. */
+	public long lostWorth;
 
 	// ---- what is carried ----
 
@@ -220,6 +225,31 @@ public final class Nomad
 			}
 		}
 		return gone;
+	}
+
+	// ---- losses ----
+
+	/** Notes something gone for good. */
+	public void lose(String cause, Map<Integer, Long> items, long worth, long now)
+	{
+		if (items == null || items.isEmpty())
+		{
+			return;
+		}
+		losses.add(new Loss(now, cause, items, worth));
+		lostWorth += worth;
+		while (losses.size() > LOSSES)
+		{
+			losses.remove(0);
+		}
+	}
+
+	/** Losses, newest first. */
+	public List<Loss> losses()
+	{
+		List<Loss> out = new ArrayList<>(losses);
+		Collections.reverse(out);
+		return out;
 	}
 
 	// ---- dropped items ----
@@ -581,6 +611,35 @@ public final class Nomad
 						n.touched.put(k, v);
 					}
 				});
+			}
+		}
+		catch (RuntimeException ex)
+		{
+			damaged = true;
+		}
+		if (o.has("losses") && o.get("losses").isJsonArray())
+		{
+			for (JsonElement e : o.getAsJsonArray("losses"))
+			{
+				try
+				{
+					Loss l = gson.fromJson(e, Loss.class);
+					if (l != null && l.items != null && l.cause != null)
+					{
+						n.losses.add(l);
+					}
+				}
+				catch (RuntimeException ex)
+				{
+					damaged = true;
+				}
+			}
+		}
+		try
+		{
+			if (o.has("lostWorth"))
+			{
+				n.lostWorth = o.get("lostWorth").getAsLong();
 			}
 		}
 		catch (RuntimeException ex)

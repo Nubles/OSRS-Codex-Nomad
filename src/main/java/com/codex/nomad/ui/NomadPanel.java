@@ -453,6 +453,7 @@ public class NomadPanel extends PluginPanel
 		if (v.stores.isEmpty())
 		{
 			p.add(note("Nomad remembers every place you keep things. Deposit into a STASH unit, open a costume room piece or the seed vault, and it shows here. Deathpiles, deathbanks, dropped items, the tool leprechaun, the Blast Furnace, fossil storage and the coffers appear on their own."));
+			lost(p, v);
 			return p;
 		}
 		p.add(new StatTile(Format.coins(v.keptWorth), "Kept away", v.stores.size() + " places remembered", Theme.GOLD));
@@ -471,7 +472,23 @@ public class NomadPanel extends PluginPanel
 			}
 			p.add(store(s));
 		}
+		lost(p, v);
 		return p;
+	}
+
+	/** Gone for good: deathpiles that ran out, wiped deathbanks, vanished floors, newest first. */
+	private void lost(StackPanel p, View v)
+	{
+		if (v.losses.isEmpty())
+		{
+			return;
+		}
+		p.add(new SectionHeader("Lost for good", Format.coins(v.lostWorth)));
+		for (View.LossLine l : v.losses)
+		{
+			p.add(new Row(l.item, 0, icons, l.cause, Format.coins(l.worth), Theme.BLOOD,
+				Format.ago(v.now - l.at) + " · " + l.what, null));
+		}
 	}
 
 	private JComponent store(View.StoreView s)

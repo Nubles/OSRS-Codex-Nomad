@@ -1065,6 +1065,7 @@ public class CodexNomadPlugin extends Plugin
 		dropping.values().removeIf(t -> client.getTickCount() - t > DROP_TICKS);
 		for (Map.Entry<Store, Map<Integer, Long>> e : nomad.expire(now).entrySet())
 		{
+			nomad.lose("Dropped on world " + e.getKey().world + " and vanished", e.getValue(), Items.worth(e.getValue(), this::price), now);
 			say("Dropped on world " + e.getKey().world + " and now gone: " + itemsText(e.getValue()) + ".", true);
 			changed();
 		}
@@ -1208,6 +1209,7 @@ public class CodexNomadPlugin extends Plugin
 			if (bank != null)
 			{
 				nomad.remove(Nomad.DEATHBANK);
+				nomad.lose("Deathbank at " + bank.name + " wiped by a death", bank.items, Items.worth(bank.items, this::price), now);
 				say("That death wiped your deathbank at " + bank.name + ".", true);
 			}
 			Store pile = nomad.pile(d.lost, deathAt.getX(), deathAt.getY(), deathAt.getPlane(), now);
@@ -1217,6 +1219,7 @@ public class CodexNomadPlugin extends Plugin
 		{
 			if (bank != null && !bank.name.equals(d.place))
 			{
+				nomad.lose("Deathbank at " + bank.name + " wiped by a death", bank.items, Items.worth(bank.items, this::price), now);
 				say("Your deathbank at " + bank.name + " was wiped by this death.", true);
 			}
 			Store s = new Store(Nomad.DEATHBANK, Kind.DEATHBANK, d.place);
@@ -1398,6 +1401,7 @@ public class CodexNomadPlugin extends Plugin
 		}
 		for (Store gone : nomad.tick())
 		{
+			nomad.lose("Deathpile ran out of time", gone.items, Items.worth(gone.items, this::price), nowMs);
 			say("A deathpile ran out of time: " + Format.coins(Items.worth(gone.items, this::price)) + " is gone.", true);
 			changed();
 		}
@@ -1412,6 +1416,7 @@ public class CodexNomadPlugin extends Plugin
 			Map<Integer, Long> lost = nomad.endRaid();
 			if (!lost.isEmpty())
 			{
+				nomad.lose("Left on the Chambers of Xeric floor", lost, Items.worth(lost, this::price), nowMs);
 				say("You left the Chambers of Xeric with things on its floor; they are gone: " + itemsText(lost) + ".", true);
 				changed();
 			}

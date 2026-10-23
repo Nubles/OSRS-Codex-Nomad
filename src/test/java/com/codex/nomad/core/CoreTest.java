@@ -455,4 +455,22 @@ public class CoreTest
 		assertEquals("Tombs of Amascut", Death.lair(14160));
 		assertEquals(-1, Death.fee("Tombs of Amascut"));
 	}
+
+	@Test
+	public void lossesAreKeptAndSurviveASave()
+	{
+		Nomad n = new Nomad();
+		for (int i = 0; i < 45; i++)
+		{
+			n.lose("Deathpile ran out of time", items(4151, 1), 1_000, i);
+		}
+		n.lose("Nothing", items(), 5, 99);
+		assertEquals(40, n.losses().size());
+		assertEquals(45_000, n.lostWorth);
+		assertEquals(44, n.losses().get(0).at);
+		Nomad back = Nomad.read(GSON, n.write(GSON)).nomad;
+		assertEquals(40, back.losses().size());
+		assertEquals(45_000, back.lostWorth);
+		assertEquals(Long.valueOf(1), back.losses().get(0).items.get(4151));
+	}
 }

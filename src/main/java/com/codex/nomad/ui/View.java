@@ -36,6 +36,8 @@ public final class View
 	public List<Peril> perils = Collections.emptyList();
 	public List<IdleLine> idle = Collections.emptyList();
 	public int idleSlots;
+	public List<LossLine> losses = Collections.emptyList();
+	public long lostWorth;
 	public long idleAfter;
 	public List<NoteLine> notes = Collections.emptyList();
 
@@ -97,6 +99,18 @@ public final class View
 		public long seen;
 		/** Carried but never checked, so what it holds is unknown. */
 		public boolean unchecked;
+	}
+
+	/** Something gone for good. */
+	public static final class LossLine
+	{
+		public long at;
+		public String cause;
+		public long worth;
+		/** The most valuable thing in it, for the icon. */
+		public int item;
+		/** "Abyssal whip, Dragon boots and 12 more". */
+		public String what;
 	}
 
 	/** A carried stack that has sat untouched. */
