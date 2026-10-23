@@ -53,6 +53,7 @@ import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.ActorDeath;
 import net.runelite.api.events.ChatMessage;
 import net.runelite.api.events.GameStateChanged;
+import net.runelite.api.events.GameObjectSpawned;
 import net.runelite.api.events.GameTick;
 import net.runelite.api.events.ItemContainerChanged;
 import net.runelite.api.events.ItemDespawned;
@@ -812,6 +813,41 @@ public class CodexNomadPlugin extends Plugin
 		ItemContainer worn = client.getItemContainer(InventoryID.WORN);
 		Item w = worn == null ? null : worn.getItem(net.runelite.api.EquipmentInventorySlot.WEAPON.getSlotIdx());
 		return w == null ? -1 : w.getId();
+	}
+
+	@Subscribe
+	public void onGameObjectSpawned(GameObjectSpawned event)
+	{
+		int[] capes = nomad == null ? null : CapeHanger.holds(event.getGameObject().getId());
+		if (capes == null)
+		{
+			return;
+		}
+		Map<Integer, Long> items = new HashMap<>();
+		for (int id : capes)
+		{
+			items.put(id, 1L);
+		}
+		Store s = nomad.store(CapeHanger.KEY);
+		if (items.isEmpty())
+		{
+			if (s != null)
+			{
+				nomad.remove(CapeHanger.KEY);
+				changed();
+			}
+			return;
+		}
+		if (s == null)
+		{
+			s = new Store(CapeHanger.KEY, Kind.KEPT, CapeHanger.NAME);
+			nomad.put(s);
+		}
+		if (!items.equals(s.items))
+		{
+			s.fill(items, System.currentTimeMillis());
+			changed();
+		}
 	}
 
 	/** Reads the compost bin nearby, if the game is telling us about one here. */

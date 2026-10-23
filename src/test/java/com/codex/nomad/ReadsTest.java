@@ -111,4 +111,12 @@ public class ReadsTest
 		assertEquals("Compost bin, Farming Guild", CompostBins.near(4922).name);
 		assertTrue(CompostBins.near(4922).big);
 	}
+
+	@Test
+	public void theCapeHangerKnowsItsCapes()
+	{
+		assertEquals(ItemID.INFERNAL_CAPE, CapeHanger.holds(net.runelite.api.gameval.ObjectID.POH_MOUNTED_INFERNAL_CAPE)[0]);
+		assertEquals(0, CapeHanger.holds(CapeHanger.EMPTY).length);
+		assertEquals(null, CapeHanger.holds(1));
+	}
 }
