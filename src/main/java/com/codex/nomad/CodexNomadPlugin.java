@@ -184,6 +184,9 @@ public class CodexNomadPlugin extends Plugin
 	/** Items taken out of the inventory and worn since the tick before last, for STASH deposits. */
 	private final Map<Integer, Long> removed = new HashMap<>();
 	private final Map<Integer, Long> removedBefore = new HashMap<>();
+	/** Items that arrived in the inventory since the last tick. */
+	private final Map<Integer, Long> gained = new HashMap<>();
+	private HerbSack herbSack;
 	/** Items the player clicked Drop on, by the tick of the click. */
 	private final Map<Integer, Integer> dropping = new HashMap<>();
 
@@ -223,6 +226,7 @@ public class CodexNomadPlugin extends Plugin
 		stash = StashBook.load(gson);
 		costume = Costume.load(gson);
 		route = Route.load();
+		herbSack = new HerbSack(id -> name(id));
 		marker = new Marker(client);
 		guide = new RouteGuide(client, eventBus, route, id -> name(itemManager.canonicalize(id)));
 		highlights = new Highlights(client, outlines, guide);
@@ -325,6 +329,7 @@ public class CodexNomadPlugin extends Plugin
 		removed.clear();
 		removedBefore.clear();
 		dropping.clear();
+		gained.clear();
 		stashDeposit = -1;
 		stashWithdraw = -1;
 		plaqueRows = new ArrayList<>();
@@ -430,6 +435,10 @@ public class CodexNomadPlugin extends Plugin
 			Map<Integer, Long> after = contents(c);
 			Map<Integer, Long> before = id == InventoryID.INV ? lastInv : lastWorn;
 			Items.add(removed, Items.minus(before, after));
+			if (id == InventoryID.INV)
+			{
+				Items.add(gained, Items.minus(after, before));
+			}
 			if (id == InventoryID.INV)
 			{
 				nomad.touch(before, after);
@@ -897,6 +906,10 @@ public class CodexNomadPlugin extends Plugin
 		}
 		String message = Text.removeTags(event.getMessage());
 		guide.heard(message);
+		if (herbSack.heard(message, nomad, System.currentTimeMillis()))
+		{
+			changed();
+		}
 		if (nomad.following)
 		{
 			observeRoute();
@@ -1004,6 +1017,11 @@ public class CodexNomadPlugin extends Plugin
 		}
 		lastTickMs = nowMs;
 		settleStash();
+		if (herbSack.tick(removed, gained, nomad, nowMs))
+		{
+			changed();
+		}
+		gained.clear();
 		removedBefore.clear();
 		removedBefore.putAll(removed);
 		removed.clear();
