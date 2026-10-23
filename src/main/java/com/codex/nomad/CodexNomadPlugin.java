@@ -11,6 +11,7 @@ import com.codex.nomad.core.StashBook;
 import com.codex.nomad.core.Store;
 import com.codex.nomad.core.Trip;
 import com.codex.nomad.overlay.Marker;
+import com.codex.nomad.overlay.People;
 import com.codex.nomad.overlay.Plaque;
 import com.codex.nomad.ui.Arrivals;
 import com.codex.nomad.ui.Format;
@@ -64,6 +65,7 @@ import net.runelite.client.chat.ChatMessageBuilder;
 import net.runelite.client.chat.ChatMessageManager;
 import net.runelite.client.chat.QueuedMessage;
 import net.runelite.client.config.ConfigManager;
+import net.runelite.client.eventbus.EventBus;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.ClientShutdown;
 import net.runelite.client.events.ConfigChanged;
@@ -75,6 +77,7 @@ import net.runelite.client.plugins.cluescrolls.clues.emote.STASHUnit;
 import net.runelite.client.ui.ClientToolbar;
 import net.runelite.client.ui.NavigationButton;
 import net.runelite.client.ui.overlay.OverlayManager;
+import net.runelite.client.ui.overlay.outline.ModelOutlineRenderer;
 import net.runelite.client.ui.overlay.worldmap.WorldMapPoint;
 import net.runelite.client.ui.overlay.worldmap.WorldMapPointManager;
 import net.runelite.client.util.AsyncBufferedImage;
@@ -148,8 +151,20 @@ public class CodexNomadPlugin extends Plugin
 	@Inject
 	private CodexNomadConfig config;
 
+	@Inject
+	private EventBus eventBus;
+
+	@Inject
+	private ModelOutlineRenderer outlines;
+
 	private final Plaque plaque = new Plaque();
 	private Marker marker;
+	private People people;
+	private RouteGuide guide;
+	/** The plaque as the last publish left it, before the route row is added each tick. */
+	private List<Plaque.Row> plaqueRows = new ArrayList<>();
+	private Color plaqueTint = Theme.GOLD;
+	private String guidedKey;
 	private final List<WorldMapPoint> mapPoints = new ArrayList<>();
 	private final Map<Integer, String> names = new HashMap<>();
 	private final Set<String> warned = new HashSet<>();
@@ -194,6 +209,8 @@ public class CodexNomadPlugin extends Plugin
 		costume = Costume.load(gson);
 		route = Route.load();
 		marker = new Marker(client);
+		guide = new RouteGuide(client, eventBus, route, id -> name(itemManager.canonicalize(id)));
+		people = new People(client, outlines, guide::people);
 		Arrivals arrivals = new Arrivals();
 		ItemIcons icons = (itemId, onLoaded) ->
 		{
@@ -248,6 +265,7 @@ public class CodexNomadPlugin extends Plugin
 		clientToolbar.addNavigation(navButton);
 		overlayManager.add(plaque);
 		overlayManager.add(marker);
+		overlayManager.add(people);
 		clientThread.invokeLater(() ->
 		{
 			loadProfile();
@@ -264,10 +282,13 @@ public class CodexNomadPlugin extends Plugin
 	{
 		overlayManager.remove(plaque);
 		overlayManager.remove(marker);
+		overlayManager.remove(people);
 		clientToolbar.removeNavigation(navButton);
 		clearMap();
+		RouteGuide g = guide;
 		clientThread.invokeLater(() ->
 		{
+			g.stop();
 			save();
 			nomad = null;
 			profile = null;
@@ -287,6 +308,7 @@ public class CodexNomadPlugin extends Plugin
 		removedBefore.clear();
 		stashDeposit = -1;
 		stashWithdraw = -1;
+		plaqueRows = new ArrayList<>();
 		plaque.show(null, null, null);
 		marker.show(null);
 	}
@@ -651,6 +673,11 @@ public class CodexNomadPlugin extends Plugin
 			return;
 		}
 		String message = Text.removeTags(event.getMessage());
+		guide.heard(message);
+		if (nomad.following)
+		{
+			observeRoute();
+		}
 		if (message.startsWith("You have items stored in an item retrieval service."))
 		{
 			sawRetrieval = true;
@@ -768,7 +795,8 @@ public class CodexNomadPlugin extends Plugin
 		}
 		warnPiles();
 		checkLogin();
-		autoTickRoute();
+		observeRoute();
+		guideRoute();
 		ticks++;
 		if (ticks % SAVE_TICKS == 0)
 		{
@@ -818,56 +846,53 @@ public class CodexNomadPlugin extends Plugin
 		}
 	}
 
-	/** Route steps tied to items tick once all their items are held while the step is in hand. */
-	private void autoTickRoute()
+	/** Ticks the route step in hand when everything it asks for holds now. */
+	private void observeRoute()
 	{
-		if (!nomad.following || ticks % 5 != 0)
-		{
-			return;
-		}
-		Set<String> held = new HashSet<>();
-		for (int id : nomad.carried().keySet())
-		{
-			held.add(name(itemManager.canonicalize(id)).toLowerCase(Locale.ENGLISH));
-		}
-		Route.Account account = account();
-		for (Route.Step s : route.heldNow(nomad.ticked(), account, i -> held.contains(i.toLowerCase(Locale.ENGLISH))))
+		List<Route.Step> done = guide.observe(nomad, here());
+		for (Route.Step s : done)
 		{
 			nomad.tick(s.key(), true);
+		}
+		if (!done.isEmpty())
+		{
+			guide.stale();
+			Route.Step next = guide.current(nomad);
+			say(next == null ? "Route finished: welcome to Prifddinas." : "Route step done. Next: " + next.text);
 			changed();
 		}
 	}
 
+	/** Keeps the arrow, path, outlines and plaque row on the route step in hand, each tick. */
+	private void guideRoute()
+	{
+		Route.Step s = client.getGameState() == GameState.LOGGED_IN ? guide.current(nomad) : null;
+		String key = s == null ? null : s.key();
+		if (key == null ? guidedKey != null : !key.equals(guidedKey))
+		{
+			guidedKey = key;
+			changed();
+		}
+		if (s == null)
+		{
+			guide.stop();
+		}
+		else
+		{
+			guide.guide(s, config.guideArrow(), config.guideNpcs(), config.shortestPath());
+		}
+		List<Plaque.Row> rows = new ArrayList<>(plaqueRows);
+		if (s != null && config.routeStep())
+		{
+			String way = RouteGuide.way(here(), guide.target(s));
+			rows.add(new Plaque.Row("Route " + (s.index + 1) + " of " + route.size(), way == null ? "" : way, s.text, Theme.GOLD));
+		}
+		plaque.show("Nomad", plaqueTint, rows);
+	}
+
 	private Route.Account account()
 	{
-		Map<String, Quest> quests = new HashMap<>();
-		for (Quest q : Quest.values())
-		{
-			quests.put(q.getName(), q);
-		}
-		Map<String, Skill> skills = new HashMap<>();
-		for (Skill s : Skill.values())
-		{
-			skills.put(s.getName(), s);
-		}
-		boolean in = client.getGameState() == GameState.LOGGED_IN;
-		Map<String, Boolean> questCache = new HashMap<>();
-		return new Route.Account()
-		{
-			@Override
-			public boolean questDone(String quest)
-			{
-				Quest q = quests.get(quest);
-				return in && q != null && questCache.computeIfAbsent(quest, k -> q.getState(client) == QuestState.FINISHED);
-			}
-
-			@Override
-			public int level(String skill)
-			{
-				Skill s = skills.get(skill);
-				return in && s != null ? client.getRealSkillLevel(s) : 0;
-			}
-		};
+		return guide.account();
 	}
 
 	// ---- guards ----
@@ -936,7 +961,8 @@ public class CodexNomadPlugin extends Plugin
 		NomadPanel target = panel;
 		if (nomad == null)
 		{
-			plaque.show(null, null, null);
+			plaqueRows = new ArrayList<>();
+		plaque.show(null, null, null);
 			marker.show(null);
 			clearMap();
 			if (target != null)
@@ -1009,11 +1035,17 @@ public class CodexNomadPlugin extends Plugin
 				labels.add("Next stop: " + s.name);
 			}
 		}
-		if (config.routeStep() && v.route != null && v.route.following && v.route.current >= 0)
+		Route.Step step = guide.current(nomad);
+		WorldPoint target = guide.target(step);
+		if (target != null)
 		{
-			View.StepView s = v.route.steps.get(v.route.current);
-			rows.add(new Plaque.Row("Route " + (v.route.done + 1) + " of " + v.route.total, "", s.text, Theme.GOLD));
+			String label = step.text.length() > 40 ? step.text.substring(0, 38) + "..." : step.text;
+			marks.add(new Marker.Mark(target, "Route: " + label, Theme.GOLD));
+			points.add(target);
+			labels.add("Route step " + (step.index + 1) + ": " + step.text);
 		}
+		plaqueRows = rows;
+		plaqueTint = tint;
 		plaque.show("Nomad", tint, rows);
 		marker.show(config.pointer() ? marks : null);
 		if (!config.pointer())

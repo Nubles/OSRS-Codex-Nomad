@@ -101,7 +101,7 @@ public class Plaque extends Overlay
 		int height = PAD + bold.getHeight() + 2;
 		for (Row r : s.rows)
 		{
-			height += small.getHeight() + 3 + (r.note == null ? 0 : small.getHeight());
+			height += small.getHeight() + 3 + small.getHeight() * lines(r.note, small, textW).size();
 		}
 		height += PAD - 2;
 
@@ -126,13 +126,48 @@ public class Plaque extends Overlay
 			int fw = small.stringWidth(r.figure);
 			Ui.shadowed(g, Ui.clip(r.name, small, textW - fw - 6), x, y, Theme.TEXT);
 			Ui.shadowed(g, r.figure, x + textW - fw, y, r.color);
-			if (r.note != null)
+			for (String line : lines(r.note, small, textW))
 			{
 				y += small.getHeight();
-				Ui.shadowed(g, Ui.clip(r.note, small, textW), x, y, Theme.TEXT_MUTED);
+				Ui.shadowed(g, line, x, y, Theme.TEXT_MUTED);
 			}
 			y += 1;
 		}
 		return new Dimension(width, height);
+	}
+
+	/** A note broken into up to three lines that fit, the last clipped. */
+	private static List<String> lines(String note, FontMetrics fm, int width)
+	{
+		List<String> out = new java.util.ArrayList<>();
+		if (note == null)
+		{
+			return out;
+		}
+		StringBuilder line = new StringBuilder();
+		String[] words = note.split(" ");
+		for (int i = 0; i < words.length; i++)
+		{
+			String next = line.length() == 0 ? words[i] : line + " " + words[i];
+			if (fm.stringWidth(next) <= width || line.length() == 0)
+			{
+				line = new StringBuilder(next);
+				continue;
+			}
+			if (out.size() == 2)
+			{
+				StringBuilder rest = new StringBuilder(line);
+				for (int j = i; j < words.length; j++)
+				{
+					rest.append(' ').append(words[j]);
+				}
+				out.add(Ui.clip(rest.toString(), fm, width));
+				return out;
+			}
+			out.add(line.toString());
+			line = new StringBuilder(words[i]);
+		}
+		out.add(Ui.clip(line.toString(), fm, width));
+		return out;
 	}
 }

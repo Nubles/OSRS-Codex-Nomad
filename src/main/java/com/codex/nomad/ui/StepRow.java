@@ -28,7 +28,7 @@ class StepRow extends Card
 		{
 			accent(Theme.GOLD).highlighted(true);
 		}
-		add(new Box(s.done, s.met, current), BorderLayout.WEST);
+		add(new Box(s.done, s.met || s.passed, current), BorderLayout.WEST);
 		StackPanel text = new StackPanel(2, 0);
 		Color color = s.done ? Theme.TEXT_FAINT : current ? Theme.TEXT : Theme.TEXT_MUTED;
 		text.add(Ui.wrapped(s.text, current ? Theme.body() : Theme.small(), color, NomadPanel.WIDTH - 40));
@@ -39,22 +39,31 @@ class StepRow extends Card
 				text.add(Ui.wrapped(tip, Theme.small(), Theme.GOLD_DIM, NomadPanel.WIDTH - 40));
 			}
 		}
+		if (s.optional && !s.done)
+		{
+			text.add(Ui.label("Optional", Theme.small(), Theme.TEXT_FAINT));
+		}
 		if (s.check != null && (current || !s.done))
 		{
-			text.add(Ui.label(s.met ? "Done in game" : s.check, Theme.small(), s.met ? Theme.GREEN : Theme.TEAL));
+			text.add(Ui.wrapped(s.met ? "Done in game" : (current ? "Watching: " : "") + s.check, Theme.small(),
+				s.met ? Theme.GREEN : Theme.TEAL, NomadPanel.WIDTH - 40));
 		}
 		JPanel holder = new JPanel(new BorderLayout());
 		holder.setOpaque(false);
 		holder.add(text, BorderLayout.NORTH);
 		add(holder, BorderLayout.CENTER);
-		if (!s.met)
+		if (s.met)
 		{
-			onClick(toggle);
-			setToolTipText(s.done ? "Click to untick" : "Click when done");
+			setToolTipText("The game says this is done");
+		}
+		else if (s.passed)
+		{
+			setToolTipText("Done: the game says you are past it");
 		}
 		else
 		{
-			setToolTipText("The game says this is done");
+			onClick(toggle);
+			setToolTipText(s.done ? "Click to untick" : "Nomad ticks this itself; click if you did it another way");
 		}
 	}
 

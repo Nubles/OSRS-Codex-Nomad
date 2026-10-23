@@ -2,7 +2,9 @@ package com.codex.nomad;
 
 import static org.junit.Assert.assertTrue;
 import com.codex.nomad.core.Route;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import net.runelite.api.Quest;
 import net.runelite.api.Skill;
@@ -26,9 +28,12 @@ public class RouteNamesTest
 		}
 		for (Route.Step s : Route.load().steps())
 		{
-			for (String q : s.quests)
+			List<String> named = new ArrayList<>(s.quests);
+			named.addAll(s.started);
+			for (String q : named)
 			{
 				assertTrue("unknown quest " + q, quests.contains(q));
+				assertTrue("no start point for " + q, Route.load().questStart(q) != null);
 			}
 			for (String k : s.skills.keySet())
 			{

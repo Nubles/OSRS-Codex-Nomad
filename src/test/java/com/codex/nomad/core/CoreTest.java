@@ -180,7 +180,20 @@ public class CoreTest
 			assertTrue(s.text, keys.add(s.key()));
 			assertFalse(s.text.isEmpty());
 		}
-		Route.Account none = new Route.Account()
+		Route.Account fresh = new Route.Account()
+		{
+			public boolean questDone(String quest)
+			{
+				return false;
+			}
+
+			public int level(String skill)
+			{
+				return 1;
+			}
+		};
+		assertEquals(0, r.current(new HashSet<>(), fresh).index);
+		Route.Account xmts = new Route.Account()
 		{
 			public boolean questDone(String quest)
 			{
@@ -192,16 +205,91 @@ public class CoreTest
 				return 1;
 			}
 		};
-		Route.Step first = r.current(new HashSet<>(), none);
-		assertEquals(0, first.index);
-		Set<String> ticked = new HashSet<>();
-		for (int i = 0; i < 5; i++)
-		{
-			ticked.add(r.steps().get(i).key());
-		}
-		// The quest step after them ticks itself, so the next step is the one beyond it.
+		// The steps before a quest the game says is done are passed, so the next step is the one beyond it.
 		assertEquals("X Marks the Spot", r.steps().get(5).quests.get(0));
-		assertEquals(6, r.current(ticked, none).index);
+		assertTrue(r.passed(r.steps().get(0), xmts));
+		assertEquals(6, r.current(new HashSet<>(), xmts).index);
+		// Every step either checks itself or lies before one that does.
+		for (Route.Step s : r.steps())
+		{
+			assertTrue(s.text, s.watched() || s.optional || r.steps().stream().anyMatch(o -> o.index > s.index && o.checkable()));
+		}
+	}
+
+	@Test
+	public void stepsInHandTickInTheMoment()
+	{
+		Route r = Route.parse(java.util.Arrays.asList(
+			"A | Sell the starter kit | gone:Bronze dagger; item:Bread",
+			"A | Go to Ferox with no coins | area:3120,3615,3160,3645,0; coins:<0",
+			"A | Build a wardrobe | built:18784-18787; go:3000,3000,0",
+			"A | A quest | quest:Cook's Assistant"));
+		Route.Account none = new Route.Account()
+		{
+			public boolean questDone(String quest)
+			{
+				return false;
+			}
+
+			public int level(String skill)
+			{
+				return 1;
+			}
+		};
+		int[] at = {3222, 3218, 0};
+		long[] coins = {25};
+		Set<String> held = new HashSet<>(java.util.Arrays.asList("bread", "bronze dagger"));
+		Route.Moment m = new Route.Moment()
+		{
+			public boolean held(String name)
+			{
+				return held.contains(name);
+			}
+
+			public int[] here()
+			{
+				return at;
+			}
+
+			public List<String> inventory()
+			{
+				return new java.util.ArrayList<>(held);
+			}
+
+			public long coins()
+			{
+				return coins[0];
+			}
+
+			public boolean heard(String text)
+			{
+				return false;
+			}
+
+			public boolean deathbank()
+			{
+				return false;
+			}
+
+			public boolean sees(int[] objects)
+			{
+				return objects[0] == 18784;
+			}
+		};
+		Set<String> ticked = new HashSet<>();
+		assertTrue(r.observe(ticked, none, m).isEmpty());
+		held.remove("bronze dagger");
+		List<Route.Step> now = r.observe(ticked, none, m);
+		assertEquals(1, now.size());
+		ticked.add(now.get(0).key());
+		at[0] = 3140;
+		at[1] = 3630;
+		assertTrue(r.observe(ticked, none, m).isEmpty());
+		coins[0] = 0;
+		// Ferox with no coins, then the wardrobe already in sight: both tick together.
+		assertEquals(2, r.observe(ticked, none, m).size());
+		assertEquals(4, r.steps().get(2).built.get(0).length);
+		assertEquals(3000, r.target(r.steps().get(2), none)[0]);
 	}
 
 	@Test

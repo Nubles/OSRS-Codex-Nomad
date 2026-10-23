@@ -6,21 +6,50 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Predicate;
 
 /**
  * The ultimate ironman route to Prifddinas, step by step, paraphrased from the OSRS Wiki's
- * walkthrough. Steps tied to a quest or a level tick themselves; steps tied to items tick when the
- * player first holds them while the step is in hand; the rest the player ticks.
+ * walkthrough. Each step says how the game shows it is done:
+ * <ul>
+ * <li>lasting checks (quests, levels, quest points, unlocks, diaries, combat achievements) are read
+ * from the game at any time;</li>
+ * <li>moment checks (items held or owned, a place reached, an empty inventory, coins carried, a chat
+ * line, a deathbank, where your house is) are watched while the step is in hand and tick it the
+ * moment they all hold;</li>
+ * <li>a step with no check of its own counts as done once the next step the game can confirm is
+ * done, since the route is followed in order.</li>
+ * </ul>
+ * Each step can also name where to go and who to talk to, for the in-game guidance.
  */
 public final class Route
 {
 	public static final String SOURCE = "https://oldschool.runescape.wiki/w/Guide:Ultimate_Ironman_Walkthrough_Guide_To_Prifddinas";
+
+	/** A varbit or varp test: id, then the value it must reach (or equal, when exact). */
+	public static final class Var
+	{
+		public final int id;
+		public final int value;
+		public final boolean exact;
+
+		Var(int id, int value, boolean exact)
+		{
+			this.id = id;
+			this.value = value;
+			this.exact = exact;
+		}
+
+		boolean test(int now)
+		{
+			return exact ? now == value : now >= value;
+		}
+	}
 
 	/** One step. */
 	public static final class Step
@@ -29,10 +58,47 @@ public final class Route
 		public final String section;
 		public final String text;
 		public final List<String> tips = new ArrayList<>();
+
+		// lasting checks
 		public final List<String> quests = new ArrayList<>();
+		public final List<String> started = new ArrayList<>();
 		/** Skill name to level. */
 		public final Map<String, Integer> skills = new LinkedHashMap<>();
+		public int questPoints;
+		public int combat;
+		public final List<Var> varbits = new ArrayList<>();
+		public final List<Var> varps = new ArrayList<>();
+		/** Combat achievement tier that must be complete: easy, medium... */
+		public String tier;
+
+		// moment checks
 		public final List<String> items = new ArrayList<>();
+		public final List<String> owned = new ArrayList<>();
+		public final List<String> gone = new ArrayList<>();
+		/** x, y, plane, reach. */
+		public int[] at;
+		/** x1, y1, x2, y2, plane (-1 any). */
+		public int[] area;
+		/** Inventory empty but for these names; null when not checked. */
+		public List<String> emptyBut;
+		/** Coins carried at least this many (or at most, when coinsAtMost). */
+		public long coins = -1;
+		public boolean coinsAtMost;
+		public final List<String> chat = new ArrayList<>();
+		/** True: a deathbank must exist; false: none may; null: not checked. */
+		public Boolean deathbank;
+		/** The POH_HOUSE_LOCATION value the house must be in, or -1. */
+		public int house = -1;
+		/** Furniture to see built in your house: each entry is a set of object ids, any of which will do. */
+		public final List<int[]> built = new ArrayList<>();
+
+		// guidance
+		/** x, y, plane to head for, or null. */
+		public int[] go;
+		/** Head for your house portal, wherever the house is. */
+		public boolean goHouse;
+		public final List<String> npcs = new ArrayList<>();
+		public boolean optional;
 
 		Step(int index, String section, String text)
 		{
@@ -47,27 +113,113 @@ public final class Route
 			return Integer.toHexString((section + "|" + text).toLowerCase(Locale.ENGLISH).hashCode());
 		}
 
-		/** True when the game itself can tell the step is done. */
+		/** True when the step has a check the game can read at any time. */
+		public boolean lasting()
+		{
+			return !quests.isEmpty() || !started.isEmpty() || !skills.isEmpty() || questPoints > 0 || combat > 0
+				|| !varbits.isEmpty() || !varps.isEmpty() || tier != null;
+		}
+
+		/** True when the step has a check that only holds in the moment. */
+		public boolean moment()
+		{
+			return !items.isEmpty() || !owned.isEmpty() || !gone.isEmpty() || at != null || area != null || emptyBut != null
+				|| coins >= 0 || !chat.isEmpty() || deathbank != null || house >= 0 || !built.isEmpty();
+		}
+
+		/** True when the game confirms the step for good, so it cannot be unticked. */
 		public boolean checkable()
 		{
-			return !quests.isEmpty() || !skills.isEmpty();
+			return lasting() && !moment();
+		}
+
+		/** True when the game ticks this step by any means. */
+		public boolean watched()
+		{
+			return lasting() || moment();
 		}
 	}
 
-	/** What the game says about the player, for the steps that check themselves. */
+	/** What the game says about the player for good. */
 	public interface Account
 	{
 		boolean questDone(String quest);
 
 		int level(String skill);
+
+		default boolean questStarted(String quest)
+		{
+			return questDone(quest);
+		}
+
+		default int questPoints()
+		{
+			return 0;
+		}
+
+		default int combat()
+		{
+			return 0;
+		}
+
+		default int varbit(int id)
+		{
+			return 0;
+		}
+
+		default int varp(int id)
+		{
+			return 0;
+		}
+
+		default boolean tierDone(String tier)
+		{
+			return false;
+		}
+	}
+
+	/** What is true this moment, for the checks watched while a step is in hand. */
+	public interface Moment
+	{
+		/** Carried, worn, in the looting bag or rune pouch, by name in lower case. */
+		boolean held(String name);
+
+		/** Held or kept in any store Nomad knows. */
+		default boolean owned(String name)
+		{
+			return held(name);
+		}
+
+		/** x, y, plane, or null when not logged in. */
+		int[] here();
+
+		/** Names in the inventory, in lower case. */
+		List<String> inventory();
+
+		long coins();
+
+		/** True when a game message containing this text arrived lately. */
+		boolean heard(String text);
+
+		boolean deathbank();
+
+		/** True when one of these objects is in the scene now. */
+		default boolean sees(int[] objects)
+		{
+			return false;
+		}
 	}
 
 	private final List<Step> steps;
 	private final List<String> sections;
+	/** For each step, the index of the next lasting step after it, or -1. */
+	private final int[] nextLasting;
+	private final Map<String, int[]> questStarts;
 
-	private Route(List<Step> steps)
+	private Route(List<Step> steps, Map<String, int[]> questStarts)
 	{
 		this.steps = steps;
+		this.questStarts = questStarts;
 		List<String> s = new ArrayList<>();
 		for (Step step : steps)
 		{
@@ -77,32 +229,70 @@ public final class Route
 			}
 		}
 		sections = s;
+		nextLasting = new int[steps.size()];
+		int next = -1;
+		for (int i = steps.size() - 1; i >= 0; i--)
+		{
+			nextLasting[i] = next;
+			if (steps.get(i).checkable() && !steps.get(i).optional)
+			{
+				next = i;
+			}
+		}
 	}
 
 	public static Route load()
 	{
-		try (InputStream in = Route.class.getResourceAsStream("/com/codex/nomad/route.txt"))
+		return parse(lines("/com/codex/nomad/route.txt"), starts(lines("/com/codex/nomad/quest-starts.txt")));
+	}
+
+	private static List<String> lines(String resource)
+	{
+		List<String> lines = new ArrayList<>();
+		try (InputStream in = Route.class.getResourceAsStream(resource))
 		{
-			if (in == null)
+			if (in != null)
 			{
-				return new Route(Collections.emptyList());
+				BufferedReader r = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
+				String line;
+				while ((line = r.readLine()) != null)
+				{
+					lines.add(line);
+				}
 			}
-			BufferedReader r = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
-			List<String> lines = new ArrayList<>();
-			String line;
-			while ((line = r.readLine()) != null)
-			{
-				lines.add(line);
-			}
-			return parse(lines);
 		}
-		catch (Exception e)
+		catch (Exception ignored)
 		{
-			return new Route(Collections.emptyList());
+			// A missing resource leaves the route empty.
 		}
+		return lines;
+	}
+
+	static Map<String, int[]> starts(List<String> lines)
+	{
+		Map<String, int[]> out = new HashMap<>();
+		for (String line : lines)
+		{
+			int bar = line.lastIndexOf('|');
+			if (line.startsWith("#") || bar < 0)
+			{
+				continue;
+			}
+			int[] p = ints(line.substring(bar + 1));
+			if (p != null && p.length == 3)
+			{
+				out.put(line.substring(0, bar).trim(), p);
+			}
+		}
+		return out;
 	}
 
 	static Route parse(List<String> lines)
+	{
+		return parse(lines, Collections.emptyMap());
+	}
+
+	static Route parse(List<String> lines, Map<String, int[]> questStarts)
 	{
 		List<Step> steps = new ArrayList<>();
 		for (String raw : lines)
@@ -130,39 +320,166 @@ public final class Route
 			{
 				for (String tag : parts[2].split(";"))
 				{
-					tag = tag.trim();
-					int colon = tag.indexOf(':');
-					if (colon < 0)
-					{
-						continue;
-					}
-					String kind = tag.substring(0, colon).trim();
-					String value = tag.substring(colon + 1).trim();
-					if (kind.equals("quest"))
-					{
-						step.quests.add(value);
-					}
-					else if (kind.equals("item"))
-					{
-						step.items.add(value);
-					}
-					else if (kind.equals("skill"))
-					{
-						int space = value.lastIndexOf(' ');
-						try
-						{
-							step.skills.put(value.substring(0, space).trim(), Integer.parseInt(value.substring(space + 1).trim()));
-						}
-						catch (RuntimeException ignored)
-						{
-							// A skill with no level checks nothing.
-						}
-					}
+					tag(step, tag.trim());
 				}
 			}
 			steps.add(step);
 		}
-		return new Route(steps);
+		return new Route(steps, questStarts);
+	}
+
+	private static void tag(Step step, String tag)
+	{
+		int colon = tag.indexOf(':');
+		String kind = colon < 0 ? tag : tag.substring(0, colon).trim();
+		String value = colon < 0 ? "" : tag.substring(colon + 1).trim();
+		try
+		{
+			switch (kind)
+			{
+				case "quest":
+					step.quests.add(value);
+					break;
+				case "started":
+					step.started.add(value);
+					break;
+				case "skill":
+				{
+					int space = value.lastIndexOf(' ');
+					step.skills.put(value.substring(0, space).trim(), Integer.parseInt(value.substring(space + 1).trim()));
+					break;
+				}
+				case "qp":
+					step.questPoints = Integer.parseInt(value);
+					break;
+				case "combat":
+					step.combat = Integer.parseInt(value);
+					break;
+				case "varbit":
+					step.varbits.add(var(value));
+					break;
+				case "varp":
+					step.varps.add(var(value));
+					break;
+				case "ca":
+					step.tier = value.toLowerCase(Locale.ENGLISH);
+					break;
+				case "item":
+					step.items.add(value);
+					break;
+				case "owned":
+					step.owned.add(value);
+					break;
+				case "gone":
+					step.gone.add(value);
+					break;
+				case "at":
+				{
+					int[] p = ints(value);
+					step.at = new int[]{p[0], p[1], p.length > 2 ? p[2] : 0, p.length > 3 ? p[3] : 8};
+					break;
+				}
+				case "area":
+				{
+					int[] p = ints(value);
+					step.area = new int[]{Math.min(p[0], p[2]), Math.min(p[1], p[3]), Math.max(p[0], p[2]), Math.max(p[1], p[3]),
+						p.length > 4 ? p[4] : -1};
+					break;
+				}
+				case "empty":
+				{
+					List<String> allow = new ArrayList<>();
+					for (String a : value.split(","))
+					{
+						if (!a.trim().isEmpty())
+						{
+							allow.add(a.trim().toLowerCase(Locale.ENGLISH));
+						}
+					}
+					step.emptyBut = allow;
+					break;
+				}
+				case "coins":
+					step.coinsAtMost = value.startsWith("<");
+					step.coins = Long.parseLong(value.replace("<", "").replace(">", "").replace("=", "").trim());
+					break;
+				case "chat":
+					step.chat.add(value);
+					break;
+				case "deathbank":
+					step.deathbank = true;
+					break;
+				case "nodeathbank":
+					step.deathbank = false;
+					break;
+				case "built":
+				{
+					List<Integer> ids = new ArrayList<>();
+					for (String part : value.split(","))
+					{
+						String[] range = part.trim().split("-");
+						int from = Integer.parseInt(range[0].trim());
+						int to = range.length > 1 ? Integer.parseInt(range[1].trim()) : from;
+						for (int id = from; id <= to; id++)
+						{
+							ids.add(id);
+						}
+					}
+					int[] set = new int[ids.size()];
+					for (int i = 0; i < set.length; i++)
+					{
+						set[i] = ids.get(i);
+					}
+					step.built.add(set);
+					break;
+				}
+				case "house":
+					step.house = Integer.parseInt(value);
+					break;
+				case "go":
+				{
+					if (value.equals("house"))
+					{
+						step.goHouse = true;
+						break;
+					}
+					int[] p = ints(value);
+					step.go = new int[]{p[0], p[1], p.length > 2 ? p[2] : 0};
+					break;
+				}
+				case "npc":
+					step.npcs.add(value);
+					break;
+				case "optional":
+					step.optional = true;
+					break;
+				default:
+					break;
+			}
+		}
+		catch (RuntimeException ignored)
+		{
+			// A malformed tag checks nothing.
+		}
+	}
+
+	private static Var var(String value)
+	{
+		String v = value.replace(" ", "");
+		boolean exact = v.contains("=") && !v.contains(">=");
+		String[] p = v.split(">=|=");
+		return new Var(Integer.parseInt(p[0]), p.length > 1 ? Integer.parseInt(p[1]) : 1, exact);
+	}
+
+	private static int[] ints(String s)
+	{
+		String[] p = s.split(",");
+		int[] out = new int[p.length];
+		for (int i = 0; i < p.length; i++)
+		{
+			out[i] = Integer.parseInt(p[i].trim());
+		}
+		return out;
 	}
 
 	public List<Step> steps()
@@ -180,16 +497,23 @@ public final class Route
 		return steps.size();
 	}
 
-	/** True when the game says every quest and level of a step is done. */
-	public static boolean met(Step s, Account a)
+	/** True when every lasting check of a step holds; false for a step with none. */
+	public static boolean lastingMet(Step s, Account a)
 	{
-		if (!s.checkable() || a == null)
+		if (!s.lasting() || a == null)
 		{
 			return false;
 		}
 		for (String q : s.quests)
 		{
 			if (!a.questDone(q))
+			{
+				return false;
+			}
+		}
+		for (String q : s.started)
+		{
+			if (!a.questStarted(q))
 			{
 				return false;
 			}
@@ -201,21 +525,152 @@ public final class Route
 				return false;
 			}
 		}
-		return true;
+		if (s.questPoints > 0 && a.questPoints() < s.questPoints || s.combat > 0 && a.combat() < s.combat)
+		{
+			return false;
+		}
+		for (Var v : s.varbits)
+		{
+			if (!v.test(a.varbit(v.id)))
+			{
+				return false;
+			}
+		}
+		for (Var v : s.varps)
+		{
+			if (!v.test(a.varp(v.id)))
+			{
+				return false;
+			}
+		}
+		return s.tier == null || a.tierDone(s.tier);
 	}
 
-	/** True when the step is done: ticked by hand or met in game. */
+	/** True when the game confirms a step for good: lasting checks only, all holding. */
+	public static boolean met(Step s, Account a)
+	{
+		return s.checkable() && lastingMet(s, a);
+	}
+
+	/** True when every check of a step holds right now. */
+	public static boolean now(Step s, Account a, Moment m)
+	{
+		if (!s.watched() || m == null || s.lasting() && !lastingMet(s, a))
+		{
+			return false;
+		}
+		for (String i : s.items)
+		{
+			if (!m.held(i.toLowerCase(Locale.ENGLISH)))
+			{
+				return false;
+			}
+		}
+		for (String i : s.owned)
+		{
+			if (!m.owned(i.toLowerCase(Locale.ENGLISH)))
+			{
+				return false;
+			}
+		}
+		for (String i : s.gone)
+		{
+			if (m.held(i.toLowerCase(Locale.ENGLISH)))
+			{
+				return false;
+			}
+		}
+		int[] here = m.here();
+		if ((s.at != null || s.area != null) && here == null)
+		{
+			return false;
+		}
+		if (s.at != null && (here[2] != s.at[2] || Math.max(Math.abs(here[0] - s.at[0]), Math.abs(here[1] - s.at[1])) > s.at[3]))
+		{
+			return false;
+		}
+		if (s.area != null && (here[0] < s.area[0] || here[0] > s.area[2] || here[1] < s.area[1] || here[1] > s.area[3]
+			|| s.area[4] >= 0 && here[2] != s.area[4]))
+		{
+			return false;
+		}
+		if (s.emptyBut != null)
+		{
+			for (String i : m.inventory())
+			{
+				if (!s.emptyBut.contains(i))
+				{
+					return false;
+				}
+			}
+		}
+		if (s.coins >= 0 && (s.coinsAtMost ? m.coins() > s.coins : m.coins() < s.coins))
+		{
+			return false;
+		}
+		for (String c : s.chat)
+		{
+			if (!m.heard(c))
+			{
+				return false;
+			}
+		}
+		if (s.deathbank != null && m.deathbank() != s.deathbank)
+		{
+			return false;
+		}
+		for (int[] set : s.built)
+		{
+			if (!m.sees(set))
+			{
+				return false;
+			}
+		}
+		return s.house < 0 || a != null && a.varbit(HOUSE_VARBIT) == s.house;
+	}
+
+	/** VarbitID.POH_HOUSE_LOCATION. */
+	public static final int HOUSE_VARBIT = 2187;
+	/** The house portal for each POH_HOUSE_LOCATION value. */
+	static final Map<Integer, int[]> HOUSE_PORTALS = new HashMap<>();
+
+	static
+	{
+		HOUSE_PORTALS.put(1, new int[]{2954, 3224, 0});
+		HOUSE_PORTALS.put(2, new int[]{2894, 3465, 0});
+		HOUSE_PORTALS.put(3, new int[]{3340, 3004, 0});
+		HOUSE_PORTALS.put(4, new int[]{2670, 3632, 0});
+		HOUSE_PORTALS.put(5, new int[]{2758, 3178, 0});
+		HOUSE_PORTALS.put(6, new int[]{2544, 3096, 0});
+		HOUSE_PORTALS.put(8, new int[]{1743, 3517, 0});
+	}
+
+	/** True when the step is done: ticked by hand or in the moment, met in game, or passed. */
 	public boolean done(Step s, Set<String> ticked, Account a)
 	{
-		return ticked.contains(s.key()) || met(s, a);
+		return ticked.contains(s.key()) || met(s, a) || passed(s, a);
 	}
 
-	/** The first step not yet done, or null when the route is finished. */
+	/**
+	 * True when a step the game cannot confirm for good lies behind one it has confirmed: the route
+	 * runs in order, so the player is past it.
+	 */
+	public boolean passed(Step s, Account a)
+	{
+		if (s.checkable())
+		{
+			return false;
+		}
+		int next = nextLasting[s.index];
+		return next >= 0 && met(steps.get(next), a);
+	}
+
+	/** The first step not yet done, skipping optional ones, or null when the route is finished. */
 	public Step current(Set<String> ticked, Account a)
 	{
 		for (Step s : steps)
 		{
-			if (!done(s, ticked, a))
+			if (!s.optional && !done(s, ticked, a))
 			{
 				return s;
 			}
@@ -237,27 +692,70 @@ public final class Route
 	}
 
 	/**
-	 * Steps whose items are now all held and that are the step in hand: these tick themselves.
-	 *
-	 * @param held whether an item, by name, is carried
+	 * The steps in hand whose moment checks all hold now, in order: each ticks, and the one after it
+	 * is tried in turn.
 	 */
-	public List<Step> heldNow(Set<String> ticked, Account a, Predicate<String> held)
+	public List<Step> observe(Set<String> ticked, Account a, Moment m)
 	{
 		List<Step> out = new ArrayList<>();
-		Step s = current(ticked, a);
-		if (s != null && !s.items.isEmpty() && !s.checkable())
+		java.util.HashSet<String> t = new java.util.HashSet<>(ticked);
+		for (int guard = 0; guard < 8; guard++)
 		{
-			boolean all = true;
-			for (String item : s.items)
+			Step s = current(t, a);
+			if (s == null || !s.moment() || !now(s, a, m))
 			{
-				all &= held.test(item);
+				break;
 			}
-			if (all)
-			{
-				out.add(s);
-			}
+			out.add(s);
+			t.add(s.key());
 		}
 		return out;
+	}
+
+	/** Where to head for a step: its own place, or where the first quest it needs starts. */
+	public int[] target(Step s, Account a)
+	{
+		if (s.go != null)
+		{
+			return s.go;
+		}
+		if (s.goHouse && a != null)
+		{
+			int[] portal = HOUSE_PORTALS.get(a.varbit(HOUSE_VARBIT));
+			if (portal != null)
+			{
+				return portal;
+			}
+		}
+		if (s.at != null)
+		{
+			return new int[]{s.at[0], s.at[1], s.at[2]};
+		}
+		if (s.area != null)
+		{
+			return new int[]{(s.area[0] + s.area[2]) / 2, (s.area[1] + s.area[3]) / 2, Math.max(0, s.area[4])};
+		}
+		List<String> qs = new ArrayList<>(s.started);
+		qs.addAll(s.quests);
+		for (String q : qs)
+		{
+			if (a != null && (s.started.contains(q) ? a.questStarted(q) : a.questDone(q)))
+			{
+				continue;
+			}
+			int[] p = questStarts.get(q);
+			if (p != null)
+			{
+				return p;
+			}
+		}
+		return null;
+	}
+
+	/** Where a quest starts, or null. */
+	public int[] questStart(String quest)
+	{
+		return questStarts.get(quest);
 	}
 
 	/** How far through a section the player is: done and total. */

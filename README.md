@@ -20,7 +20,8 @@ A RuneLite plugin for ultimate ironmen. A UIM has no bank, so Nomad keeps the bo
 - **STASH reminders.** Emote clue items you carry are matched to the STASH units they belong in, so you can put them away and stop carrying them.
 - **Guards.** Hides *Destroy* on the looting bag outside the Wilderness (*Looting bag Destroy*), and *Sell* on items worth more than a set amount in shops (*Shop Sell*, *Protect items over* 50,000 gp).
 - **Peril plaque.** A small plaque in the game view with your free slots, the value at risk and the most urgent deathpile (*Peril plaque*).
-- **Route tab.** The early steps of the OSRS Wiki's UIM walkthrough to Prifddinas, ticked off as you finish the quests, reach the levels and hold the items each step needs. The current step can also be shown on the plaque (*Route step on plaque*). All thirteen sections are in, from a fresh account to Song of the Elves: over 300 steps.
+- **Route tab.** The OSRS Wiki's Ultimate Ironman walkthrough to Prifddinas, all thirteen sections from a fresh account to Song of the Elves: over 300 steps. Nomad ticks them itself. Quests, levels, quest points, unlocks, diaries and combat achievements are read from the game. Steps about items, places, coins, chat, your deathbank, where your house is and the furniture in it are watched while the step is in hand. The few it cannot see tick once you are past them. You can still tick any step by hand.
+- **Guided steps.** While you follow the route, the step in hand shows on the plaque with how far away it is and which way. Its place is marked on the ground and the world map, the game's hint arrow points at the person to talk to or the spot to go to, and the people it names are outlined. If you have the Shortest Path plugin, Nomad asks it to draw the way there (*Route arrow*, *Outline route people*, *Path with Shortest Path*). Quest steps lead to where the quest starts.
 
 ## Settings
 
@@ -29,6 +30,7 @@ A RuneLite plugin for ultimate ironmen. A UIM has no bank, so Nomad keeps the bo
 - **Share with Codex** (on): share what you hold with other Codex plugins.
 - **Looting bag Destroy** and **Shop Sell** (on), **Protect items over** (50,000 gp): the guards.
 - **Peril plaque**, **Mark the next stop**, **Route step on plaque** (on): what shows in the game view.
+- **Route arrow**, **Outline route people**, **Path with Shortest Path** (on): how the route guides you.
 
 ## With other Codex plugins
 
@@ -38,11 +40,12 @@ Nomad writes what you hold everywhere to `codexnomad/holdingsV1`, in the same sh
 
 The inventory, worn items, looting bag, seed vault, costume room and the deathbank retrieval window are read as they change, and the rune pouch from its varbits. Deaths come from `ActorDeath`, STASH deposits and the item retrieval service from chat messages, and the account type from the ironman varbit. Worth comes from RuneLite's item manager. Everything is stored per account in the RuneLite profile config. A damaged save never stops the panel: whatever still reads is kept.
 
-It is guidance only. It does not automate any input, send any data off the client, or read or write files. The only menu changes are the two guards, which remove an option and never add or swap one.
+It is guidance only. It does not automate any input, send any data off the client, or read or write files. The route only points and outlines; you walk and click. The only menu changes are the two guards, which remove an option and never add or swap one.
 
 ## Credits
 
 - STASH unit and costume room data is adapted from [Dude, Where's My Stuff](https://github.com/Thource/dude-wheres-my-stuff) (BSD 2-Clause).
+- Where each quest starts comes from the first step of [Quest Helper](https://github.com/Zoinkwiz/quest-helper) (BSD 2-Clause).
 - The route follows the OSRS Wiki's [Ultimate Ironman Walkthrough Guide To Prifddinas](https://oldschool.runescape.wiki/w/Guide:Ultimate_Ironman_Walkthrough_Guide_To_Prifddinas), paraphrased, under [CC BY-NC-SA 3.0](https://creativecommons.org/licenses/by-nc-sa/3.0/).
 
 ## Building

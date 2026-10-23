@@ -181,5 +181,8 @@ public final class View
 		public boolean met;
 		/** What the game checks: "Quest", "Agility 50", "Holding 2 items". */
 		public String check;
+		/** Done because a later step the game confirms is done. */
+		public boolean passed;
+		public boolean optional;
 	}
 }

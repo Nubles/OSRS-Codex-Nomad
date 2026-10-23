@@ -11,6 +11,7 @@ import com.codex.nomad.core.Route;
 import com.codex.nomad.core.StashBook;
 import com.codex.nomad.core.Store;
 import com.codex.nomad.core.Trip;
+import com.codex.nomad.ui.Format;
 import com.codex.nomad.ui.View;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -284,7 +285,9 @@ final class Views
 			sv.text = s.text;
 			sv.tips = s.tips;
 			sv.met = Route.met(s, account);
-			sv.done = sv.met || n.ticked().contains(s.key());
+			sv.done = route.done(s, n.ticked(), account);
+			sv.passed = sv.done && !sv.met && !n.ticked().contains(s.key());
+			sv.optional = s.optional;
 			if (sv.done)
 			{
 				rv.done++;
@@ -303,22 +306,77 @@ final class Views
 		return rv;
 	}
 
-	private static String check(Route.Step s)
+	/** What the game watches to tick a step, in a few words. */
+	static String check(Route.Step s)
 	{
 		List<String> parts = new ArrayList<>();
 		if (!s.quests.isEmpty())
 		{
 			parts.add(s.quests.size() == 1 ? "Quest" : s.quests.size() + " quests");
 		}
+		if (!s.started.isEmpty())
+		{
+			parts.add("Quest started");
+		}
 		for (Map.Entry<String, Integer> e : s.skills.entrySet())
 		{
 			parts.add(e.getValue() + " " + e.getKey());
 		}
-		if (parts.isEmpty() && !s.items.isEmpty())
+		if (s.questPoints > 0)
 		{
-			parts.add(s.items.size() == 1 ? "Ticks when held" : "Ticks when all " + s.items.size() + " held");
+			parts.add(s.questPoints + " quest points");
 		}
-		return parts.isEmpty() ? null : String.join(" · ", parts);
+		if (s.combat > 0)
+		{
+			parts.add(s.combat + " combat");
+		}
+		if (s.tier != null)
+		{
+			parts.add(Character.toUpperCase(s.tier.charAt(0)) + s.tier.substring(1) + " combat achievements");
+		}
+		if (!s.varbits.isEmpty() || !s.varps.isEmpty())
+		{
+			parts.add("Unlock");
+		}
+		if (!s.items.isEmpty() || !s.owned.isEmpty())
+		{
+			int n = s.items.size() + s.owned.size();
+			parts.add(n == 1 ? "Holding it" : "Holding all " + n);
+		}
+		if (!s.gone.isEmpty())
+		{
+			parts.add(s.gone.size() == 1 ? "Without " + s.gone.get(0) : "Without " + s.gone.size() + " items");
+		}
+		if (s.at != null || s.area != null)
+		{
+			parts.add("Being there");
+		}
+		if (s.emptyBut != null)
+		{
+			parts.add(s.emptyBut.isEmpty() ? "Empty inventory" : "Inventory cleared");
+		}
+		if (s.coins >= 0)
+		{
+			parts.add(s.coinsAtMost ? (s.coins == 0 ? "No coins on you" : "At most " + Format.coins(s.coins) + " on you")
+				: Format.coins(s.coins) + " on you");
+		}
+		if (!s.chat.isEmpty())
+		{
+			parts.add("The game's message");
+		}
+		if (s.deathbank != null)
+		{
+			parts.add(s.deathbank ? "A deathbank" : "Deathbank emptied");
+		}
+		if (s.house >= 0)
+		{
+			parts.add("House moved");
+		}
+		if (!s.built.isEmpty())
+		{
+			parts.add("Seen built in your house");
+		}
+		return parts.isEmpty() ? "Ticks when the next checked step is done" : String.join(" · ", parts);
 	}
 
 	static int slots(Map<Integer, Long> items, Lookup look)

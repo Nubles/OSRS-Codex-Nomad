@@ -136,4 +136,40 @@ public interface CodexNomadConfig extends Config
 	{
 		return true;
 	}
+
+	@ConfigItem(
+		keyName = "guideArrow",
+		name = "Route arrow",
+		description = "While you follow the route, point the game's hint arrow at the person to talk to or the place to go for the step in hand",
+		section = SCENE,
+		position = 3
+	)
+	default boolean guideArrow()
+	{
+		return true;
+	}
+
+	@ConfigItem(
+		keyName = "guideNpcs",
+		name = "Outline route people",
+		description = "While you follow the route, outline the people the step in hand names",
+		section = SCENE,
+		position = 4
+	)
+	default boolean guideNpcs()
+	{
+		return true;
+	}
+
+	@ConfigItem(
+		keyName = "shortestPath",
+		name = "Path with Shortest Path",
+		description = "If the Shortest Path plugin is installed, ask it to draw the way to each route step",
+		section = SCENE,
+		position = 5
+	)
+	default boolean shortestPath()
+	{
+		return true;
+	}
 }
