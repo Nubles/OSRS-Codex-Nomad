@@ -1,5 +1,6 @@
 package com.codex.nomad;
 
+import com.codex.nomad.notes.FieldNotes;
 import com.codex.nomad.core.Costume;
 import com.codex.nomad.core.Death;
 import com.codex.nomad.core.Fetch;
@@ -180,6 +181,9 @@ public class CodexNomadPlugin extends Plugin
 	@Inject
 	private CodexNomadConfig config;
 
+	/** The optional local record of what the plugin read and decided. */
+	private FieldNotes notes;
+
 	@Inject
 	private EventBus eventBus;
 
@@ -263,6 +267,11 @@ public class CodexNomadPlugin extends Plugin
 	@Override
 	protected void startUp()
 	{
+		notes = new FieldNotes(this::getPluginDirectory, gson);
+		if (config.fieldNotes())
+		{
+			notes.open();
+		}
 		stash = StashBook.load(gson);
 		costume = Costume.load(gson);
 		route = Route.load();
@@ -348,6 +357,11 @@ public class CodexNomadPlugin extends Plugin
 	@Override
 	protected void shutDown()
 	{
+		if (notes != null)
+		{
+			notes.shutdown();
+			notes = null;
+		}
 		overlayManager.remove(plaque);
 		overlayManager.remove(marker);
 		overlayManager.remove(highlights);
@@ -434,6 +448,18 @@ public class CodexNomadPlugin extends Plugin
 	@Subscribe
 	public void onConfigChanged(ConfigChanged event)
 	{
+		if (CodexNomadConfig.GROUP.equals(event.getGroup()) && "fieldNotes".equals(event.getKey()) && notes != null)
+		{
+			if (config.fieldNotes())
+			{
+				notes.open();
+			}
+			else
+			{
+				notes.close();
+			}
+			return;
+		}
 		if (CodexNomadConfig.GROUP.equals(event.getGroup()) && event.getKey() != null && !event.getKey().startsWith(SAVE_KEY)
 			&& !HOLDINGS_KEY.equals(event.getKey()))
 		{
@@ -1362,6 +1388,19 @@ public class CodexNomadPlugin extends Plugin
 	@Subscribe
 	public void onChatMessage(ChatMessage event)
 	{
+		if (notes != null && notes.isOpen())
+		{
+			net.runelite.api.ChatMessageType chatType = event.getType();
+			// Only the game's own lines: other players' chat is never written down.
+			if (chatType == net.runelite.api.ChatMessageType.GAMEMESSAGE || chatType == net.runelite.api.ChatMessageType.SPAM
+				|| chatType == net.runelite.api.ChatMessageType.MESBOX)
+			{
+				com.google.gson.JsonObject chatNote = new com.google.gson.JsonObject();
+				chatNote.addProperty("type", chatType.name());
+				chatNote.addProperty("text", event.getMessage());
+				notes.note("chat", chatNote);
+			}
+		}
 		if (nomad == null || event.getType() != ChatMessageType.GAMEMESSAGE && event.getType() != ChatMessageType.SPAM)
 		{
 			return;
@@ -1760,6 +1799,20 @@ public class CodexNomadPlugin extends Plugin
 		View view = Views.build(nomad, look, stash, route, account(), here, keep(), config.idleHours() * 3_600_000L,
 			System.currentTimeMillis());
 		view.loggedIn = client.getGameState() == GameState.LOGGED_IN;
+		if (notes.isOpen() && view.loggedIn)
+		{
+			// What would be kept and lost on death, the perils and the stash route, so a wrong call can be traced.
+			com.google.gson.JsonObject n = new com.google.gson.JsonObject();
+			n.addProperty("carriedWorth", view.carriedWorth);
+			n.addProperty("keepNow", view.keepNow);
+			n.addProperty("dropNow", view.dropNow);
+			n.add("kept", notes.safe(view.kept));
+			n.add("perils", notes.safe(view.perils));
+			n.addProperty("active", view.active);
+			n.add("fetch", notes.safe(view.fetch));
+			n.add("route", notes.safe(view.route));
+			notes.noteChanged("view", n);
+		}
 		for (View.Peril p : view.perils)
 		{
 			Store pile = p.kind == Kind.DEATHPILE ? nomad.store(p.key) : null;

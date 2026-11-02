@@ -56,6 +56,10 @@ The inventory, worn items, looting bag, seed box, kits, seed vault, costume room
 
 It is guidance only. It does not automate any input, send any data off the client, or read or write files. The route only points and outlines; you walk and click. The only menu changes are the two guards, which remove an option and never add or swap one.
 
+## Field notes
+
+An optional setting, **Keep field notes** (under Field notes, off by default), writes a plain record of what Nomad reads and decides to its own folder in `.runelite/plugin-data` on your computer, one line at a time. It is for checking the plugin's guesses against real play: when something looks wrong, the notes show what it saw and why it chose what it did. Other players' chat is never written down, it stays on your computer, and nothing is sent anywhere.
+
 ## Credits
 
 - STASH unit and costume room data, and which game counters hold the leprechaun, sacks, pouches and coffers, are adapted from [Dude, Where's My Stuff](https://github.com/Thource/dude-wheres-my-stuff) (BSD 2-Clause).
