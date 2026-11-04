@@ -57,6 +57,81 @@ public final class View
 	// ---- route ----
 	public RouteView route;
 
+	// ---- clues ----
+	public CluesView clues = new CluesView();
+
+	/** The clue companion: what is juggled on the floor, the log by tier, and the STASH unit the step in hand needs. */
+	public static final class CluesView
+	{
+		public List<FloorClue> floor = Collections.emptyList();
+		public List<TierLine> tiers = Collections.emptyList();
+		/** The STASH unit an emote step needs, or null. */
+		public StashStep stash;
+		/** Logged-in ticks left at which a piece is shown as about to vanish. */
+		public long warnTicks = 500;
+		public int sessionCaskets;
+		public long sessionMs;
+	}
+
+	/** A clue item lying on the floor. */
+	public static final class FloorClue
+	{
+		public int item;
+		/** "Hard clue", "Elite reward casket". */
+		public String label;
+		public long ticksLeft;
+		/** True once the game's own despawn time set the timer. */
+		public boolean exact;
+		/** "6 tiles north-east". */
+		public String where;
+	}
+
+	/** One tier of the clue log. */
+	public static final class TierLine
+	{
+		public String tier;
+		public int casket;
+		/** The game's own count, or -1 until it says. */
+		public int count = -1;
+		/** Trails Nomad timed. */
+		public int timed;
+		public int session;
+		/** Clues and scroll boxes of this tier in the pack. */
+		public int held;
+		public int boxes;
+		public int onFloor;
+		public long medianMs = -1;
+		public double perHour = -1;
+		public double steps = -1;
+		public int minSteps;
+		public int maxSteps;
+		/** Logged-in time the clue in hand has been carried, ms, or 0. */
+		public long carriedMs;
+	}
+
+	/** The STASH unit an emote step needs, and whether Nomad has seen it filled. */
+	public static final class StashStep
+	{
+		public String tier;
+		/** Where the unit stands, as the clue chart names it. */
+		public String chart;
+		public String place;
+		/** Nomad has seen items put in this unit. */
+		public boolean filled;
+		/** "from the clue you carry", "from the clue you last read". */
+		public String source;
+		public List<StashNeed> needs = Collections.emptyList();
+	}
+
+	/** One thing the STASH unit takes. */
+	public static final class StashNeed
+	{
+		public String name;
+		public int icon = -1;
+		public boolean stashed;
+		public boolean carried;
+	}
+
 	/** One stack. */
 	public static final class ItemLine
 	{

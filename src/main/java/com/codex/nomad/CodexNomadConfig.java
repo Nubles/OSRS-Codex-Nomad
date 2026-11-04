@@ -252,4 +252,49 @@ public interface CodexNomadConfig extends Config
 	{
 		return false;
 	}
+
+	@ConfigSection(
+		name = "Clues",
+		description = "Clue scrolls and caskets juggled on the floor, and the clue log",
+		position = 40
+	)
+	String CLUES = "clues";
+
+	@ConfigItem(
+		keyName = "clueWarning",
+		name = "Clue juggling warning",
+		description = "Say in the chat box when a clue scroll or casket you dropped has this many minutes of logged-in time left",
+		section = CLUES,
+		position = 0
+	)
+	@Range(min = 0, max = 60)
+	@Units(" min")
+	default int clueWarning()
+	{
+		return 5;
+	}
+
+	@ConfigItem(
+		keyName = "clueNotify",
+		name = "Notify on clue warning",
+		description = "Also send a notification with the clue juggling warning, and when a dropped clue is gone",
+		section = CLUES,
+		position = 1
+	)
+	default boolean clueNotify()
+	{
+		return true;
+	}
+
+	@ConfigItem(
+		keyName = "clueMarks",
+		name = "Clue timers in the game",
+		description = "Label dropped clue scrolls and caskets on their tiles with the time left, and show the next to vanish on the plaque",
+		section = CLUES,
+		position = 2
+	)
+	default boolean clueMarks()
+	{
+		return true;
+	}
 }

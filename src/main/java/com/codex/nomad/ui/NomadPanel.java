@@ -26,14 +26,14 @@ import javax.swing.event.DocumentListener;
 import net.runelite.client.ui.PluginPanel;
 
 /**
- * The Nomad side panel: the crest, a search over everything owned, then four pages. Pack is everything carried with what is at
+ * The Nomad side panel: the crest, a search over everything owned, then five pages. Pack is everything carried with what is at
  * risk, dead weight and noting; Stores is every place things are kept; Trips is the packing lists
- * with the stops to make; Route is the way to Prifddinas step by step.
+ * with the stops to make; Route is the way to Prifddinas step by step; Clues is what is juggled on the floor and the clue log.
  */
 public class NomadPanel extends PluginPanel
 {
 	static final int WIDTH = 200;
-	private static final String[] TABS = {"pack", "stores", "trips", "route"};
+	private static final String[] TABS = {"pack", "stores", "trips", "route", "clues"};
 	/** Route steps shown past the one in hand before "Show more". */
 	private static final int AHEAD = 6;
 
@@ -61,11 +61,11 @@ public class NomadPanel extends PluginPanel
 	private final ItemIcons icons;
 	private final Actions actions;
 	private final Crest crest = new Crest();
-	private final Segmented tabs = new Segmented(true, "Pack", "Stores", "Trips", "Route");
+	private final Segmented tabs = new Segmented(true, "Pack", "Stores", "Trips", "Route", "Clues");
 	private final CardLayout cards = new CardLayout();
 	private final JPanel content = new JPanel(cards);
-	private final JScrollPane[] pages = {scroller(), scroller(), scroller(), scroller()};
-	private final boolean[] stale = {true, true, true, true};
+	private final JScrollPane[] pages = {scroller(), scroller(), scroller(), scroller(), scroller()};
+	private final boolean[] stale = {true, true, true, true, true};
 	private final Set<String> open = new HashSet<>();
 	private final Set<String> sectionsOpen = new HashSet<>();
 	private final Field tripName = new Field("Name this setup");
@@ -192,7 +192,7 @@ public class NomadPanel extends PluginPanel
 			return;
 		}
 		stale[page] = false;
-		JComponent body = page == 0 ? pack() : page == 1 ? stores() : page == 2 ? trips() : route();
+		JComponent body = page == 0 ? pack() : page == 1 ? stores() : page == 2 ? trips() : page == 3 ? route() : clues();
 		show(pages[page], body);
 	}
 
@@ -925,6 +925,157 @@ public class NomadPanel extends PluginPanel
 		}
 		p.add(foot("Steps paraphrased from the OSRS Wiki's Ultimate Ironman walkthrough to Prifddinas (CC BY-NC-SA 3.0)."));
 		return p;
+	}
+
+	// ---- clues ----
+
+	private JComponent clues()
+	{
+		StackPanel p = new StackPanel(6, 8);
+		View.CluesView c = view.clues;
+		View.FloorClue next = c.floor.isEmpty() ? null : c.floor.get(0);
+		JPanel tiles = new JPanel(new GridLayout(1, 2, 6, 0));
+		tiles.setOpaque(false);
+		boolean soon = next != null && next.ticksLeft <= c.warnTicks;
+		tiles.add(new StatTile(String.valueOf(c.floor.size()), "Juggled",
+			next == null ? "none dropped" : "next in " + Format.ticks(next.ticksLeft), soon ? Theme.BLOOD : next != null ? Theme.EMBER : Theme.TEAL));
+		double rate = c.sessionMs >= 600_000 && c.sessionCaskets > 0 ? c.sessionCaskets * 3_600_000.0 / c.sessionMs : -1;
+		tiles.add(new StatTile(String.valueOf(c.sessionCaskets), "Caskets", rate > 0 ? Format.perTrip(rate) + " an hour" : "this session", Theme.GOLD));
+		p.add(tiles);
+
+		p.add(new SectionHeader("On the floor", c.floor.isEmpty() ? "" : String.valueOf(c.floor.size())));
+		if (c.floor.isEmpty())
+		{
+			p.add(note("Drop a clue scroll and Nomad times it here. A dropped clue lasts 61 minutes of logged-in time and follows you between worlds, so you can hold another of the same tier while it waits."));
+		}
+		for (View.FloorClue f : c.floor)
+		{
+			p.add(floorClue(f, c.warnTicks));
+		}
+
+		if (c.stash != null)
+		{
+			p.add(new SectionHeader("STASH for this step", c.stash.tier == null ? "" : c.stash.tier));
+			p.add(stashStep(c.stash));
+		}
+
+		int total = 0;
+		for (View.TierLine t : c.tiers)
+		{
+			total += Math.max(0, t.count);
+		}
+		p.add(new SectionHeader("Clue log", total > 0 ? Format.whole(total) + " done" : ""));
+		for (View.TierLine t : c.tiers)
+		{
+			p.add(tierRow(t));
+		}
+		p.add(foot("Counts are the game's own, read when you open a casket. Times are logged-in time with the clue in your pack, from taking it to its casket; time on the floor is not counted."));
+		return p;
+	}
+
+	private JComponent floorClue(View.FloorClue f, long warnTicks)
+	{
+		boolean soon = f.ticksLeft <= warnTicks;
+		Color c = soon ? Theme.BLOOD : Theme.EMBER;
+		Card card = new Card(new BorderLayout());
+		card.setBorder(new EmptyBorder(0, 0, 6, 0));
+		card.accent(c);
+		Row row = new Row(f.item, 0, icons, f.label, Format.ticks(f.ticksLeft), c,
+			(f.where == null || f.where.isEmpty() ? "" : Character.toUpperCase(f.where.charAt(0)) + f.where.substring(1)) + (f.exact ? "" : " · timer estimated"), null);
+		row.flat();
+		card.add(row, BorderLayout.CENTER);
+		double left = f.ticksLeft / (double) com.codex.nomad.core.Clues.CLUE_TICKS;
+		card.add(new TimeBar(Math.min(1, left)), BorderLayout.SOUTH);
+		return card;
+	}
+
+	private JComponent stashStep(View.StashStep s)
+	{
+		Card card = new Card(new BorderLayout());
+		card.setBorder(new EmptyBorder(6, 8, 6, 8));
+		card.accent(s.filled ? Theme.GREEN : Theme.GOLD);
+		card.add(new Row.Plain(s.chart, s.filled ? "Filled" : "Not filled", s.filled ? Theme.GREEN : Theme.EMBER,
+			s.place + " · " + s.source), BorderLayout.NORTH);
+		StackPanel in = new StackPanel(4, 0);
+		in.setBorder(new EmptyBorder(6, 0, 0, 0));
+		for (View.StashNeed n : s.needs)
+		{
+			String figure = n.stashed ? "Stashed" : n.carried ? "Carried" : null;
+			Color fc = n.stashed ? Theme.GREEN : Theme.TEAL;
+			Row r = new Row(n.icon, 0, icons, n.name, figure, fc, n.stashed || n.carried ? null : "Not with you", null);
+			r.flat();
+			in.add(r);
+		}
+		card.add(in, BorderLayout.CENTER);
+		if (!s.filled)
+		{
+			card.add(Ui.wrapped(s.needs.stream().allMatch(n -> n.carried) ? "You carry the whole set: deposit it on the way."
+				: "Nomad has not seen this unit filled. Fill it once and the step is a walk.", Theme.small(), Theme.TEXT_MUTED, WIDTH - 24), BorderLayout.SOUTH);
+		}
+		return card;
+	}
+
+	private JComponent tierRow(View.TierLine t)
+	{
+		List<String> bits = new ArrayList<>();
+		if (t.held > 0 || t.boxes > 0)
+		{
+			bits.add("holding " + (t.held > 0 ? t.held + (t.held == 1 ? " clue" : " clues") : "")
+				+ (t.held > 0 && t.boxes > 0 ? " + " : "") + (t.boxes > 0 ? t.boxes + (t.boxes == 1 ? " box" : " boxes") : ""));
+		}
+		if (t.onFloor > 0)
+		{
+			bits.add(t.onFloor + " on the floor");
+		}
+		if (t.carriedMs > 0)
+		{
+			bits.add("this clue " + pace(t.carriedMs));
+		}
+		if (t.medianMs > 0)
+		{
+			bits.add(pace(t.medianMs) + " each · " + Format.perTrip(t.perHour) + "/h");
+		}
+		bits.add(t.steps > 0 ? Format.perTrip(t.steps) + " steps (" + t.minSteps + "-" + t.maxSteps + ")" : t.minSteps + "-" + t.maxSteps + " steps");
+		if (t.session > 0)
+		{
+			bits.add(t.session + " this session");
+		}
+		boolean known = t.count > 0 || t.timed > 0 || t.held > 0 || t.onFloor > 0;
+		return new Row(t.casket, 0, icons, t.tier, t.count >= 0 ? Format.whole(t.count) : "-", known ? Theme.GOLD : Theme.TEXT_FAINT,
+			String.join(" · ", bits), null);
+	}
+
+	/** A trail's time: "6m 12s", "1h 4m". */
+	static String pace(long ms)
+	{
+		long s = Math.max(0, ms) / 1000;
+		if (s >= 3600)
+		{
+			return s / 3600 + "h " + s % 3600 / 60 + "m";
+		}
+		return s / 60 + "m " + String.format(Locale.ENGLISH, "%02d", s % 60) + "s";
+	}
+
+	/** The slim bar under a juggled clue: how much of its hour is left. */
+	private static final class TimeBar extends javax.swing.JComponent
+	{
+		private final double left;
+
+		TimeBar(double left)
+		{
+			this.left = left;
+			setPreferredSize(new Dimension(10, 7));
+			setOpaque(false);
+		}
+
+		@Override
+		protected void paintComponent(java.awt.Graphics graphics)
+		{
+			java.awt.Graphics2D g = (java.awt.Graphics2D) graphics.create();
+			Theme.smooth(g);
+			Bar.paint(g, Well.SIZE + 16, 1, getWidth() - Well.SIZE - 24, 4, left);
+			g.dispose();
+		}
 	}
 
 	// ---- small parts ----
