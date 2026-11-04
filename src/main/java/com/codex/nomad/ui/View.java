@@ -235,6 +235,9 @@ public final class View
 		/** When dropped items vanish, epoch ms, or 0. */
 		public long until;
 		public int world;
+		/** Slots in use and in all, as the game last showed them, or -1 where it does not say. */
+		public int used = -1;
+		public int capacity = -1;
 		/** The quickest way there with Codex Wayfinder: "~1m 40s · Camelot Teleport", or null. */
 		public String travel;
 		public Spot spot;

@@ -294,6 +294,11 @@ final class Views
 			sv.ticksLeft = s.ticksLeft;
 			sv.until = s.until;
 			sv.world = s.world;
+			if (s.used != null && s.capacity != null)
+			{
+				sv.used = s.used;
+				sv.capacity = s.capacity;
+			}
 			if (here != null && s.located() && s.plane == here[2])
 			{
 				sv.distance = Math.max(Math.abs(s.x - here[0]), Math.abs(s.y - here[1]));
@@ -307,7 +312,8 @@ final class Views
 			kept += sv.worth;
 			stores.add(sv);
 		}
-		stores.sort((a, b) -> a.kind != b.kind ? Integer.compare(a.kind.ordinal(), b.kind.ordinal()) : Long.compare(b.worth, a.worth));
+		stores.sort((a, b) -> a.kind != b.kind ? Integer.compare(a.kind.ordinal(), b.kind.ordinal())
+			: a.kind == Kind.CARGO ? a.key.compareTo(b.key) : Long.compare(b.worth, a.worth));
 		v.stores = stores;
 		v.keptWorth = kept;
 

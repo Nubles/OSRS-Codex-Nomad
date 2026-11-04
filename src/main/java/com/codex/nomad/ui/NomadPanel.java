@@ -458,7 +458,7 @@ public class NomadPanel extends PluginPanel
 		View v = view;
 		if (v.stores.isEmpty())
 		{
-			p.add(note("Nomad remembers every place you keep things. Deposit into a STASH unit, open a costume room piece or the seed vault, and it shows here. Deathpiles, deathbanks, dropped items, the tool leprechaun, the Blast Furnace, fossil storage and the coffers appear on their own."));
+			p.add(note("Nomad remembers every place you keep things. Deposit into a STASH unit, open a costume room piece, the seed vault or a boat's cargo hold, and it shows here. Deathpiles, deathbanks, dropped items, the tool leprechaun, the Blast Furnace, fossil storage and the coffers appear on their own."));
 			lost(p, v);
 			return p;
 		}
@@ -509,13 +509,18 @@ public class NomadPanel extends PluginPanel
 		}
 		String figure = s.kind == Kind.FLOOR ? Format.clock(s.until - view.now) : s.kind == Kind.DEATHPILE ? Format.ticks(s.ticksLeft)
 			: !s.exact ? "?" : s.worth > 0 ? Format.coins(s.worth) : "";
-		String sub = (s.exact ? s.items.size() + (s.items.size() == 1 ? " item" : " items") : "Estimated from your death")
+		boolean cargo = s.kind == Kind.CARGO;
+		String sub = (s.exact ? cargo && s.items.isEmpty() ? "Empty" : s.items.size() + (s.items.size() == 1 ? " item" : " items") : "Estimated from your death")
 			+ (s.distance >= 0 ? " · " + s.distance + " tiles" : "")
-			+ (s.live ? " · read live" : s.seen > 0 ? " · " + Format.ago(view.now - s.seen) : "")
+			+ (s.live ? " · read live" : cargo && s.seen > 0 ? " · as last seen " + Format.ago(view.now - s.seen) : s.seen > 0 ? " · " + Format.ago(view.now - s.seen) : "")
 			+ (s.kind == Kind.DEATHBANK && Death.claim(s.name) != null ? " · " + Death.claim(s.name) : "");
 		card.add(new Row.Plain(s.name, figure, c == null ? Theme.GOLD : c, s.travel == null ? sub : sub + " · " + s.travel), BorderLayout.NORTH);
 		StackPanel in = new StackPanel(4, 0);
 		in.setBorder(new EmptyBorder(6, 0, 0, 0));
+		if (s.capacity > 0)
+		{
+			in.add(new Hold(s.used, s.capacity));
+		}
 		if (!s.items.isEmpty())
 		{
 			in.add(grid(s.items, null));
@@ -583,6 +588,7 @@ public class NomadPanel extends PluginPanel
 				: s.kind == Kind.FLOOR ? "Floor, world " + s.world + " (" + Format.clock(s.until - v.now) + ")"
 				: s.kind == Kind.DEATHPILE ? "Deathpile (" + Format.ticks(s.ticksLeft) + ")"
 				: s.kind == Kind.STASH ? "STASH, " + s.name
+				: s.kind == Kind.CARGO ? s.name + " (as last seen " + Format.ago(v.now - s.seen) + ")"
 				: s.kind == Kind.DEATHBANK ? "Deathbank, " + s.name : s.name;
 			look(hits, q, s.items, place + (s.distance >= 0 ? ", " + s.distance + " tiles" : ""), s.kind.perilous());
 		}
