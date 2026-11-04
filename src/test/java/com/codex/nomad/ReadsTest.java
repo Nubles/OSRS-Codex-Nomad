@@ -1,5 +1,6 @@
 package com.codex.nomad;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -118,5 +119,13 @@ public class ReadsTest
 		assertEquals(ItemID.INFERNAL_CAPE, CapeHanger.holds(net.runelite.api.gameval.ObjectID.POH_MOUNTED_INFERNAL_CAPE)[0]);
 		assertEquals(0, CapeHanger.holds(CapeHanger.EMPTY).length);
 		assertEquals(null, CapeHanger.holds(1));
+	}
+
+	@Test
+	public void theCapeHangerHoldsTheSailingCape()
+	{
+		// Mounted Sailing Cape 58664 and (t) 58665; Sailing cape 31288, (t) 31290, hood 31292 (OSRS wiki).
+		assertArrayEquals(new int[]{31288, 31292}, CapeHanger.holds(58664));
+		assertArrayEquals(new int[]{31290, 31292}, CapeHanger.holds(58665));
 	}
 }
