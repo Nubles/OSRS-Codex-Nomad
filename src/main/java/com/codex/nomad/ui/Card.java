@@ -23,6 +23,7 @@ public class Card extends JPanel
 	private boolean hover;
 	private boolean highlighted;
 	private Runnable onClick;
+	private boolean flat;
 
 	public Card(LayoutManager layout)
 	{
@@ -42,6 +43,14 @@ public class Card extends JPanel
 	public Card highlighted(boolean value)
 	{
 		highlighted = value;
+		repaint();
+		return this;
+	}
+
+	/** Draws no surface of its own, for a row set inside another card. */
+	public Card flat()
+	{
+		flat = true;
 		repaint();
 		return this;
 	}
@@ -88,6 +97,11 @@ public class Card extends JPanel
 	@Override
 	protected void paintComponent(Graphics graphics)
 	{
+		if (flat)
+		{
+			super.paintComponent(graphics);
+			return;
+		}
 		Graphics2D g = (Graphics2D) graphics.create();
 		Theme.smooth(g);
 		int w = getWidth();

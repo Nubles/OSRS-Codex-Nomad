@@ -1,6 +1,7 @@
 package com.codex.nomad;
 
 import com.codex.nomad.notes.FieldNotes;
+import com.codex.nomad.core.Clues;
 import com.codex.nomad.core.Costume;
 import com.codex.nomad.core.Death;
 import com.codex.nomad.core.Fetch;
@@ -97,6 +98,7 @@ import net.runelite.client.game.ItemManager;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.plugins.PluginManager;
+import net.runelite.client.plugins.cluescrolls.clues.EmoteClue;
 import net.runelite.client.plugins.cluescrolls.clues.emote.STASHUnit;
 import net.runelite.client.ui.ClientToolbar;
 import net.runelite.client.ui.NavigationButton;
@@ -122,6 +124,8 @@ public class CodexNomadPlugin extends Plugin
 	private static final String DAMAGED_KEY = "nomadDamaged";
 	/** What the account holds, for the rest of the suite: {version,savedAt,items{id:qty},truncated}. */
 	static final String HOLDINGS_KEY = "holdingsV1";
+	/** The clue book: what is juggled on the floor and the clue log, per account. */
+	static final String CLUES_KEY = "cluesV1";
 	static final String STEWARD_GROUP = "codexbanksteward";
 	static final String STEWARD_KEY = "bankV1";
 	private static final int SAVE_TICKS = 50;
@@ -249,6 +253,10 @@ public class CodexNomadPlugin extends Plugin
 
 	private String profile;
 	private Nomad nomad;
+	/** The clue companion's book for this account. */
+	private Clues clues;
+	/** The emote clue last read from the clue scroll interface, for the tiers whose id does not tell. */
+	private EmoteClue readEmote;
 	private Map<Integer, Long> lastInv = new HashMap<>();
 	private Map<Integer, Long> lastWorn = new HashMap<>();
 	private Map<Integer, Long> beforeDeath;
@@ -415,6 +423,7 @@ public class CodexNomadPlugin extends Plugin
 		gained.clear();
 		stashDeposit = -1;
 		stashWithdraw = -1;
+		readEmote = null;
 		plaqueRows = new ArrayList<>();
 		plaque.show(null, null, null);
 		marker.show(null);
@@ -638,6 +647,7 @@ public class CodexNomadPlugin extends Plugin
 				nomad.carry(Nomad.INVENTORY, after, now);
 				pickUp(Items.minus(after, before));
 				lastInv = after;
+				cluesGained(Items.minus(after, before));
 				readPouch();
 				forecast.note(nomad.played, slotsUsed(c));
 			}
@@ -833,6 +843,19 @@ public class CodexNomadPlugin extends Plugin
 	@Subscribe
 	public void onWidgetLoaded(WidgetLoaded event)
 	{
+		if (event.getGroupId() == InterfaceID.TRAIL_CLUETEXT)
+		{
+			clientThread.invokeLater(() ->
+			{
+				Widget text = client.getWidget(InterfaceID.TrailCluetext.TEXT);
+				if (text != null && text.getText() != null)
+				{
+					readEmote = EmoteClue.forText(Text.sanitizeMultilineText(text.getText()));
+					dirty = true;
+				}
+			});
+			return;
+		}
 		if (event.getGroupId() == InterfaceID.CHATMENU)
 		{
 			clientThread.invokeLater(() ->
@@ -902,6 +925,10 @@ public class CodexNomadPlugin extends Plugin
 	{
 		TileItem item = event.getItem();
 		Player me = client.getLocalPlayer();
+		if (clueSpawned(event, item, me))
+		{
+			return;
+		}
 		Integer clicked = dropping.get(item.getId());
 		if (nomad == null || me == null || clicked == null || item.getOwnership() != TileItem.OWNERSHIP_SELF
 			|| client.getTickCount() - clicked > DROP_TICKS)
@@ -921,6 +948,46 @@ public class CodexNomadPlugin extends Plugin
 		changed();
 	}
 
+	/**
+	 * A clue item of the player's on the floor: dropped just now, it goes in the clue book instead of
+	 * the floor store, since its timer only runs while logged in and it follows the player between
+	 * worlds; seen again after a login or a hop, its timer is set from the game.
+	 *
+	 * @return whether the item was a clue item of the player's
+	 */
+	private boolean clueSpawned(ItemSpawned event, TileItem item, Player me)
+	{
+		if (clues == null || me == null || item.getOwnership() != TileItem.OWNERSHIP_SELF || raidFloor.inRaid())
+		{
+			return false;
+		}
+		Clues.Kind kind = Clues.classify(item.getId(), name(item.getId()));
+		if (kind == null)
+		{
+			return false;
+		}
+		WorldPoint at = WorldPoint.fromLocalInstance(client, event.getTile().getLocalLocation());
+		if (at == null)
+		{
+			return true;
+		}
+		long gameTicks = item.getDespawnTime() > 0 ? item.getDespawnTime() - client.getTickCount() : -1;
+		Integer clicked = dropping.get(item.getId());
+		WorldPoint mine = WorldPoint.fromLocalInstance(client, me.getLocalLocation());
+		if (clicked != null && client.getTickCount() - clicked <= DROP_TICKS && mine != null && at.getPlane() == mine.getPlane()
+			&& at.distanceTo2D(mine) <= 1)
+		{
+			dropping.remove(item.getId());
+			clues.drop(item.getId(), kind, at.getX(), at.getY(), at.getPlane(), gameTicks, System.currentTimeMillis());
+			changed();
+		}
+		else if (clues.resync(item.getId(), at.getX(), at.getY(), at.getPlane(), gameTicks))
+		{
+			changed();
+		}
+		return true;
+	}
+
 	@Subscribe
 	public void onItemDespawned(ItemDespawned event)
 	{
@@ -936,6 +1003,16 @@ public class CodexNomadPlugin extends Plugin
 			return;
 		}
 		TileItem item = event.getItem();
+		Clues.Dropped clue = clues == null ? null : clues.lift(item.getId(), at.getX(), at.getY(), at.getPlane());
+		if (clue != null)
+		{
+			if (Clues.vanished(clue))
+			{
+				clueGone(clue);
+			}
+			changed();
+			return;
+		}
 		int world = raidFloor.inRaid() ? Nomad.RAID : client.getWorld();
 		if (nomad.store(Nomad.floorKey(world, at.getX(), at.getY(), at.getPlane())) != null)
 		{
@@ -1468,6 +1545,12 @@ public class CodexNomadPlugin extends Plugin
 		}
 		String message = Text.removeTags(event.getMessage());
 		guide.heard(message);
+		Map.Entry<Clues.Tier, Integer> done = Clues.completed(message);
+		if (done != null && clues != null)
+		{
+			clues.count(done.getKey(), done.getValue());
+			changed();
+		}
 		if (herbSack.heard(message, nomad, System.currentTimeMillis()) | Bags.heard(message, nomad, System.currentTimeMillis())
 			| Sayings.heard(message, weapon(), this::itemNamed, nomad, System.currentTimeMillis()))
 		{
@@ -1601,6 +1684,7 @@ public class CodexNomadPlugin extends Plugin
 		}
 		warnPiles();
 		watchFloor();
+		watchClues();
 		if (ticks % 3 == 0)
 		{
 			findErrandObjects();
@@ -1641,7 +1725,115 @@ public class CodexNomadPlugin extends Plugin
 
 	private boolean hasTimers()
 	{
-		return !nomad.stores(Kind.DEATHPILE).isEmpty() || !nomad.stores(Kind.FLOOR).isEmpty();
+		return !nomad.stores(Kind.DEATHPILE).isEmpty() || !nomad.stores(Kind.FLOOR).isEmpty()
+			|| clues != null && !clues.floor().isEmpty();
+	}
+
+	/** Counts juggled clues down, times the clue in hand, and warns before a dropped clue vanishes. */
+	private void watchClues()
+	{
+		if (clues == null || client.getGameState() != GameState.LOGGED_IN)
+		{
+			return;
+		}
+		for (Clues.Dropped d : clues.tick(cluesHeld()))
+		{
+			clueGone(d);
+			changed();
+		}
+		long warnTicks = config.clueWarning() * 100L;
+		if (warnTicks <= 0)
+		{
+			return;
+		}
+		for (Clues.Dropped d : clues.floor())
+		{
+			if (d.ticksLeft == warnTicks)
+			{
+				String text = "Your dropped " + d.label().toLowerCase(Locale.ENGLISH) + " vanishes in " + config.clueWarning()
+					+ (config.clueWarning() == 1 ? " minute" : " minutes") + ": pick it up and drop it again to reset it.";
+				say(text, true);
+				if (config.clueNotify())
+				{
+					notifier.notify(text);
+				}
+			}
+		}
+	}
+
+	private void clueGone(Clues.Dropped d)
+	{
+		String text = "Your dropped " + d.label().toLowerCase(Locale.ENGLISH) + " has vanished.";
+		say(text, true);
+		if (config.clueNotify())
+		{
+			notifier.notify(text);
+		}
+		if (nomad == null)
+		{
+			return;
+		}
+		Map<Integer, Long> lost = new HashMap<>();
+		lost.put(d.item, 1L);
+		nomad.lose("Dropped " + d.label().toLowerCase(Locale.ENGLISH) + " vanished", lost, 0, System.currentTimeMillis());
+	}
+
+	/** The clue (or challenge scroll) in the pack of each tier, by id. */
+	private Map<Clues.Tier, Integer> cluesHeld()
+	{
+		Map<Clues.Tier, Integer> held = new java.util.EnumMap<>(Clues.Tier.class);
+		for (int id : lastInv.keySet())
+		{
+			Clues.Kind k = Clues.classify(id, name(id));
+			if (k != null && k.tier != null && k.piece.open())
+			{
+				held.put(k.tier, id);
+			}
+		}
+		return held;
+	}
+
+	/** Reward caskets that came into the pack close the trail of their tier, for the pace. */
+	private void cluesGained(Map<Integer, Long> gainedNow)
+	{
+		if (clues == null || gainedNow.isEmpty())
+		{
+			return;
+		}
+		Map<Clues.Tier, Integer> held = cluesHeld();
+		for (int id : gainedNow.keySet())
+		{
+			Clues.Kind k = Clues.classify(id, name(id));
+			if (k != null && k.piece == Clues.Piece.REWARD && clues.casket(k.tier, held.containsKey(k.tier)))
+			{
+				changed();
+			}
+		}
+	}
+
+	/**
+	 * The STASH unit the emote step in hand needs: from the clue's id where each step has its own,
+	 * else from the clue last read, while that clue is still carried. Null with none.
+	 */
+	private EmoteClue emoteInHand()
+	{
+		for (int id : lastInv.keySet())
+		{
+			if (id == Clues.BEGINNER_CLUE || id == Clues.MASTER_CLUE)
+			{
+				continue;
+			}
+			EmoteClue e = EmoteClue.forItemId(id);
+			if (e != null && e.getStashUnit() != null)
+			{
+				return e;
+			}
+		}
+		if (readEmote != null && readEmote.getStashUnit() != null && lastInv.containsKey(readEmote.getItemId()))
+		{
+			return readEmote;
+		}
+		return null;
 	}
 
 	private void warnPiles()
@@ -1861,6 +2053,16 @@ public class CodexNomadPlugin extends Plugin
 			System.currentTimeMillis(), travel(), config.sellAbove());
 		view.loggedIn = client.getGameState() == GameState.LOGGED_IN;
 		view.wayfinder = config.wayfinder() && wayfinder.on();
+		if (clues != null)
+		{
+			EmoteClue emote = emoteInHand();
+			String unit = emote == null ? null : emote.getStashUnit().name();
+			Clues.Kind ek = emote == null ? null : Clues.classify(emote.getItemId(), name(emote.getItemId()));
+			view.clues = ClueViews.build(clues, here, ClueViews.held(lastInv, look), config.clueWarning() * 100L, stash, unit,
+				ek == null || ek.tier == null ? null : ek.tier.label(),
+				emote == null ? null : emote.getItemId() == Clues.MASTER_CLUE ? "from the clue you last read" : "from the clue you carry",
+				unit == null ? null : nomad.store("stash:" + unit), nomad.carried(), look);
+		}
 		if (view.wayfinder)
 		{
 			for (View.StoreView sv : view.stores)
@@ -1979,6 +2181,24 @@ public class CodexNomadPlugin extends Plugin
 				soonest = floor;
 			}
 		}
+		List<Marker.Mark> clueMarks = new ArrayList<>();
+		Clues.Dropped nextClue = clues == null || !config.clueMarks() ? null : clues.soonest();
+		if (nextClue != null)
+		{
+			long warnTicks = config.clueWarning() * 100L;
+			for (Clues.Dropped d : clues.floor())
+			{
+				clueMarks.add(new Marker.Mark(new WorldPoint(d.x, d.y, d.plane), d.label() + " " + Format.ticks(d.ticksLeft),
+					d.ticksLeft <= warnTicks ? Theme.BLOOD : Theme.GOLD));
+			}
+			marks.addAll(clueMarks);
+			if (config.plaque())
+			{
+				int more = clues.floor().size() - 1;
+				rows.add(new Plaque.Row("Juggled clue", Format.ticks(nextClue.ticksLeft), nextClue.label()
+					+ (more > 0 ? " · " + more + " more on the floor" : ""), nextClue.ticksLeft <= warnTicks ? Theme.BLOOD : Theme.GOLD));
+			}
+		}
 		if (soonest != null && config.plaque())
 		{
 			long left = soonest.until - nowMs;
@@ -2041,7 +2261,7 @@ public class CodexNomadPlugin extends Plugin
 		plaqueRows = rows;
 		plaqueTint = tint;
 		plaque.show("Nomad", tint, rows);
-		marker.show(config.pointer() ? marks : null);
+		marker.show(config.pointer() ? marks : clueMarks.isEmpty() ? null : clueMarks);
 		if (!config.pointer())
 		{
 			points.clear();
@@ -2515,6 +2735,7 @@ public class CodexNomadPlugin extends Plugin
 	{
 		profile = configManager.getRSProfileKey();
 		nomad = null;
+		clues = null;
 		if (profile == null)
 		{
 			return;
@@ -2527,6 +2748,7 @@ public class CodexNomadPlugin extends Plugin
 			configManager.setConfiguration(CodexNomadConfig.GROUP, profile, DAMAGED_KEY, saved);
 		}
 		nomad = read.nomad;
+		clues = Clues.read(gson, configManager.getRSProfileConfiguration(CodexNomadConfig.GROUP, CLUES_KEY));
 		unsaved = false;
 		dirty = true;
 	}
@@ -2539,6 +2761,10 @@ public class CodexNomadPlugin extends Plugin
 		}
 		unsaved = false;
 		configManager.setConfiguration(CodexNomadConfig.GROUP, profile, SAVE_KEY, nomad.write(gson));
+		if (clues != null)
+		{
+			configManager.setConfiguration(CodexNomadConfig.GROUP, profile, CLUES_KEY, clues.write(gson));
+		}
 		String holdings = Holdings.write(gson, nomad.holdings(), System.currentTimeMillis());
 		configManager.setConfiguration(CodexNomadConfig.GROUP, profile, HOLDINGS_KEY, holdings);
 		if (config.shareHoldings() && nomad.account == 2)
