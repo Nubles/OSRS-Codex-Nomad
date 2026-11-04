@@ -59,7 +59,11 @@ With Codex Wayfinder installed, Nomad reads the travel atlas it shares (`codexwa
 
 The inventory, worn items, looting bag, seed box, kits, seed vault, costume room and the deathbank retrieval window are read as they change. The rune pouch, bolt pouch, plank sack, scroll book, spool, quiver, tool leprechaun, Blast Furnace, fossil storage and coffers are read from the game's own counters. The herb sack, coal bag, gem bag and bottomless compost bucket are followed from what the game says when you check, fill or empty them, and the fish barrel and log basket from the box shown when you check them. Dropped items are matched to your Drop clicks, with the despawn time the game gives them. Deaths come from `ActorDeath`, STASH deposits and the item retrieval service from chat messages, and the account type from the ironman varbit. Worth comes from RuneLite's item manager. Everything is stored per account in the RuneLite profile config. A damaged save never stops the panel: whatever still reads is kept.
 
-It is guidance only. It does not automate any input, send any data off the client, or read or write files. The route only points and outlines; you walk and click. The only menu changes are the two guards, which remove an option and never add or swap one.
+It is guidance only. It does not automate any input, send any data off the client, or read or write files apart from the optional field notes below. The route only points and outlines; you walk and click. The only menu changes are the two guards, which remove an option and never add or swap one.
+
+## Field notes
+
+An optional setting, **Keep field notes** (under Field notes, off by default), writes a plain record of what Nomad reads and decides to its own folder in `.runelite/plugin-data` on your computer, one line at a time. It is for checking the plugin's guesses against real play: when something looks wrong, the notes show what it saw and why it chose what it did. Other players' chat is never written down, it stays on your computer, and nothing is sent anywhere.
 
 ## Credits
 
