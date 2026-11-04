@@ -15,6 +15,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import javax.swing.Box;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -50,6 +51,11 @@ public class NomadPanel extends PluginPanel
 		void tickStep(String key, boolean done);
 
 		void follow(boolean on);
+
+		/** Asks Codex Wayfinder to plot the way to a place. */
+		default void route(View.Spot spot)
+		{
+		}
 	}
 
 	private final ItemIcons icons;
@@ -507,7 +513,7 @@ public class NomadPanel extends PluginPanel
 			+ (s.distance >= 0 ? " · " + s.distance + " tiles" : "")
 			+ (s.live ? " · read live" : s.seen > 0 ? " · " + Format.ago(view.now - s.seen) : "")
 			+ (s.kind == Kind.DEATHBANK && Death.claim(s.name) != null ? " · " + Death.claim(s.name) : "");
-		card.add(new Row.Plain(s.name, figure, c == null ? Theme.GOLD : c, sub), BorderLayout.NORTH);
+		card.add(new Row.Plain(s.name, figure, c == null ? Theme.GOLD : c, s.travel == null ? sub : sub + " · " + s.travel), BorderLayout.NORTH);
 		StackPanel in = new StackPanel(4, 0);
 		in.setBorder(new EmptyBorder(6, 0, 0, 0));
 		if (!s.items.isEmpty())
@@ -521,6 +527,11 @@ public class NomadPanel extends PluginPanel
 			JPanel holder = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
 			holder.setOpaque(false);
 			holder.add(new CodexButton("Forget this place", false, () -> actions.forgetStore(s.key)));
+			if (view.wayfinder && s.spot != null)
+			{
+				holder.add(Box.createHorizontalStrut(6));
+				holder.add(new CodexButton("Route", true, () -> actions.route(s.spot)));
+			}
 			in.add(holder);
 		}
 		card.highlighted(isOpen);
@@ -643,8 +654,14 @@ public class NomadPanel extends PluginPanel
 			JPanel tiles = new JPanel(new GridLayout(1, 2, 6, 0));
 			tiles.setOpaque(false);
 			tiles.add(new StatTile(f.ready + "/" + f.total, "Packed", ready ? "Ready to go" : f.missing + " missing", ready ? Theme.GREEN : Theme.GOLD));
-			tiles.add(new StatTile(f.slots + "/28", "Slots", f.slots <= 28 ? "Fits" : "Too much to carry", f.slots <= 28 ? Theme.TEAL : Theme.BLOOD));
+			// With the loadout solved, the slots count the rune pouch and bags as the game does.
+			int slots = v.loadout != null ? v.loadout.needed : f.slots;
+			tiles.add(new StatTile(slots + "/28", "Slots", slots <= 28 ? "Fits" : "Too much to carry", slots <= 28 ? Theme.TEAL : Theme.BLOOD));
 			p.add(tiles);
+			if (v.loadout != null)
+			{
+				loadout(p, v.loadout);
+			}
 			if (!f.stops.isEmpty())
 			{
 				p.add(new SectionHeader("Stops", String.valueOf(f.stops.size())));
@@ -662,6 +679,11 @@ public class NomadPanel extends PluginPanel
 					card.accent(c);
 					card.highlighted(n == 1);
 					card.add(new Row.Plain(n + ". " + s.name, s.distance >= 0 ? s.distance + " tiles" : s.kind.getLabel(), c, String.join(", ", take)), BorderLayout.NORTH);
+					JComponent way = travelLine(s.travel, s.spot);
+					if (way != null)
+					{
+						card.add(way, BorderLayout.SOUTH);
+					}
 					p.add(card);
 					n++;
 				}
@@ -676,7 +698,7 @@ public class NomadPanel extends PluginPanel
 				Color c = ok ? Theme.GREEN : l.missing > 0 && l.bagged == 0 ? Theme.BLOOD : Theme.GOLD;
 				p.add(new Row(l.want.id, l.want.qty, icons, l.want.name, figure, c, where, null));
 			}
-			if (!f.extra.isEmpty())
+			if (!f.extra.isEmpty() && v.loadout == null)
 			{
 				p.add(new SectionHeader("Not on the list", String.valueOf(f.extra.size())));
 				p.add(grid(f.extra, Theme.alpha(Theme.GOLD_DIM, 160)));
@@ -705,6 +727,110 @@ public class NomadPanel extends PluginPanel
 			}
 		}
 		return p;
+	}
+
+	/** "~1m 40s · Camelot Teleport" with a Route button when Wayfinder is on, or null. */
+	private JComponent travelLine(String travel, View.Spot spot)
+	{
+		boolean button = view.wayfinder && spot != null;
+		if (travel == null && !button)
+		{
+			return null;
+		}
+		JPanel row = new JPanel(new BorderLayout(6, 0));
+		row.setOpaque(false);
+		row.setBorder(new EmptyBorder(4, 0, 0, 0));
+		if (travel != null)
+		{
+			row.add(Ui.wrapped(travel, Theme.small(), Theme.TEAL, WIDTH - (button ? 80 : 24)), BorderLayout.CENTER);
+		}
+		if (button)
+		{
+			JPanel holder = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
+			holder.setOpaque(false);
+			holder.add(new CodexButton("Route", true, () -> actions.route(spot)));
+			row.add(holder, BorderLayout.EAST);
+		}
+		return row;
+	}
+
+	/** The packing list solved: the 28 slots, what is worn and pouched, and where the rest waits. */
+	private void loadout(StackPanel p, View.LoadoutView l)
+	{
+		p.add(new SectionHeader("Loadout", l.used + "/28 slots"));
+		if (l.over > 0)
+		{
+			Card warn = new Card(new BorderLayout());
+			warn.setBorder(new EmptyBorder(6, 8, 6, 8));
+			warn.accent(Theme.BLOOD);
+			List<String> cut = new ArrayList<>();
+			for (View.ItemLine t : l.trim)
+			{
+				cut.add(Format.amount(t.qty) + " fewer " + t.name);
+			}
+			warn.add(new Row.Plain("The list is " + l.over + (l.over == 1 ? " slot" : " slots") + " over", l.needed + "/28", Theme.BLOOD,
+				cut.isEmpty() ? "Nothing on it can be cut by count; drop a line." : "To fit, carry " + String.join(", ", cut) + "."), BorderLayout.CENTER);
+			p.add(warn);
+		}
+		JPanel holder = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
+		holder.setOpaque(false);
+		holder.add(new PackGrid(l.grid, icons));
+		p.add(holder);
+		p.add(foot("Gold: on the list. Teal: bags and pouches. Faint: spare, with nowhere safer to go."));
+		if (!l.worn.isEmpty())
+		{
+			p.add(new SectionHeader("Worn", String.valueOf(l.worn.size())));
+			p.add(grid(l.worn, Theme.alpha(Theme.GOLD, 160)));
+		}
+		if (l.hasPouch)
+		{
+			p.add(new SectionHeader("Rune pouch", l.pouch.size() + "/" + l.pouchTypes + " kinds"));
+			p.add(grid(l.pouch, Theme.alpha(Theme.VIOLET, 170)));
+		}
+		if (l.wipes != null)
+		{
+			Card warn = new Card(new BorderLayout());
+			warn.setBorder(new EmptyBorder(6, 8, 6, 8));
+			warn.accent(Theme.BLOOD);
+			warn.add(new Row.Plain("Reclaim your deathbank first", null, Theme.BLOOD,
+				"Dying to store things wipes the deathbank waiting at " + l.wipes + "."), BorderLayout.CENTER);
+			p.add(warn);
+		}
+		if (l.leave.isEmpty())
+		{
+			p.add(foot(l.over > 0 ? "" : "Everything you carry is on the list or fits beside it."));
+			return;
+		}
+		int must = 0;
+		for (View.LeaveView x : l.leave)
+		{
+			must += x.must ? 1 : 0;
+		}
+		p.add(new SectionHeader("Leave behind", must > 0 ? must + " must go" : String.valueOf(l.leave.size())));
+		for (View.LeaveView x : l.leave)
+		{
+			Color c = x.safe ? Theme.GREEN : "Looting bag".equals(x.home) ? Theme.TEAL : "Death storage".equals(x.home) ? Theme.EMBER : Theme.TEXT_MUTED;
+			String note = x.where == null ? "" : x.where;
+			if (x.slots > 0)
+			{
+				note = note + (note.isEmpty() ? "" : " · ") + "frees " + x.slots + (x.slots == 1 ? " slot" : " slots");
+			}
+			Card card = new Card(new BorderLayout());
+			card.setBorder(new EmptyBorder(0, 0, 0, 0));
+			if (x.must)
+			{
+				card.accent(Theme.EMBER);
+			}
+			card.add(new Row(x.item.id, x.item.qty, icons, x.item.name, x.brief, c, note, null), BorderLayout.CENTER);
+			JComponent way = travelLine(x.travel, x.spot);
+			if (way != null)
+			{
+				way.setBorder(new EmptyBorder(0, 8, 6, 8));
+				card.add(way, BorderLayout.SOUTH);
+			}
+			p.add(card);
+		}
+		p.add(foot("Safe homes keep things for good. The looting bag and death storage only give them back after a death."));
 	}
 
 	// ---- route ----

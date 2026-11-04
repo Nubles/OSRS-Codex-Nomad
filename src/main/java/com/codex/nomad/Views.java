@@ -1,16 +1,19 @@
 package com.codex.nomad;
 
+import com.codex.nomad.core.Costume;
 import com.codex.nomad.core.Death;
 import com.codex.nomad.core.Fetch;
 import com.codex.nomad.core.Idle;
 import com.codex.nomad.core.Items;
 import com.codex.nomad.core.Kept;
 import com.codex.nomad.core.Kind;
+import com.codex.nomad.core.Loadout;
 import com.codex.nomad.core.Nomad;
 import com.codex.nomad.core.Notary;
 import com.codex.nomad.core.Route;
 import com.codex.nomad.core.StashBook;
 import com.codex.nomad.core.Store;
+import com.codex.nomad.core.Travel;
 import com.codex.nomad.core.Trip;
 import com.codex.nomad.ui.Format;
 import com.codex.nomad.ui.View;
@@ -36,6 +39,12 @@ final class Views
 
 		/** The item's common form: unnoted, no placeholder. */
 		int canon(int id);
+
+		/** Whether it can be traded, which the looting bag asks. */
+		default boolean tradeable(int id)
+		{
+			return true;
+		}
 	}
 
 	/** Items never called dead weight: the containers themselves. */
@@ -90,6 +99,16 @@ final class Views
 
 	static View build(Nomad n, Lookup look, StashBook stash, Route route, Route.Account account, int[] here, int keep,
 		long idleAfter, long now)
+	{
+		return build(n, look, stash, null, route, account, here, keep, idleAfter, now, null, Long.MAX_VALUE);
+	}
+
+	/**
+	 * As above, with the costume room's furniture for the loadout, Codex Wayfinder's atlas (or null)
+	 * for travel times, and the worth a stack needs to be worth a trip to death storage.
+	 */
+	static View build(Nomad n, Lookup look, StashBook stash, Costume costume, Route route, Route.Account account, int[] here,
+		int keep, long idleAfter, long now, Travel travel, long storeOver)
 	{
 		View v = new View();
 		v.now = now;
@@ -279,6 +298,12 @@ final class Views
 			{
 				sv.distance = Math.max(Math.abs(s.x - here[0]), Math.abs(s.y - here[1]));
 			}
+			if (s.located())
+			{
+				sv.spot = new View.Spot(s.x, s.y, s.plane, s.name, "store:" + s.key);
+				Travel.Leg leg = travel == null ? null : travel.to(here, s.x, s.y, s.plane, -1);
+				sv.travel = leg == null ? null : leg.say();
+			}
 			kept += sv.worth;
 			stores.add(sv);
 		}
@@ -297,7 +322,8 @@ final class Views
 		if (active != null)
 		{
 			v.active = active.name;
-			v.fetch = fetch(n, active, look, here);
+			v.fetch = fetch(n, active, look, here, travel);
+			v.loadout = loadout(n, active, look, stash, costume, here, travel, storeOver);
 		}
 
 		// ---- route ----
@@ -307,18 +333,23 @@ final class Views
 
 	static Fetch plan(Nomad n, Trip trip, Lookup look, int[] here)
 	{
+		return plan(n, trip, look, here, null);
+	}
+
+	static Fetch plan(Nomad n, Trip trip, Lookup look, int[] here, Travel travel)
+	{
 		Map<Integer, Long> pocket = Items.canon(n.carried(Nomad.INVENTORY), look::canon);
 		Items.add(pocket, Items.canon(n.carried(Nomad.WORN), look::canon));
 		Map<Integer, Long> pouch = Items.canon(n.carried(Nomad.RUNE_POUCH), look::canon);
 		Items.add(pocket, pouch);
 		Map<Integer, Long> bag = Items.canon(n.carried(Nomad.LOOTING_BAG), look::canon);
 		return Fetch.plan(trip, pocket, bag, n.stores(), look::canon, look::stackable, here,
-			id -> CONTAINERS.contains(id) || pouch.containsKey(id), look::name);
+			id -> CONTAINERS.contains(id) || pouch.containsKey(id), look::name, travel);
 	}
 
-	private static View.FetchView fetch(Nomad n, Trip trip, Lookup look, int[] here)
+	private static View.FetchView fetch(Nomad n, Trip trip, Lookup look, int[] here, Travel travel)
 	{
-		Fetch f = plan(n, trip, look, here);
+		Fetch f = plan(n, trip, look, here, travel);
 		View.FetchView fv = new View.FetchView();
 		fv.name = trip.name;
 		fv.ready = f.ready;
@@ -352,11 +383,179 @@ final class Views
 			sv.kind = s.store.kind;
 			sv.distance = s.distance;
 			sv.take = lines(s.take, look);
+			sv.travel = s.leg == null ? null : s.leg.say();
+			if (s.store.located())
+			{
+				sv.spot = new View.Spot(s.store.x, s.store.y, s.store.plane, s.store.name, "store:" + s.store.key);
+			}
 			stops.add(sv);
 		}
 		fv.stops = stops;
 		fv.extra = lines(f.extra, look);
 		return fv;
+	}
+
+	/** Whether the rune pouch takes an item: its name ends in "rune". */
+	static boolean rune(String name)
+	{
+		return name != null && name.toLowerCase(java.util.Locale.ENGLISH).endsWith(" rune");
+	}
+
+	static View.LoadoutView loadout(Nomad n, Trip trip, Lookup look, StashBook stash, Costume costume, int[] here,
+		Travel travel, long storeOver)
+	{
+		String deathbank = null;
+		for (Store s : n.stores())
+		{
+			if (s.kind == Kind.DEATHBANK && !s.isEmpty())
+			{
+				deathbank = s.name;
+			}
+		}
+		Loadout.Facts facts = new Loadout.Facts()
+		{
+			@Override
+			public boolean stackable(int item)
+			{
+				return look.stackable(item);
+			}
+
+			@Override
+			public boolean rune(int item)
+			{
+				return Views.rune(look.name(item));
+			}
+
+			@Override
+			public boolean tradeable(int item)
+			{
+				return look.tradeable(item);
+			}
+
+			@Override
+			public long price(int item)
+			{
+				return look.price(item);
+			}
+
+			@Override
+			public boolean container(int item)
+			{
+				return CONTAINERS.contains(item);
+			}
+
+			@Override
+			public String stash(int item)
+			{
+				List<StashBook.Home> homes = stash == null ? Collections.emptyList() : stash.homes(item);
+				return homes.isEmpty() ? null : homes.get(0).place;
+			}
+
+			@Override
+			public boolean costume(int item)
+			{
+				return costume != null && costume.holds(item);
+			}
+		};
+		Loadout l = Loadout.solve(trip, n.carried(Nomad.INVENTORY), n.carried(Nomad.WORN), n.carried(Nomad.RUNE_POUCH),
+			n.carried(Nomad.LOOTING_BAG), look::canon, facts, deathbank, storeOver);
+		View.LoadoutView lv = new View.LoadoutView();
+		List<View.SlotView> grid = new ArrayList<>();
+		int last = -2;
+		for (int i : l.grid())
+		{
+			View.SlotView sv = new View.SlotView();
+			if (i >= 0)
+			{
+				Loadout.Packed p = l.pack.get(i);
+				sv.item = line(p.item, look.stackable(p.item) ? p.qty : 1, look);
+				sv.role = p.role.name();
+				sv.first = i != last;
+			}
+			last = i;
+			grid.add(sv);
+		}
+		lv.grid = grid;
+		List<View.ItemLine> worn = new ArrayList<>();
+		for (Loadout.Packed p : l.worn)
+		{
+			worn.add(line(p.item, p.qty, look));
+		}
+		lv.worn = worn;
+		List<View.ItemLine> pouch = new ArrayList<>();
+		for (Loadout.Packed p : l.pouch)
+		{
+			pouch.add(line(p.item, p.qty, look));
+		}
+		lv.pouch = pouch;
+		lv.pouchTypes = l.pouchTypes;
+		lv.hasPouch = l.hasPouch;
+		lv.hasBag = l.hasBag;
+		lv.bagFree = l.bagFree;
+		lv.needed = l.needed;
+		lv.used = l.used;
+		lv.over = l.over();
+		List<View.ItemLine> trim = new ArrayList<>();
+		for (Loadout.Trim t : l.trim)
+		{
+			trim.add(line(t.item, t.cut, look));
+		}
+		lv.trim = trim;
+		List<View.LeaveView> leave = new ArrayList<>();
+		for (Loadout.Leave x : l.leave)
+		{
+			View.LeaveView lw = new View.LeaveView();
+			lw.item = line(x.item, x.qty, look);
+			lw.home = x.home.getLabel();
+			lw.brief = x.home.getBrief();
+			lw.safe = x.home.isSafe();
+			lw.must = x.must;
+			lw.slots = x.slots;
+			int[] at = null;
+			switch (x.home)
+			{
+				case STASH:
+					lw.where = x.where;
+					for (StashBook.Home h : stash == null ? Collections.<StashBook.Home>emptyList() : stash.homes(x.item))
+					{
+						Store unit = n.store("stash:" + h.unit);
+						if (unit != null && unit.located())
+						{
+							at = new int[]{unit.x, unit.y, unit.plane};
+							lw.where = h.place;
+							break;
+						}
+					}
+					break;
+				case COSTUME:
+					lw.where = "Costume room in your house, one of each";
+					break;
+				case LEPRECHAUN:
+					lw.where = "Tool leprechaun at any farming patch";
+					break;
+				case LOOTING_BAG:
+					lw.where = "Looting bag: takes no slot; fill it in the Wilderness, it opens only on death";
+					break;
+				case DEATH_STORAGE:
+					lw.where = "Death storage: die at Zulrah, reclaim free from Priestess Zul-Gwenwynig";
+					at = Loadout.ZUL_ANDRA;
+					break;
+				default:
+					lw.where = "Worth less than a trip to keep";
+					break;
+			}
+			if (at != null)
+			{
+				lw.spot = new View.Spot(at[0], at[1], at[2], x.home == Loadout.Home.DEATH_STORAGE ? "Zul-Andra" : "STASH unit, " + lw.where,
+					"leave:" + x.home.name() + ":" + x.item);
+				Travel.Leg leg = travel == null ? null : travel.to(here, at[0], at[1], at[2], -1);
+				lw.travel = leg == null ? null : leg.say();
+			}
+			leave.add(lw);
+		}
+		lv.leave = leave;
+		lv.wipes = l.wipes;
+		return lv;
 	}
 
 	private static View.RouteView route(Nomad n, Route route, Route.Account account)

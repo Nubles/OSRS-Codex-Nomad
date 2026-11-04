@@ -50,6 +50,8 @@ public final class Fetch
 		public Map<Integer, Long> take = new LinkedHashMap<>();
 		/** Tiles away as the crow flies, or -1 when unknown or on another plane. */
 		public int distance = -1;
+		/** The quickest way there with Codex Wayfinder's atlas, or null without it. */
+		public Travel.Leg leg;
 
 		public long count()
 		{
@@ -125,7 +127,19 @@ public final class Fetch
 	public static Fetch plan(Trip trip, Map<Integer, Long> pocket, Map<Integer, Long> bag, List<Store> stores,
 		IntUnaryOperator canon, IntPredicate stackable, int[] here, IntPredicate always, IntFunction<String> name)
 	{
+		return plan(trip, pocket, bag, stores, canon, stackable, here, always, name, null);
+	}
+
+	/**
+	 * As above; with Codex Wayfinder's atlas, the safe stores are visited quickest first, by the
+	 * real travel time from here with the teleports carried, rather than by kind. Stores whose
+	 * contents can be lost still come first.
+	 */
+	public static Fetch plan(Trip trip, Map<Integer, Long> pocket, Map<Integer, Long> bag, List<Store> stores,
+		IntUnaryOperator canon, IntPredicate stackable, int[] here, IntPredicate always, IntFunction<String> name, Travel travel)
+	{
 		Fetch f = new Fetch(trip);
+		Map<Store, Travel.Leg> legs = new LinkedHashMap<>();
 		List<Store> order = new ArrayList<>();
 		Map<Store, Map<Integer, Long>> left = new LinkedHashMap<>();
 		Map<Store, Integer> distance = new LinkedHashMap<>();
@@ -138,9 +152,27 @@ public final class Fetch
 			order.add(s);
 			left.put(s, Items.canon(s.items, canon));
 			distance.put(s, distance(s, here));
+			Travel.Leg leg = travel == null || !s.located() ? null : travel.to(here, s.x, s.y, s.plane, -1);
+			if (leg != null)
+			{
+				legs.put(s, leg);
+			}
 		}
 		order.sort((a, b) ->
 		{
+			if (!a.kind.perilous() && !b.kind.perilous() && (legs.containsKey(a) || legs.containsKey(b)))
+			{
+				Travel.Leg la = legs.get(a);
+				Travel.Leg lb = legs.get(b);
+				if (la == null || lb == null)
+				{
+					return la == null ? 1 : -1;
+				}
+				if (la.seconds != lb.seconds)
+				{
+					return Integer.compare(la.seconds, lb.seconds);
+				}
+			}
 			int k = Integer.compare(a.kind.ordinal(), b.kind.ordinal());
 			if (k != 0)
 			{
@@ -182,6 +214,7 @@ public final class Fetch
 						Stop st = new Stop();
 						st.store = k;
 						st.distance = distance.get(k);
+						st.leg = legs.get(k);
 						return st;
 					});
 					stop.take.merge(w.item, n, Long::sum);
@@ -234,6 +267,7 @@ public final class Fetch
 							Stop sp = new Stop();
 							sp.store = x;
 							sp.distance = distance.get(x);
+							sp.leg = legs.get(x);
 							return sp;
 						});
 						stop.take.merge(e.getKey(), k, Long::sum);

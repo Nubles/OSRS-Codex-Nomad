@@ -77,6 +77,17 @@ public interface CodexNomadConfig extends Config
 	}
 
 	@ConfigItem(
+		keyName = "wayfinder",
+		name = "Travel with Wayfinder",
+		description = "With Codex Wayfinder on, order stops by real travel time with your teleports and show a Route button",
+		position = 4
+	)
+	default boolean wayfinder()
+	{
+		return true;
+	}
+
+	@ConfigItem(
 		keyName = "guardLootingBag",
 		name = "Looting bag Destroy",
 		description = "Take Destroy off the looting bag wherever destroying it deletes what is inside: outside the Wilderness, in the Ferox Enclave and on the first two tiles past the ditch",
