@@ -28,6 +28,10 @@ public final class Store
 	public long until;
 	/** The world dropped items lie on, or 0. */
 	public int world;
+	/** Slots in use, as the game last showed them, or null where the game does not say. */
+	public Integer used;
+	/** Slots in all, as the game last showed them, or null where the game does not say. */
+	public Integer capacity;
 	/** When each dropped item vanishes, epoch ms. */
 	public Map<Integer, Long> expires = new LinkedHashMap<>();
 

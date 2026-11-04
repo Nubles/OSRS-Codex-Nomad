@@ -12,6 +12,7 @@ public enum Kind
 	COSTUME("Costume room", "Safe in your house"),
 	STASH("STASH unit", "Safe, one outfit per unit"),
 	SEED_VAULT("Seed vault", "Safe at the Farming Guild"),
+	CARGO("Cargo holds", "As last seen: the hold can only be read while it is open. Summoning or recovering the boat loses salvage, fish, bounty items and port task cargo; the rest is kept"),
 	KEPT("Kept for you", "Safe; the game keeps the count, so Nomad reads it any time"),
 	COFFER("Coffers", "Coins held for you; the game keeps the count"),
 	OTHER("Elsewhere", "Remembered by hand");

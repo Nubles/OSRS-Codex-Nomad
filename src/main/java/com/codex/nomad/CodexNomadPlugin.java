@@ -79,6 +79,7 @@ import net.runelite.api.widgets.Widget;
 import net.runelite.http.api.item.ItemPrice;
 import net.runelite.api.gameval.InventoryID;
 import net.runelite.api.gameval.ItemID;
+import net.runelite.api.gameval.VarPlayerID;
 import net.runelite.api.gameval.VarbitID;
 import net.runelite.client.Notifier;
 import net.runelite.client.callback.ClientThread;
@@ -667,6 +668,17 @@ public class CodexNomadPlugin extends Plugin
 		{
 			nomad.carry(opened(id).name, contents(c), now);
 			changed();
+		}
+		else if (CargoHolds.boat(id) > 0)
+		{
+			// Remembered as last seen. An empty hold counts only while its window is open, so
+			// a container cleared outside the window never wipes what was seen.
+			Map<Integer, Long> held = contents(c);
+			if (!held.isEmpty() || cargoOpen() != null)
+			{
+				CargoHolds.record(nomad, CargoHolds.boat(id), held, now);
+				changed();
+			}
 		}
 		else if (id == InventoryID.SEED_VAULT)
 		{
@@ -1668,6 +1680,7 @@ public class CodexNomadPlugin extends Plugin
 			changed();
 		}
 		readShown(nowMs);
+		readCargoSlots();
 		gained.clear();
 		removedBefore.clear();
 		removedBefore.putAll(removed);
@@ -2539,6 +2552,51 @@ public class CodexNomadPlugin extends Plugin
 		return c == null ? null : c.getName();
 	}
 
+	/** The boat, 1 to 5, whose cargo hold window is open, or null. */
+	private Integer cargoOpen()
+	{
+		Widget items = client.getWidget(InterfaceID.SailingBoatCargohold.ITEMS);
+		if (items == null || items.isHidden())
+		{
+			return null;
+		}
+		// The window's script draws the hold this varp names.
+		int boat = CargoHolds.boat(client.getVarpValue(VarPlayerID.SAILING_BOAT_CARGOHOLD_INV));
+		return boat == 0 ? null : boat;
+	}
+
+	/** While a cargo hold is open, notes what it holds and the slots its window shows. */
+	private void readCargoSlots()
+	{
+		Integer boat = cargoOpen();
+		if (boat == null)
+		{
+			return;
+		}
+		ItemContainer hold = client.getItemContainer(CargoHolds.CONTAINERS[boat - 1]);
+		Store s = nomad.store(CargoHolds.key(boat));
+		boolean changed = false;
+		if (hold != null)
+		{
+			Map<Integer, Long> held = contents(hold);
+			if (s == null || !held.equals(s.items))
+			{
+				s = CargoHolds.record(nomad, boat, held, System.currentTimeMillis());
+				changed = true;
+			}
+		}
+		Widget used = client.getWidget(InterfaceID.SailingBoatCargohold.OCCUPIEDSLOTS);
+		Widget capacity = client.getWidget(InterfaceID.SailingBoatCargohold.CAPACITY);
+		if (used != null && capacity != null && CargoHolds.slots(s, used.getText(), capacity.getText()))
+		{
+			changed = true;
+		}
+		if (changed)
+		{
+			changed();
+		}
+	}
+
 	private static int slotsUsed(ItemContainer c)
 	{
 		int n = 0;
@@ -2559,6 +2617,7 @@ public class CodexNomadPlugin extends Plugin
 				: s.kind == Kind.FLOOR ? "On the floor, world " + s.world
 				: s.kind == Kind.DEATHPILE ? "Deathpile, " + Format.ticks(s.ticksLeft) + " left"
 				: s.kind == Kind.STASH ? "STASH, " + s.name
+				: s.kind == Kind.CARGO ? s.name + " (as last seen " + Format.ago(v.now - s.seen) + ")"
 				: s.kind == Kind.DEATHBANK ? "Deathbank, " + s.name : s.name;
 			for (View.ItemLine l : s.items)
 			{
