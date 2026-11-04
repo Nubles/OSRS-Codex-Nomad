@@ -11,6 +11,7 @@ import com.codex.nomad.core.Notary;
 import com.codex.nomad.core.Route;
 import com.codex.nomad.core.StashBook;
 import com.codex.nomad.core.Store;
+import com.codex.nomad.core.Travel;
 import com.codex.nomad.core.Trip;
 import com.codex.nomad.core.WayBack;
 import com.codex.nomad.overlay.ItemTips;
@@ -88,10 +89,13 @@ import net.runelite.client.eventbus.EventBus;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.ClientShutdown;
 import net.runelite.client.events.ConfigChanged;
+import net.runelite.client.events.PluginChanged;
+import net.runelite.client.events.PluginMessage;
 import net.runelite.client.events.RuneScapeProfileChanged;
 import net.runelite.client.game.ItemManager;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
+import net.runelite.client.plugins.PluginManager;
 import net.runelite.client.plugins.cluescrolls.clues.emote.STASHUnit;
 import net.runelite.client.ui.ClientToolbar;
 import net.runelite.client.ui.NavigationButton;
@@ -189,6 +193,12 @@ public class CodexNomadPlugin extends Plugin
 	@Inject
 	private TooltipManager tooltipManager;
 
+	@Inject
+	private PluginManager pluginManager;
+
+	/** Codex Wayfinder: its travel atlas and the Route button. */
+	private WayfinderLink wayfinder;
+
 	private ItemTips tips;
 
 	private final Plaque plaque = new Plaque();
@@ -265,6 +275,8 @@ public class CodexNomadPlugin extends Plugin
 	{
 		stash = StashBook.load(gson);
 		costume = Costume.load(gson);
+		wayfinder = new WayfinderLink(pluginManager, eventBus, configManager, clientThread, gson);
+		wayfinder.refresh();
 		route = Route.load();
 		herbSack = new HerbSack(id -> name(id));
 		marker = new Marker(client);
@@ -320,6 +332,15 @@ public class CodexNomadPlugin extends Plugin
 			public void follow(boolean on)
 			{
 				clientThread.invokeLater(() -> change(n -> n.following = on));
+			}
+
+			@Override
+			public void route(View.Spot spot)
+			{
+				if (config.wayfinder() && spot != null)
+				{
+					wayfinder.route(spot.x, spot.y, spot.plane, spot.name, spot.key);
+				}
 			}
 		});
 		navButton = NavigationButton.builder()
@@ -426,6 +447,7 @@ public class CodexNomadPlugin extends Plugin
 	@Subscribe
 	public void onRuneScapeProfileChanged(RuneScapeProfileChanged event)
 	{
+		wayfinder.refresh();
 		save();
 		loadProfile();
 		publish();
@@ -443,6 +465,45 @@ public class CodexNomadPlugin extends Plugin
 		{
 			clientThread.invokeLater(this::importKits);
 		}
+		if (Travel.GROUP.equals(event.getGroup()) && Travel.KEY.equals(event.getKey()))
+		{
+			wayfinder.refresh();
+			clientThread.invokeLater(this::publish);
+		}
+	}
+
+	@Subscribe
+	public void onPluginChanged(PluginChanged event)
+	{
+		wayfinder.refresh();
+		clientThread.invokeLater(this::publish);
+	}
+
+	@Subscribe
+	public void onPluginMessage(PluginMessage event)
+	{
+		if (wayfinder.heard(event))
+		{
+			clientThread.invokeLater(this::publish);
+		}
+	}
+
+	/** Wayfinder's atlas while the setting is on, else null. */
+	private Travel travel()
+	{
+		return config.wayfinder() ? wayfinder.atlas() : null;
+	}
+
+	/** Wayfinder's own answer for a place it was asked to route to, in words, or the estimate. */
+	private String routed(View.Spot spot, String estimate)
+	{
+		Travel.Routed r = spot == null ? null : wayfinder.reply(spot.key);
+		if (r == null || !r.found)
+		{
+			return estimate;
+		}
+		return "Wayfinder: " + Travel.time(r.seconds) + (r.steps.isEmpty() ? "" : " · " + r.steps.get(0)
+			+ (r.steps.size() > 1 ? " +" + (r.steps.size() - 1) + " more" : ""));
 	}
 
 	/** Brings Codex Quartermaster's kits in as packing lists, and lets go of ones it no longer has. */
@@ -1129,7 +1190,7 @@ public class CodexNomadPlugin extends Plugin
 	private String needless()
 	{
 		Trip t = nomad.activeTrip();
-		Fetch f = t == null ? null : Views.plan(nomad, t, lookup(), here());
+		Fetch f = t == null ? null : Views.plan(nomad, t, lookup(), here(), travel());
 		if (f == null || f.extra.isEmpty())
 		{
 			return "";
@@ -1757,9 +1818,31 @@ public class CodexNomadPlugin extends Plugin
 		}
 		int[] here = here();
 		Views.Lookup look = lookup();
-		View view = Views.build(nomad, look, stash, route, account(), here, keep(), config.idleHours() * 3_600_000L,
-			System.currentTimeMillis());
+		View view = Views.build(nomad, look, stash, costume, route, account(), here, keep(), config.idleHours() * 3_600_000L,
+			System.currentTimeMillis(), travel(), config.sellAbove());
 		view.loggedIn = client.getGameState() == GameState.LOGGED_IN;
+		view.wayfinder = config.wayfinder() && wayfinder.on();
+		if (view.wayfinder)
+		{
+			for (View.StoreView sv : view.stores)
+			{
+				sv.travel = routed(sv.spot, sv.travel);
+			}
+			if (view.fetch != null)
+			{
+				for (View.StopView sv : view.fetch.stops)
+				{
+					sv.travel = routed(sv.spot, sv.travel);
+				}
+			}
+			if (view.loadout != null)
+			{
+				for (View.LeaveView lv : view.loadout.leave)
+				{
+					lv.travel = routed(lv.spot, lv.travel);
+				}
+			}
+		}
 		for (View.Peril p : view.perils)
 		{
 			Store pile = p.kind == Kind.DEATHPILE ? nomad.store(p.key) : null;
@@ -1857,7 +1940,7 @@ public class CodexNomadPlugin extends Plugin
 				(28 - v.invUsed) + ((28 - v.invUsed) == 1 ? " slot" : " slots") + " left at this pace", full <= 2 * 60_000L ? Theme.EMBER : Theme.GOLD));
 		}
 		Trip t = nomad.activeTrip();
-		Fetch f = t == null ? null : Views.plan(nomad, t, lookup(), here);
+		Fetch f = t == null ? null : Views.plan(nomad, t, lookup(), here, travel());
 		Errand was = job;
 		job = errand(urgent, f);
 		if (t != null && job == null && was != null && (was.kind == Errand.Kind.FETCH || was.kind == Errand.Kind.UNNOTE))
@@ -2350,6 +2433,13 @@ public class CodexNomadPlugin extends Plugin
 			public int canon(int id)
 			{
 				return itemManager.canonicalize(id);
+			}
+
+			@Override
+			public boolean tradeable(int id)
+			{
+				ItemComposition c = itemManager.getItemComposition(id);
+				return c != null && c.isTradeable();
 			}
 		};
 	}

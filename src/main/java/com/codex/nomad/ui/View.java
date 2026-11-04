@@ -49,6 +49,10 @@ public final class View
 	public List<String> trips = Collections.emptyList();
 	public String active;
 	public FetchView fetch;
+	/** What to carry for the active list, solved slot by slot, or null. */
+	public LoadoutView loadout;
+	/** Codex Wayfinder is on, so places can have a Route button. */
+	public boolean wayfinder;
 
 	// ---- route ----
 	public RouteView route;
@@ -156,6 +160,73 @@ public final class View
 		/** When dropped items vanish, epoch ms, or 0. */
 		public long until;
 		public int world;
+		/** The quickest way there with Codex Wayfinder: "~1m 40s · Camelot Teleport", or null. */
+		public String travel;
+		public Spot spot;
+	}
+
+	/** A tile to route to. */
+	public static final class Spot
+	{
+		public final int x;
+		public final int y;
+		public final int plane;
+		public final String name;
+		public final String key;
+
+		public Spot(int x, int y, int plane, String name, String key)
+		{
+			this.x = x;
+			this.y = y;
+			this.plane = plane;
+			this.name = name;
+			this.key = key;
+		}
+	}
+
+	/** The packing list solved: what is worn, pouched, carried, and where the rest waits. */
+	public static final class LoadoutView
+	{
+		/** The 28 slots in order; null where empty. */
+		public List<SlotView> grid = Collections.emptyList();
+		public List<ItemLine> worn = Collections.emptyList();
+		public List<ItemLine> pouch = Collections.emptyList();
+		public int pouchTypes;
+		public boolean hasPouch;
+		public boolean hasBag;
+		public int bagFree;
+		public int needed;
+		public int used;
+		public int over;
+		public List<ItemLine> trim = Collections.emptyList();
+		public List<LeaveView> leave = Collections.emptyList();
+		/** The deathbank a death for storage would wipe, or null. */
+		public String wipes;
+	}
+
+	/** One inventory slot of the solved pack. */
+	public static final class SlotView
+	{
+		public ItemLine item;
+		/** "LIST", "CONTAINER" or "SPARE". */
+		public String role;
+		/** The first slot of a stack spread over several. */
+		public boolean first;
+	}
+
+	/** One stack to leave behind before setting off. */
+	public static final class LeaveView
+	{
+		public ItemLine item;
+		public String home;
+		/** One short word for the home: "STASH", "Bag", "Zulrah". */
+		public String brief;
+		public String where;
+		public boolean must;
+		public boolean safe;
+		public int slots;
+		public String travel;
+		public Spot spot;
 	}
 
 	/** The active packing list, checked. */
@@ -190,6 +261,9 @@ public final class View
 		public Kind kind;
 		public int distance = -1;
 		public List<ItemLine> take = Collections.emptyList();
+		/** The quickest way there with Codex Wayfinder, or null. */
+		public String travel;
+		public Spot spot;
 	}
 
 	/** The route to Prifddinas. */

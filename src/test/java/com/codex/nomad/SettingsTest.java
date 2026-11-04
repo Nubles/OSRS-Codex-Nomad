@@ -82,7 +82,7 @@ public class SettingsTest
 				keys.add(item.keyName());
 			}
 		}
-		for (String key : new String[]{"idleHours", "pileWarning", "floorWarning", "shareHoldings", "guardLootingBag", "guardSell", "sellAbove", "wildWarning", "plaque", "pointer", "routeStep", "guideArrow", "guideNpcs", "shortestPath", "itemTips"})
+		for (String key : new String[]{"idleHours", "pileWarning", "floorWarning", "shareHoldings", "guardLootingBag", "guardSell", "sellAbove", "wildWarning", "plaque", "pointer", "routeStep", "guideArrow", "guideNpcs", "shortestPath", "itemTips", "wayfinder"})
 		{
 			assertTrue(key, keys.contains(key));
 		}

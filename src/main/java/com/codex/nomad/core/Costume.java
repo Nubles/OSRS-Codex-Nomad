@@ -74,6 +74,19 @@ public final class Costume
 		return best;
 	}
 
+	/** Whether any piece of costume room furniture takes this item. */
+	public boolean holds(int item)
+	{
+		for (Set<Integer> ids : pieces.values())
+		{
+			if (ids.contains(item))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
 	/** What of the shown items the piece holds. */
 	public Map<Integer, Long> held(String piece, Map<Integer, Long> shown)
 	{
