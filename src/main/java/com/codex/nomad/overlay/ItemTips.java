@@ -52,7 +52,7 @@ public class ItemTips extends Overlay
 		{
 			return null;
 		}
-		MenuEntry[] menu = client.getMenuEntries();
+		MenuEntry[] menu = client.getMenu().getMenuEntries();
 		if (menu.length == 0)
 		{
 			return null;
