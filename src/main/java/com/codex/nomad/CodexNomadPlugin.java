@@ -1040,7 +1040,7 @@ public class CodexNomadPlugin extends Plugin
 	private WayBack.Way wayBack(Store pile)
 	{
 		int[] here = here();
-		if (here == null || pile == null || !pile.located() || client.isInInstancedRegion())
+		if (here == null || pile == null || !pile.located() || client.getTopLevelWorldView().isInstance())
 		{
 			return null;
 		}
@@ -1449,7 +1449,7 @@ public class CodexNomadPlugin extends Plugin
 		WorldPoint at = WorldPoint.fromLocalInstance(client, client.getLocalPlayer().getLocalLocation());
 		deathAt = at;
 		deathRegion = at == null ? -1 : at.getRegionID();
-		deathInstanced = client.isInInstancedRegion();
+		deathInstanced = client.getTopLevelWorldView().isInstance();
 		deathTick = client.getTickCount();
 	}
 
@@ -2038,9 +2038,9 @@ public class CodexNomadPlugin extends Plugin
 		Player me = client.getLocalPlayer();
 		if (me != null && me.getSkullIcon() >= 0)
 		{
-			return client.isPrayerActive(Prayer.PROTECT_ITEM) ? 1 : 0;
+			return client.getVarbitValue(Prayer.PROTECT_ITEM.getVarbit()) == 1 ? 1 : 0;
 		}
-		return client.isPrayerActive(Prayer.PROTECT_ITEM) ? 4 : 3;
+		return client.getVarbitValue(Prayer.PROTECT_ITEM.getVarbit()) == 1 ? 4 : 3;
 	}
 
 	private void publish()

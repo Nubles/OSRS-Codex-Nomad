@@ -56,7 +56,7 @@ public class Marker extends Overlay
 	{
 		for (Mark m : marks)
 		{
-			if (m.point.getPlane() != client.getPlane())
+			if (m.point.getPlane() != client.getTopLevelWorldView().getPlane())
 			{
 				continue;
 			}
