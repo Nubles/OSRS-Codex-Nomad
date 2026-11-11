@@ -40,7 +40,21 @@ class Clicks extends Overlay
 	}
 
 	@Override
-	public Dimension render(Graphics2D g)
+	public Dimension render(Graphics2D graphics)
+	{
+		// Draws on a copy, so no font, stroke, hint or clip set here reaches the next overlay.
+		Graphics2D copy = (Graphics2D) graphics.create();
+		try
+		{
+			return draw(copy);
+		}
+		finally
+		{
+			copy.dispose();
+		}
+	}
+
+	private Dimension draw(Graphics2D g)
 	{
 		Errand job = errand.get();
 		if (job != null && job.kind == Errand.Kind.FETCH && !job.take.isEmpty())
